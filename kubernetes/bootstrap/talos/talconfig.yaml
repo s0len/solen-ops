@@ -44,15 +44,13 @@ patches:
   - # Force nameserver
     |-
     machine:
+      kernel:
+        modules:
+          - name: zfs
       network:
         nameservers:
-          - 1
-          - .
-          - 1
-          - .
-          - 1
-          - .
-          - 1
+          - 1.1.1.1
+          - 1.0.0.1
   - "@./patches/global/cluster-discovery.yaml"
   - "@./patches/global/containerd.yaml"
   - "@./patches/global/disable-search-domain.yaml"
