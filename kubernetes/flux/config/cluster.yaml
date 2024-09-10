@@ -6,7 +6,7 @@ metadata:
   namespace: flux-system
 spec:
   interval: 30m
-  url: "https://github.com/s0len/cluster.git"
+  url: "https://github.com/s0len/solen-ops.git"
   ref:
     branch: "main"
   ignore: |
