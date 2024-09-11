@@ -1,0 +1,119 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: &app unpackerr
+spec:
+  interval: 30m
+  chart:
+    spec:
+      chart: app-template
+      version: 3.4.0
+      sourceRef:
+        kind: HelmRepository
+        name: bjw-s
+        namespace: flux-system
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      strategy: rollback
+      retries: 3
+
+  values:
+    controllers:
+      unpackerr:
+        annotations:
+          reloader.stakater.com/auto: "true"
+        containers:
+          app:
+            image:
+              repository: ghcr.io/unpackerr/unpackerr
+              tag: 0.14.5@sha256:dc72256942ce50d1c8a1aeb5aa85b6ae2680a36eefd2182129d8d210fce78044
+            env:
+              TZ: ${TIMEZONE}
+              UN_WEBSERVER_METRICS: true
+              UN_WEBSERVER_LOG_FILE: /logs/webserver.log
+              UN_ACTIVITY: true
+              UN_SONARR_0_URL: http://sonarr.media.svc.cluster.local:8989
+              UN_SONARR_0_PATHS_0: /data/torrents/standard/series
+              UN_SONARR_1_URL: http://sonarr-kids.media.svc.cluster.local:8990
+              UN_SONARR_1_PATHS_0: /data/torrents/kids/series
+              UN_SONARR_2_URL: http://sonarr-anime.media.svc.cluster.local:8991
+              UN_SONARR_2_PATHS_0: /data/torrents/anime/series
+              UN_SONARR_3_URL: http://sonarr-sport.media.svc.cluster.local:8992
+              UN_SONARR_3_PATHS_0: /data/torrents/sport/series
+              UN_RADARR_0_URL: http://radarr.media.svc.cluster.local:7878
+              UN_RADARR_0_PATHS_0: /data/torrents/standard/movies
+              UN_RADARR_1_URL: http://radarr-kids.media.svc.cluster.local:7879
+              UN_RADARR_1_PATHS_0: /data/torrents/kids/movies
+              UN_RADARR_2_URL: http://radarr-anime.media.svc.cluster.local:7880
+              UN_RADARR_2_PATHS_0: /data/torrents/anime/movies
+              UN_LIDARR_0_URL: http://lidarr.media.svc.cluster.local:8686
+              UN_LIDARR_0_PATHS_0: /data/torrents/standard/music
+              UN_READARR_0_URL: http://readarr.media.svc.cluster.local:8787
+              UN_READARR_0_PATHS_0: /data/torrents/standard/books
+              UN_READARR_1_URL: http://readarr-audio.media.svc.cluster.local:8788
+              UN_READARR_1_PATHS_0: /data/torrents/standard/audiobooks
+              UN_WEBHOOK_0_NAME: notifiarr
+              UN_WEBHOOK_0_IGNORE_SSL: "false"
+              UN_WEBHOOK_0_SILENT: "false"
+              UN_WEBHOOK_0_EVENTS_0: 0
+            envFrom:
+              - secretRef:
+                  name: unpackerr-secret
+            probes:
+              liveness:
+                enabled: true
+              readiness:
+                enabled: true
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities: { drop: ["ALL"] }
+            resources:
+              requests:
+                cpu: 10m
+              limits:
+                memory: 4Gi
+
+    defaultPodOptions:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 568
+        runAsGroup: 568
+        fsGroup: 568
+        fsGroupChangePolicy: OnRootMismatch
+        supplementalGroups: [10000]
+        seccompProfile: { type: RuntimeDefault }
+
+    service:
+      app:
+        controller: *app
+        ports:
+          http:
+            port: 5656
+
+    serviceMonitor:
+      app:
+        serviceName: *app
+        endpoints:
+          - port: http
+            scheme: http
+            path: /metrics
+            interval: 1m
+            scrapeTimeout: 10s
+
+    persistence:
+      logs:
+        type: emptyDir
+
+      media:
+        type: nfs
+        server: ${TRUENAS_IP}
+        path: /mnt/rust/data/torrents
+        globalMounts:
+          - path: /data/torrents
