@@ -1,0 +1,102 @@
+collections:
+  Viaplay Shows:
+    mdblist_list: https://mdblist.com/lists/lordgreen/tv-viaplay
+    sync_mode: sync
+    collection_order: custom
+    collection_mode: hide
+    sort_title: "!07_Viaplay"
+
+  Universe Trends - AI-Curated Collection of Trendsetting Shows:
+    trakt_list: https://trakt.tv/users/solentankar/lists/tv-trending-couchmoney-tv?sort=rank,asc
+    #file_poster: config/posters/uniflix_trendsetters.jpg
+    sync_mode: sync
+    smart_label:
+      sort_by: added.asc
+      all:
+        label: <<smart_label>>
+    summary:
+      This collection of TV Shows is maintained by an awesome AI which looks at the whole wide worlds trending
+      series and their ratings and then creates it's own version of what should be the most trendy movies
+      the whole Universe!
+    visible_library: true
+    visible_home: true
+    visible_shared: true
+    sort_title: "!018_trendy_series"
+    collection_mode: hide
+
+  ⭐ - Dreadful Duds:
+    trakt_list: https://trakt.tv/users/solentankar/lists/uniflix-1-star
+    sync_mode: sync
+    #file_poster: config/posters/Dreadful Duds.jpg
+    #    smart_label:
+    #      sort_by: added.asc
+    #      all:
+    #        label: <<smart_label>>
+    #        unplayed: true
+    summary: Should be avoided at any cost.
+    visible_library: true
+    visible_home: true
+    visible_shared: true
+    sort_title: "!025_Dreadful_Duds"
+
+  ⭐⭐ - Mediocre Misses:
+    trakt_list:
+      - https://trakt.tv/users/solentankar/lists/uniflix-2-stars
+    sync_mode: sync
+    #file_poster: config/posters/Mediocre Misses.jpg
+    #    smart_label:
+    #      sort_by: added.asc
+    #      all:
+    #        label: <<smart_label>>
+    #        unplayed: true
+    summary: Only for those with a special interest in the genre, actor or similar.
+    visible_library: true
+    visible_home: true
+    visible_shared: true
+    sort_title: "!024_Mediocre_Misses"
+
+  ⭐⭐⭐ - Average Aces:
+    trakt_list:
+      - https://trakt.tv/users/solentankar/lists/uniflix-3-stars
+    sync_mode: sync
+    #file_poster: config/posters/Average Aces.jpg
+    #    smart_label:
+    #      sort_by: added.asc
+    #      all:
+    #        label: <<smart_label>>
+    #        unplayed: true
+    summary: General recommendation to watch this one. Though maybe not twice.
+    visible_library: true
+    visible_home: true
+    visible_shared: true
+    sort_title: "!023_Average_Aces"
+
+  ⭐⭐⭐⭐ - Remarkable Reels:
+    trakt_list:
+      - https://trakt.tv/users/solentankar/lists/uniflix-4-stars
+    sync_mode: sync
+    #file_poster: config/posters/Remarkable Reels.jpg
+    #    smart_label:
+    #      sort_by: added.asc
+    #      all:
+    #        label: <<smart_label>>
+    #        unplayed: true
+    summary: Seriously good in more then one way. You should not miss this one.
+    visible_library: true
+    visible_home: true
+    visible_shared: true
+    sort_title: "!022_Remarkable_Reels"
+
+  ⭐⭐⭐⭐⭐ - Exceptional Epics:
+    trakt_list: https://trakt.tv/users/solentankar/lists/uniflix-5-stars
+    sync_mode: sync
+    #file_poster: config/posters/Exceptional Epics.jpg
+    smart_label:
+      sort_by: added.asc
+      all:
+        label: <<smart_label>>
+    summary: This is a MUST watch!
+    visible_library: true
+    visible_home: true
+    visible_shared: true
+    sort_title: "!021_Exceptional_Epics"

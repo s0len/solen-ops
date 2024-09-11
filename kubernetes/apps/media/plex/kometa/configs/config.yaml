@@ -1,0 +1,871 @@
+libraries:
+  Filmer:
+    remove_overlays: false
+    reapply_overlays: false
+    #reset_overlays: false
+    schedule_overlays: daily
+
+    collection_files:
+    - file: /config/best-of.yaml
+    - default: oscars
+      template_variables:
+        collection_mode: hide
+        collection_order: alpha
+        collection_section: '027'
+        data:
+          starting: latest-5
+          ending: latest
+
+    - url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/collection_files/better_new_and_old_movie_releases.yml
+
+    - default: franchise
+      template_variables:
+          # fix mismatch between tpdb and tmdb collection naming
+        title_override:
+          8091: Alien Complete
+          9649: Mexico Trilogy
+          535313: MonsterVerse
+          735384: Hercule Poirot
+          # override asset path directory name
+        name_mapping_10: Star Wars
+        name_mapping_1565: 28 DaysWeeks Later
+        name_mapping_133352: Resident Evil (Animated)
+        name_mapping_735384: Hercule Poirot
+        collection_section: '050'
+        collection_mode: hide
+
+    #- repo: collections/weekly
+    #- repo: chart/charts
+    #  template_variables:
+    #    collection_mode: hide
+
+
+    - default: universe
+      template_variables:
+        sort_title: '!034<<order_<<key>>>><<title>>'
+        use_separator: false
+              # exclude: fast
+        collection_mode: hide
+        append_data:
+          monsterverse: MonsterVerse
+          in_association_with_dc: In Association With DC
+          the_spiderverse: The Spiderverse
+          the_conjuring_universe: The Conjuring Universe
+          batman_universe: The Batman Universe
+        trakt_list_trek: https://trakt.tv/users/dgw/lists/star-trek-canon
+        mdblist_list_monsterverse: https://mdblist.com/lists/drazzilb/monsterverse
+        mdblist_list_in_association_with_dc: https://mdblist.com/lists/drazzilb/in-association-with-dc
+        mdblist_list_the_spiderverse: https://mdblist.com/lists/drazzilb/spiderverse
+        mdblist_list_the_conjuring_universe: https://mdblist.com/lists/drazzilb/the-conjuring-universe
+        mdblist_list_batman_universe: https://mdblist.com/lists/drazzilb/batman-universe
+        summary_avp: Alien vs. Predator is a science-fiction action horror media franchise created by comic book writers Randy Stradley and Chris Warner. The series is a crossover between, and part of, the larger Alien and Predator franchises, depicting the two species as being in conflict with one another.
+        summary_dca: The DC Animated Universe (DCAU, also referred to as the Timmverse or Diniverse by fans) is a shared universe centered on a group of animated television series based on DC Comics and produced by Warner Bros. Animation.
+        summary_dcu: The DC Extended Universe is an American media franchise and shared universe centered on a series of superhero films and television series produced by DC Studios and distributed by Warner Bros. Pictures. It is based on characters that appear in American comic books published by DC Comics
+        summary_fast: Over many missions and against impossible odds, Dom Toretto and his family have outsmarted and outdriven every foe in their path. Now, they must confront the most lethal opponent they've ever faced. Fueled by revenge, a terrifying threat emerges from the shadows of the past to shatter Dom's world and destroy everything -- and everyone -- he loves.
+        summary_marvel: Films made in association with Marvel Comics or that used Marvel Comics characters.
+        summary_mcu: The Marvel Cinematic Universe is an American media franchise and shared universe centered on a series of superhero films produced by Marvel Studios. The films are based on characters that appear in American comic books published by Marvel Comics.
+        summary_middle: Professor J. R. R. Tolkien's fantasy novels The Hobbit and The Lord of the Rings, which tell the story of a mythical war and heroic quests set in the lands of Middle-earth, have been the subject of various film and TV adaptations, chiefly six feature films produced, written and directed by Sir Peter Jackson from 2001 to 2015.
+        summary_mummy: The Mummy is an action adventure horror film media franchise based on films by Universal Pictures about a mummified ancient Egyptian priest who is accidentally resurrected, bringing with him a powerful curse, and the ensuing efforts of heroic archaeologists to stop him.
+        summary_rocky: Rocky is an American sports drama multimedia franchise created by Sylvester Stallone, based on the life of Chuck Wepner, which began with the eponymous 1976 film and has since become a cultural phenomenon, centered on the boxing careers of Rocky Balboa and his protégé Donnie Creed
+        summary_trek: Star Trek is an American science fiction media franchise created by Gene Roddenberry, which began with the eponymous 1960s television series and quickly became a worldwide pop-culture phenomenon. The franchise has expanded into various films, television series, video games, novels, and comic books
+        summary_star: Star Wars is an American epic space opera multimedia franchise created by George Lucas, which began with the eponymous 1977 film and quickly became a worldwide pop culture phenomenon.
+        summary_askew: The View Askewniverse is a fictional universe created by writer/director Kevin Smith, featured in several films, comics and a television series; it is named for Smith's production company, View Askew Productions.
+        summary_wizard: The Wizarding World is a fantasy media franchise and shared fictional universe centred on the Harry Potter novel series by J. K. Rowling.
+        summary_xmen: X-Men is an American superhero film series based on the Marvel Comics superhero team of the same name.
+        summary_monsterverse: The MonsterVerse is an American multimedia franchise and shared fictional universe featuring Godzilla, King Kong, and other monster characters owned and created by Toho Co., Ltd. The franchise is produced by Legendary Pictures and co-produced and distributed by Warner Bros. Pictures.
+        summary_in_association_with_dc: Films made in association with DC Commics or that used DC Comics characters.
+        summary_the_spiderverse: The fictional character Spider-Man, a comic book superhero created by Stan Lee and Steve Ditko and featured in Marvel Comics publications, has appeared as a main character in numerous theatrical and made-for-television films.
+        summary_the_conjuring_universe: The Conjuring Universe is an American media franchise and shared universe centered on a series of supernatural horror films. The franchise is produced by New Line Cinema, the Safran Company, and Atomic Monster Productions and distributed by Warner Bros. Pictures.
+        batman_universe: The Batman film franchise follows various incarnations of the character created by DC Comics. The franchise consists of a total of nine theatrical live-action films and two live-action serials, excluding various villain spin-off and crossovers with other DC films
+
+    - default: seasonal
+      template_variables:
+        sort_by: random
+        schedule_valentine: range(02/01-02/15)
+        schedule_christmas: range(12/01-12/26)
+    - file: config/movies_collections.yaml
+      template_variable:
+        collection_mode: hide
+        use_separator: false
+    - default: tautulli
+      template_variables:
+        name_popular: A Cosmic Movie Collection of Uniflix Favorites
+        collection_section: '015'
+        collection_mode: hide
+        use_watched: false
+        list_days_popular: 45
+        list_size_popular: 30
+        summary_popular: The most popular movies inside the Uniflix-verse the last 15 days.
+    - default: streaming
+      template_variables:
+        collection_mode: hide
+        use_separator: false
+        use_crunchyroll: false
+        use_hayu: false
+        collection_section: '041'
+        visible_library_all4: false
+        visible_library_appletv: true
+        visible_library_bet: false
+        visible_library_britbox: false
+        visible_library_disney: true
+        visible_library_max: true
+        visible_library_hulu: false
+        visible_library_netflix: true
+        visible_library_now: false
+        visible_library_paramount: true
+        visible_library_peacock: false
+        visible_library_amazon: true
+        visible_library_showtime: false
+        sort_by: random
+    - default: collectionless
+      template_variables:
+        summary_collectionless: This is a grouping of movies that have no collection. This collection is solely for the purpose of ensuring collections display in the proper fashion. This is a dummy collection, pay it no mind.
+        collection_section: '999'
+        collection_mode: hide
+    overlay_files:
+    - url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/overlays/background_top_left_313_wide.yml
+
+    - default: resolution
+      template_variables:
+        url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/overlays/resolution-top-left-45deg/<<overlay_name>>.png
+        horizontal_align: left
+        horizontal_offset: 0
+        vertical_offset: 0
+        vertical_align: top
+        final_horizontal_offset: 0
+        final_vertical_offset: 0
+        back_width: 1000
+        back_height: 1500
+        back_color: 00
+
+    - default: audio_codec
+      template_variables:
+        url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/overlays/audio-top-left-45deg/<<key>>.png
+        horizontal_align: left
+        horizontal_offset: 0
+        vertical_offset: 0
+        vertical_align: top
+        back_width: 1000
+        back_height: 1500
+        back_color: 00
+
+
+
+      # Ribbons in the bottom right corner
+    - url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/overlays/ribbon_awards.yml
+    - url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/overlays/ribbon_trending.yml
+    - url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/overlays/ribbon_imdb.yml
+    - url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/overlays/ribbon_rotten.yml
+
+
+    operations:
+      assets_for_all: true
+      delete_collections:
+        less: 2
+      mass_genre_update: tmdb
+      mass_content_rating_update: mdb_commonsense
+      mass_studio_update: tmdb
+      mass_originally_available_update: tmdb
+      mass_audience_rating_update: mdb_tomatoesaudience
+      mass_critic_rating_update: mdb_metacritic
+      mass_imdb_parental_labels: mild
+      split_duplicates: false
+
+  Serier:
+    remove_overlays: false
+    reapply_overlays: false
+    #reset_overlays: false
+    schedule_overlays: daily
+
+    metadata_files:
+    - file: config/title_cards.yaml
+
+    collection_files:
+    - file: config/series_collections.yaml
+    - url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/collection_files/better_new_and_old_tv_shows_releases.yml
+    - default: network
+      template_variables:
+        use_separator: false
+        collection_section: '090'
+    - default: streaming
+      template_variables:
+        collection_mode: hide
+        use_separator: false
+        use_all4: false
+        use_now: false
+        visible_library_appletv: true
+        visible_library_bet: true
+        visible_library_britbox: true
+        visible_library_disney: true
+        visible_library_max: true
+        visible_library_hulu: true
+        visible_library_netflix: true
+        visible_library_paramount: true
+        visible_library_peacock: true
+        visible_library_amazon: true
+        visible_library_showtime: true
+        visible_library_hayu: true
+        visible_library_crunchyroll: true
+        collection_section: '070'
+        sort_by: random
+    - default: tautulli
+      template_variables:
+        name_popular: A Cosmic Series Collection of Uniflix Favorites
+        collection_section: '010'
+        use_watched: false
+        list_days_popular: 45
+        list_size_popular: 20
+        visible_home_popular: true
+        visible_library_popular: true
+        visible_shared_popular: true
+        summary_popular: The most popular media inside the Uniflix verse.
+    overlay_files:
+      # Ribbons in the bottom right corner
+    - url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/overlays/ribbon_trending.yml
+    - url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/overlays/ribbon_imdb.yml
+    - url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/overlays/ribbon_awards.yml
+
+
+      # Status in the top left corner
+    - default: status
+      template_variables:
+        text_airing: .
+        url_airing: https://raw.githubusercontent.com/s0len/meta-manager-config/main/overlays/status-top-left/airing.png
+        text_returning: .
+        url_returning: https://raw.githubusercontent.com/s0len/meta-manager-config/main/overlays/status-top-left/returning.png
+        text_canceled: .
+        url_canceled: https://raw.githubusercontent.com/s0len/meta-manager-config/main/overlays/status-top-left/cancelled.png
+        text_ended: .
+        url_ended: https://raw.githubusercontent.com/s0len/meta-manager-config/main/overlays/status-top-left/ended.png
+        horizontal_align: left
+        horizontal_offset: 25
+        vertical_align: top
+        vertical_offset: 0
+        font_size: 1
+        font_color: '#00000000'
+        back_color: '#00000000'
+        back_width_airing: 1000
+        back_width_returning: 1000
+        back_width_ended: 1000
+        back_width_cancelled: 1000
+        back_width: 1000
+        back_height_airing: 1500
+        back_height_returning: 1500
+        back_height_ended: 1500
+        back_height_cancelled: 1500
+        back_height: 1500
+        back_padding: 0
+        back_line_width: 1000
+        final_horizontal_offset: 0
+        final_vertical_offset: 0
+
+    - url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/overlays/network_fallback.yml
+
+    - default: network
+      template_variables:
+        horizontal_align: left
+        horizontal_offset: 0
+        vertical_offset: 0
+        vertical_align: top
+        back_width: 1000
+        back_height: 1500
+        url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/overlays/network-top-left/<<key_encoded>>.png
+        back_color: 00
+
+    operations:
+      assets_for_all: true
+      delete_collections:
+        less: 2
+      mass_genre_update: tmdb
+      mass_content_rating_update: mdb_commonsense
+      mass_studio_update: tmdb
+      mass_originally_available_update: tmdb
+      mass_audience_rating_update: mdb_tomatoesaudience
+      mass_critic_rating_update: mdb_metacritic
+      mass_imdb_parental_labels: mild
+      split_duplicates: false
+  Barnfilmer:
+    remove_overlays: false
+    reapply_overlays: false
+    #reset_overlays: false
+    schedule_overlays: daily
+
+    collection_files:
+    - file: config/movies_collections.yaml
+    - url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/collection_files/better_new_and_old_movie_releases.yml
+    - default: universe
+      template_variables:
+        sort_title: <<order_<<key>>>><<title>>
+            #file_poster: config/posters/universe/<<key>>.jpg
+        use_separator: false
+        append_data:
+          monsterverse: MonsterVerse
+          in_association_with_dc: In Association With DC
+          the_spiderverse: The Spiderverse
+          the_conjuring_universe: The Conjuring Universe
+          batman_universe: The Batman Universe
+
+        trakt_list_trek: https://trakt.tv/users/dgw/lists/star-trek-canon
+        mdblist_list_monsterverse: https://mdblist.com/lists/drazzilb/monsterverse
+        mdblist_list_in_association_with_dc: https://mdblist.com/lists/drazzilb/in-association-with-dc
+        mdblist_list_the_spiderverse: https://mdblist.com/lists/drazzilb/spiderverse
+        mdblist_list_the_conjuring_universe: https://mdblist.com/lists/drazzilb/the-conjuring-universe
+        mdblist_list_batman_universe: https://mdblist.com/lists/drazzilb/batman-universe
+        summary_avp: Alien vs. Predator is a science-fiction action horror media franchise created by comic book writers Randy Stradley and Chris Warner. The series is a crossover between, and part of, the larger Alien and Predator franchises, depicting the two species as being in conflict with one another.
+        summary_dca: The DC Animated Universe (DCAU, also referred to as the Timmverse or Diniverse by fans) is a shared universe centered on a group of animated television series based on DC Comics and produced by Warner Bros. Animation.
+        summary_dcu: The DC Extended Universe is an American media franchise and shared universe centered on a series of superhero films and television series produced by DC Studios and distributed by Warner Bros. Pictures. It is based on characters that appear in American comic books published by DC Comics
+        summary_fast: Over many missions and against impossible odds, Dom Toretto and his family have outsmarted and outdriven every foe in their path. Now, they must confront the most lethal opponent they've ever faced. Fueled by revenge, a terrifying threat emerges from the shadows of the past to shatter Dom's world and destroy everything -- and everyone -- he loves.
+        summary_marvel: Films made in association with Marvel Comics or that used Marvel Comics characters.
+        summary_mcu: The Marvel Cinematic Universe is an American media franchise and shared universe centered on a series of superhero films produced by Marvel Studios. The films are based on characters that appear in American comic books published by Marvel Comics.
+        summary_middle: Professor J. R. R. Tolkien's fantasy novels The Hobbit and The Lord of the Rings, which tell the story of a mythical war and heroic quests set in the lands of Middle-earth, have been the subject of various film and TV adaptations, chiefly six feature films produced, written and directed by Sir Peter Jackson from 2001 to 2015.
+        summary_mummy: The Mummy is an action adventure horror film media franchise based on films by Universal Pictures about a mummified ancient Egyptian priest who is accidentally resurrected, bringing with him a powerful curse, and the ensuing efforts of heroic archaeologists to stop him.
+        summary_rocky: Rocky is an American sports drama multimedia franchise created by Sylvester Stallone, based on the life of Chuck Wepner, which began with the eponymous 1976 film and has since become a cultural phenomenon, centered on the boxing careers of Rocky Balboa and his protégé Donnie Creed
+        summary_trek: Star Trek is an American science fiction media franchise created by Gene Roddenberry, which began with the eponymous 1960s television series and quickly became a worldwide pop-culture phenomenon. The franchise has expanded into various films, television series, video games, novels, and comic books
+        summary_star: Star Wars is an American epic space opera multimedia franchise created by George Lucas, which began with the eponymous 1977 film and quickly became a worldwide pop culture phenomenon.
+        summary_askew: The View Askewniverse is a fictional universe created by writer/director Kevin Smith, featured in several films, comics and a television series; it is named for Smith's production company, View Askew Productions.
+        summary_wizard: The Wizarding World is a fantasy media franchise and shared fictional universe centred on the Harry Potter novel series by J. K. Rowling.
+        summary_xmen: X-Men is an American superhero film series based on the Marvel Comics superhero team of the same name.
+        summary_monsterverse: The MonsterVerse is an American multimedia franchise and shared fictional universe featuring Godzilla, King Kong, and other monster characters owned and created by Toho Co., Ltd. The franchise is produced by Legendary Pictures and co-produced and distributed by Warner Bros. Pictures.
+        summary_in_association_with_dc: Films made in association with DC Commics or that used DC Comics characters.
+        summary_the_spiderverse: The fictional character Spider-Man, a comic book superhero created by Stan Lee and Steve Ditko and featured in Marvel Comics publications, has appeared as a main character in numerous theatrical and made-for-television films.
+        summary_the_conjuring_universe: The Conjuring Universe is an American media franchise and shared universe centered on a series of supernatural horror films. The franchise is produced by New Line Cinema, the Safran Company, and Atomic Monster Productions and distributed by Warner Bros. Pictures.
+        batman_universe: The Batman film franchise follows various incarnations of the character created by DC Comics. The franchise consists of a total of nine theatrical live-action films and two live-action serials, excluding various villain spin-off and crossovers with other DC films
+    - default: content_rating_cs
+      template_variables:
+        use_separator: false
+        collection_mode: hide
+    - default: seasonal
+      template_variables:
+        sort_by: random
+        schedule_valentine: range(02/01-02/15)
+        schedule_christmas: range(12/01-12/26)
+
+    - default: streaming
+      template_variables:
+        collection_mode: hide
+        use_separator: false
+        use_crunchyroll: false
+        use_hayu: false
+        visible_library_all4: false
+        visible_library_appletv: false
+        visible_library_bet: false
+        visible_library_britbox: false
+        visible_library_disney: false
+        visible_library_max: false
+        visible_library_hulu: false
+        visible_library_netflix: false
+        visible_library_now: false
+        visible_library_paramount: false
+        visible_library_peacock: false
+        visible_library_amazon: false
+        visible_library_showtime: false
+        sort_by: random
+    - default: tautulli
+      template_variables:
+        name_popular: A Cosmic Kids Movies Collection of Uniflix Favorites
+        collection_section: '01'
+        use_watched: false
+        list_days_popular: 45
+        list_size_popular: 20
+        visible_home_popular: true
+        visible_library_popular: true
+        visible_shared_popular: true
+        summary_popular: The most popular movies for kids inside the Uniflix verse.
+    - default: collectionless
+      template_variables:
+        summary_collectionless: This is a grouping of movies that have no collection. This collection is solely for the purpose of ensuring collections display in the proper fashion. This is a dummy collection, pay it no mind.
+    overlay_files:
+    - default: languages
+      template_variables:
+        languages:
+        - en
+        - sv
+        style: square
+        font: config/fonts/ARIAL.TTF
+        back_color: '#00000080'
+        position:
+        - horizontal_offset: 30
+          horizontal_align: left
+          vertical_offset: 30
+          vertical_align: top
+        - horizontal_offset: 30
+          horizontal_align: left
+          vertical_offset: 91
+          vertical_align: top
+        - horizontal_offset: 30
+          horizontal_align: left
+          vertical_offset: 152
+          vertical_align: top
+        - horizontal_offset: 30
+          horizontal_align: left
+          vertical_offset: 213
+          vertical_align: top
+        - horizontal_offset: 30
+          horizontal_align: left
+          vertical_offset: 304
+          vertical_align: top
+    - default: commonsense
+      template_variables:
+        horizontal_offset: 0
+        horizontal_align: left
+        vertical_offset: 25
+        vertical_align: bottom
+        back_color: '#00000000'
+        font_size: 70
+        back_width: 60
+        font: config/fonts/ARIAL.TTF
+        addon_offset: 50
+    operations:
+      assets_for_all: true
+      mass_critic_rating_update: mdb_metacritic
+  Barnserier:
+    remove_overlays: false
+    reapply_overlays: false
+    #reset_overlays: false
+    schedule_overlays: daily
+    collection_files:
+    - file: config/series_collections.yaml
+    - url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/collection_files/better_new_and_old_tv_shows_releases.yml
+    - default: streaming
+      template_variables:
+        collection_mode: hide
+        use_separator: false
+        use_all4: false
+        use_now: false
+        visible_library_appletv: false
+        visible_library_bet: false
+        visible_library_britbox: false
+        visible_library_disney: false
+        visible_library_max: false
+        visible_library_hulu: false
+        visible_library_netflix: false
+        visible_library_paramount: false
+        visible_library_peacock: false
+        visible_library_amazon: false
+        visible_library_showtime: false
+        visible_library_hayu: false
+        visible_library_crunchyroll: false
+        sort_by: random
+    - default: tautulli
+      template_variables:
+        name_popular: A Cosmic Kids Series Collection of Uniflix Favorites
+        collection_section: '01'
+        collection_mode: hide
+        use_watched: false
+        list_days_popular: 45
+        list_size_popular: 20
+        visible_home_popular: true
+        visible_library_popular: true
+        visible_shared_popular: true
+        summary_popular: The most popular media inside the Uniflix verse.
+    - default: network
+      template_variables:
+        use_separator: false
+        collection_mode: hide
+    - default: content_rating_cs
+      template_variables:
+        collection_mode: hide
+        use_separator: false
+    overlay_files:
+    - reapply_overlays: false
+    - url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/overlays/background_top_left_313_wide.yml
+    - default: languages
+      template_variables:
+        languages:
+        - en
+        - sv
+        style: square
+        font: config/fonts/ARIAL.TTF
+        back_color: '#00000000'
+        font_color: '#00000000'
+        position:
+        - horizontal_offset: 30
+          horizontal_align: left
+          vertical_offset: 30
+          vertical_align: top
+        - horizontal_offset: 30
+          horizontal_align: left
+          vertical_offset: 91
+          vertical_align: top
+        - horizontal_offset: 30
+          horizontal_align: left
+          vertical_offset: 152
+          vertical_align: top
+        - horizontal_offset: 30
+          horizontal_align: left
+          vertical_offset: 213
+          vertical_align: top
+        - horizontal_offset: 30
+          horizontal_align: left
+          vertical_offset: 304
+          vertical_align: top
+    - default: commonsense
+      template_variables:
+        horizontal_offset: 80
+        horizontal_align: left
+        vertical_offset: 15
+        vertical_align: top
+        back_color: '#00000000'
+        font_color: '#FFFFFF00'
+        font_size: 70
+        back_width: 45
+        font: config/fonts/ARIAL.TTF
+        addon_offset: 50
+
+
+    - default: status
+      template_variables:
+        text_airing: .
+        url_airing: https://raw.githubusercontent.com/s0len/meta-manager-config/main/overlays/status-top-left/airing.png
+        text_returning: .
+        url_returning: https://raw.githubusercontent.com/s0len/meta-manager-config/main/overlays/status-top-left/returning.png
+        text_canceled: .
+        url_canceled: https://raw.githubusercontent.com/s0len/meta-manager-config/main/overlays/status-top-left/cancelled.png
+        text_ended: .
+        url_ended: https://raw.githubusercontent.com/s0len/meta-manager-config/main/overlays/status-top-left/ended.png
+        horizontal_align: left
+        horizontal_offset: 25
+        vertical_align: top
+        vertical_offset: 0
+        font_size: 1
+        font_color: '#00000000'
+        back_color: '#00000000'
+        back_width_airing: 1000
+        back_width_returning: 1000
+        back_width_ended: 1000
+        back_width_cancelled: 1000
+        back_width: 1000
+        back_height_airing: 1500
+        back_height_returning: 1500
+        back_height_ended: 1500
+        back_height_cancelled: 1500
+        back_height: 1500
+        back_padding: 0
+        back_line_width: 1000
+        final_horizontal_offset: 0
+        final_vertical_offset: 0
+
+    operations:
+      assets_for_all: true
+
+  Animefilmer:
+    remove_overlays: false
+    reapply_overlays: false
+    #reset_overlays: false
+    schedule_overlays: daily
+    collection_files:
+    - url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/collection_files/better_new_and_old_movie_releases.yml
+    - default: streaming
+      template_variables:
+        collection_mode: hide
+        use_separator: false
+        use_crunchyroll: true
+        use_hayu: false
+        use_max: false
+        use_all4: false
+        use_now: false
+        visible_library_appletv: false
+        visible_library_bet: false
+        visible_library_disney: false
+        visible_library_max: false
+        visible_library_hulu: false
+        visible_library_netflix: false
+        visible_library_paramount: false
+        visible_library_peacock: false
+        visible_library_amazon: false
+        visible_library_showtime: false
+        sort_by: random
+    - default: studio
+      template_variables:
+        collection_mode: hide
+        visible_library_studio_ghibli: true
+        use_separator: false
+    overlay_files:
+    - default: studio
+      template_variables:
+        horizontal_align: left
+        horizontal_offset: 0
+        vertical_align: top
+        vertical_offset: 0
+        back_width: 1000
+        back_height: 1500
+        url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/overlays/studio-top-left/<<key>>.png
+        back_color: 00
+    # - default: ribbon
+    #   template_variables:
+    #     use_common: false
+    #     use_oscars: false
+    #     use_rotten: false
+    #     use_metacritic: false
+    # - default: languages
+    #   template_variables:
+    #     builder_level: episode
+    #     languages:
+    #     - en
+    #     - ja
+    #     style: square
+    #     font: config/fonts/ARIAL.TTF
+    #     back_color:     #00000080
+    #     horizontal_offset: 25
+    #     horizontal_align: left
+    #     vertical_offset: 25
+    #     vertical_align: top
+    # - default: languages
+    #   template_variables:
+    #     builder_level: season
+    #     languages:
+    #     - en
+    #     - ja
+    #     style: square
+    #     font: config/fonts/ARIAL.TTF
+    #     back_color:     #00000080
+    #     horizontal_offset: 25
+    #           #horizontal_align: left
+    #     vertical_offset: 25
+    #           #vertical_align: top
+    operations:
+      assets_for_all: true
+  Animeserier:
+    remove_overlays: false
+    reapply_overlays: false
+    #reset_overlays: false
+    schedule_overlays: daily
+    collection_files:
+    - url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/collection_files/better_new_and_old_tv_shows_releases.yml
+    - default: studio
+      template_variables:
+        use_separator: false
+    - default: streaming
+      template_variables:
+        collection_mode: hide
+        use_separator: false
+        use_all4: false
+        use_now: false
+        visible_library_appletv: false
+        visible_library_bet: false
+        visible_library_britbox: false
+        visible_library_disney: false
+        visible_library_max: false
+        visible_library_hulu: false
+        visible_library_netflix: false
+        visible_library_paramount: false
+        visible_library_peacock: false
+        visible_library_amazon: false
+        visible_library_showtime: false
+        visible_library_hayu: false
+        visible_library_crunchyroll: false
+        sort_by: random
+    overlay_files:
+    - default: studio
+      template_variables:
+        horizontal_align: left
+        horizontal_offset: 0
+        vertical_align: top
+        vertical_offset: 0
+        back_width: 1000
+        back_height: 1500
+        url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/overlays/studio-top-left/<<key>>.png
+        back_color: 00
+    - default: status
+      template_variables:
+        text_airing: .
+        url_airing: https://raw.githubusercontent.com/s0len/meta-manager-config/main/overlays/status-top-left/airing.png
+        text_returning: .
+        url_returning: https://raw.githubusercontent.com/s0len/meta-manager-config/main/overlays/status-top-left/returning.png
+        text_canceled: .
+        url_canceled: https://raw.githubusercontent.com/s0len/meta-manager-config/main/overlays/status-top-left/cancelled.png
+        text_ended: .
+        url_ended: https://raw.githubusercontent.com/s0len/meta-manager-config/main/overlays/status-top-left/ended.png
+        horizontal_align: left
+        horizontal_offset: 25
+        vertical_align: top
+        vertical_offset: 0
+        font_size: 1
+        font_color: '#00000000'
+        back_color: '#00000000'
+        back_width_airing: 1000
+        back_width_returning: 1000
+        back_width_ended: 1000
+        back_width_cancelled: 1000
+        back_width: 1000
+        back_height_airing: 1500
+        back_height_returning: 1500
+        back_height_ended: 1500
+        back_height_cancelled: 1500
+        back_height: 1500
+        back_padding: 0
+        back_line_width: 1000
+        final_horizontal_offset: 0
+        final_vertical_offset: 0
+    # - default: languages
+    #   template_variables:
+    #     languages:
+    #     - en
+    #     - ja
+    #     style: square
+    #     font: config/fonts/ARIAL.TTF
+    #     back_color: '#00000080'
+    #     position:
+    #     - horizontal_offset: 30
+    #       horizontal_align: left
+    #       vertical_offset: 30
+    #       vertical_align: top
+    #     - horizontal_offset: 30
+    #       horizontal_align: left
+    #       vertical_offset: 91
+    #       vertical_align: top
+    #     - horizontal_offset: 30
+    #       horizontal_align: left
+    #       vertical_offset: 152
+    #       vertical_align: top
+    #     - horizontal_offset: 30
+    #       horizontal_align: left
+    #       vertical_offset: 213
+    #       vertical_align: top
+    #     - horizontal_offset: 30
+    #       horizontal_align: left
+    #       vertical_offset: 304
+    #       vertical_align: top
+    operations:
+      assets_for_all: true
+  Sports:
+    collection_files:
+    - url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/collection_files/formula1_2024.yml
+    - url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/collection_files/motogp_2024.yml
+    metadata_files:
+    - url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/metadata_files/formula1_title_cards_2024.yml
+    - url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/metadata_files/motogp_posters_and_title_cards.yml
+    - url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/metadata_files/isle_of_man_tt.yml
+    operations:
+      assets_for_all: true
+    minimum_items: 1
+
+  #Musik:
+  #  collection_files:
+  #  - file: config/Music.yml   # This is a local file THAT YOU MIGHT CREATE
+playlist_files:
+  default: playlist
+  template_variables:
+    use_dragonball: false
+    libraries:
+    - Filmer
+    - Serier
+    - Animeserier
+    - Animefilmer
+    file_poster: config/posters/playlist/<<key>>.jpg
+settings:
+  cache: true
+  cache_expiration: 60
+  asset_directory: config/assets
+  asset_folders: true
+  asset_depth: 2
+  create_asset_folders: false
+  prioritize_assets: true
+  dimensional_asset_rename: false
+  download_url_assets: true
+  show_missing_season_assets: false
+  show_missing_episode_assets: false
+  show_asset_not_needed: false
+  sync_mode: sync
+  minimum_items: 2
+  default_collection_order:
+  delete_below_minimum: true
+  delete_not_scheduled: false
+  run_again_delay: 2
+  missing_only_released: false
+  only_filter_missing: false
+  show_unmanaged: true
+  show_unconfigured: true
+  show_filtered: false
+  show_options: false
+  show_missing: false
+  show_missing_assets: true
+  save_report: false
+  tvdb_language: eng
+  ignore_ids:
+  ignore_imdb_ids:
+  item_refresh_delay: 0
+  playlist_exclude_users:
+  playlist_report: false
+  verify_ssl: true
+  check_nightly: false
+  playlist_sync_to_users: all
+  run_order:
+  - operations
+  - metadata
+  - collections
+  - overlays
+  overlay_artwork_filetype: jpg
+  overlay_artwork_quality:
+  config_repo:
+
+webhooks: # Can be individually specified per library as well
+  error: notifiarr
+  version: notifiarr
+  run_start: notifiarr
+  run_end: notifiarr
+  changes: notifiarr
+  delete:
+
+plex: # Can be individually specified per library as well; REQUIRED for the script to run
+  url: http://plex.media.svc.cluster.local:32400
+  token: <<PLEX_API_KEY>>
+  timeout: 60
+  clean_bundles: true
+  empty_trash: true
+  optimize: true
+  db_cache: 1024
+  verify_ssl:
+
+tmdb: # REQUIRED for the script to run
+  apikey: <<TMDB_API_KEY>>
+  language: en
+  cache_expiration: 60
+  region: SE
+
+tautulli: # Can be individually specified per library as well
+  url: http://tautulli.media.svc.cluster.local
+  apikey: <<KOMETA_TAUTULLI_API_KEY>>
+
+omdb:
+  apikey: <<OMDB_API_KEY>>
+  cache_expiration: 60
+
+mdblist:
+  apikey: <<MDBLIST_API_KEY>>
+  cache_expiration: 60
+
+notifiarr:
+  apikey: <<NOTIFIARR_API_KEY>>
+
+anidb: # Not required for AniDB builders unless you want mature content
+  username: <<ANIDB_USERNAME>>
+  password: <<ANIDB_PASSWORD>>
+  language: en
+  client: uniflix
+  version: 1
+  cache_expiration: 60
+
+trakt:
+  client_id: <<TRAKT_CLIENT_ID>>
+  client_secret: <<TRAKT_CLIENT_SECRET>>
+  authorization:
+    access_token: <<TRAKT_ACCESS_TOKEN>>
+    token_type: Bearer
+    expires_in: <<TRAKT_EXPIRES_IN>>
+    refresh_token: <<TRAKT_REFRESH_TOKEN>>
+    scope: public
+    created_at: <<TRAKT_CREATED_AT>>
+  pin:
+
+mal:
+  client_id: <<MYANIMELIST_CLIENT_ID>>
+  client_secret: <<MYANIMELIST_CLIENT_SECRET>>
+  localhost_url: <<MYANIMELIST_LOCALHOST_URL>>
+  authorization:
+    access_token: <<MYANIMELIST_ACCESS_TOKEN>>
+    token_type: Bearer
+    expires_in: <<MYANIMELIST_EXPIRES_IN>>
+    refresh_token: <<MYANIMELIST_REFRESH_TOKEN>>
+  cache_expiration: 60
+
