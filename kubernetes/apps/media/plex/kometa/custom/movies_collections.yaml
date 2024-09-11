@@ -1,0 +1,135 @@
+collections:
+
+  Uniflix Curates - Global Gems Uncovered by AI:
+    trakt_list: https://trakt.tv/users/solentankar/lists/movies-based-on-recently-watched-couchmoney-tv?sort=rank,asc
+    #file_poster: config/posters/uniflix_curates.jpg
+    sync_mode: sync
+    #    smart_label:
+    #      sort_by: added.asc
+    #      all:
+    #        label: <<smart_label>>
+    #        unplayed: true
+    summary:
+      This collection of movies is maintained by an awesome AI which looks at the habits of all Uniflix users and compares
+      our likes and dislikes to the whole wide world and makes recommendations on movies that we should like but would
+      probably not have watched otherwise.
+    visible_library: true
+    visible_home: true
+    visible_shared: true
+    sort_title: "!017_recommended_based_on_watched_movies"
+    collection_mode: hide
+
+  Universe's Finest - AI-Picked Blockbusters from Around the Globe:
+    trakt_list: https://trakt.tv/users/solentankar/lists/movies-recommendations-couchmoney-tv?sort=rank,asc
+    #file_poster: config/posters/uniflix_blockbusters.jpg
+    sync_mode: sync
+    #    smart_label:
+    #      sort_by: added.asc
+    #      all:
+    #        label: <<smart_label>>
+    #        unplayed: true
+    summary:
+      This collection of movies is maintained by an awesome AI which looks at the whole wide worlds most
+      popular movies and their ratings and then creates it's own version of what should be the most popular movies list in
+      the whole Universe!
+    visible_library: true
+    visible_home: true
+    visible_shared: true
+    sort_title: "!019_popular_movies"
+    collection_mode: hide
+
+  Universe Trends - AI-Curated Collection of Trendsetting Films:
+    trakt_list: https://trakt.tv/users/solentankar/lists/movies-trending-couchmoney-tv?sort=rank,asc
+    #file_poster: config/posters/uniflix_trendsetters.jpg
+    sync_mode: sync
+    smart_label:
+      sort_by: added.asc
+      all:
+        label: <<smart_label>>
+    summary:
+      This collection of movies is maintained by an awesome AI which looks at the whole wide worlds trending
+      movies and their ratings and then creates it's own version of what should be the most trendy movies
+      the whole Universe!
+    visible_library: true
+    visible_home: true
+    visible_shared: true
+    sort_title: "!018_trendy_movies"
+    collection_mode: hide
+
+  ⭐ - Dreadful Duds:
+    trakt_list: https://trakt.tv/users/solentankar/lists/uniflix-1-star
+    letterboxd_list: https://letterboxd.com/bionithrin/list/uniflix-4/
+    #file_poster: config/posters/Dreadful Duds.jpg
+    sync_mode: sync
+    smart_label:
+      sort_by: added.asc
+      all:
+        label: <<smart_label>>
+    summary: Should be avoided at any cost.
+    visible_library: true
+    visible_home: true
+    visible_shared: true
+    sort_title: "!025_Dreadful_Duds"
+
+  ⭐⭐ - Mediocre Misses:
+    trakt_list:
+      - https://trakt.tv/users/solentankar/lists/uniflix-2-stars
+    letterboxd_list: https://letterboxd.com/bionithrin/list/uniflix-2/
+    sync_mode: sync
+    #file_poster: config/posters/Mediocre Misses.jpg
+    smart_label:
+      sort_by: added.asc
+      all:
+        label: <<smart_label>>
+    summary: Only for those with a special interest in the genre, actor or similar.
+    visible_library: true
+    visible_home: true
+    visible_shared: true
+    sort_title: "!024_Mediocre_Misses"
+
+  ⭐⭐⭐ - Average Aces:
+    trakt_list:
+      - https://trakt.tv/users/solentankar/lists/uniflix-3-stars
+    letterboxd_list: https://letterboxd.com/bionithrin/list/uniflix/
+    sync_mode: sync
+    #file_poster: config/posters/Average Aces.jpg
+    smart_label:
+      sort_by: added.asc
+      all:
+        label: <<smart_label>>
+    summary: General recommendation to watch this one. Though maybe not twice.
+    visible_library: true
+    visible_home: true
+    visible_shared: true
+    sort_title: "!023_Average_Aces"
+
+  ⭐⭐⭐⭐ - Remarkable Reels:
+    trakt_list:
+      - https://trakt.tv/users/solentankar/lists/uniflix-4-stars
+    letterboxd_list: https://letterboxd.com/bionithrin/list/uniflix-1/
+    sync_mode: sync
+    #file_poster: config/posters/Remarkable Reels.jpg
+    smart_label:
+      sort_by: added.asc
+      all:
+        label: <<smart_label>>
+    summary: Seriously good in more then one way. You should not miss this one.
+    visible_library: true
+    visible_home: true
+    visible_shared: true
+    sort_title: "!022_Remarkable_Reels"
+
+  ⭐⭐⭐⭐⭐ - Exceptional Epics:
+    trakt_list: https://trakt.tv/users/solentankar/lists/uniflix-5-stars
+    letterboxd_list: https://letterboxd.com/bionithrin/list/uniflix-3/
+    #file_poster: config/posters/Exceptional Epics.jpg
+    sync_mode: sync
+    smart_label:
+      sort_by: added.asc
+      all:
+        label: <<smart_label>>
+    summary: This is a MUST watch!
+    visible_library: true
+    visible_home: true
+    visible_shared: true
+    sort_title: "!021_Exceptional_Epics"

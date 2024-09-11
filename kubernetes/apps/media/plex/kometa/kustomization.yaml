@@ -12,14 +12,9 @@ configMapGenerator:
       - ./configs/config.yaml
   - name: kometa-custom-configs
     files:
-      - ./custom/Anime_Collections_All.yaml
-      - ./custom/Movies_Collections_Awards.yaml
-      - ./custom/Movies_Collections_Decades.yaml
-      - ./custom/Movies_Collections_Genres.yaml
-      - ./custom/Movies_Collections_Holidays.yaml
-      - ./custom/Movies_Collections_Suggestions.yaml
-      - ./custom/Series_Collections_Networks.yaml
-      - ./custom/Series_Collections_Suggestions.yaml
-      - ./custom/Movies_Metadata.yaml
+      - ./custom/best-of.yaml
+      - ./custom/movies_collections.yaml
+      - ./custom/series_collections.yaml
+      - ./custom/title_cards.yaml
 generatorOptions:
   disableNameSuffixHash: true

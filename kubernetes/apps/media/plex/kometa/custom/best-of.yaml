@@ -1,0 +1,29 @@
+collections:
+  Best of Sweden:
+    trakt_list:
+      - https://trakt.tv/users/maxwelldeux/lists/flm-s-best-swedish-films-of-all-time?sort=rank,asc
+      - https://trakt.tv/users/a925sw/lists/swedish-movies?sort=rank,asc
+    sync_mode: sync
+    limit: 50
+    sort_title: ~_Best of Sweden
+    smart_label: random
+    visible_home: weekly(monday)
+    visible_shared: weekly(monday)
+    collection_mode: hide
+
+  Best of United States:
+    mdblist_list: https://mdblist.com/lists/solentankar/best-of-united-states
+    sort_title: ~_Best of United States
+    smart_label: random
+    visible_home: weekly(monday)
+    visible_shared: weekly(monday)
+    collection_mode: hide
+    sync_mode: sync
+    limit: 50
+
+  Trending:
+    mdblist_list: https://mdblist.com/lists/solentankar/trending-movies
+    sort_title: 012-Trending
+    collection_mode: hide
+    sync_mode: sync
+    limit: 50
