@@ -26,7 +26,7 @@ spec:
         lvm:
           enabled: false
         zfs:
-          enabled: false
+          enabled: true
       replicated:
         mayastor:
           enabled: false
@@ -38,11 +38,18 @@ spec:
       localpv:
         image:
           registry: quay.io/
-      helperPod:
-        image:
-          registry: quay.io/
       hostpathClass:
         enabled: true
         name: openebs-hostpath
         isDefaultClass: false
         basePath: /var/openebs/local
+    zfs-localpv:
+      enabled: true
+      zfsNode:
+        encrKeysDir: /var/openebs/keys
+      crds:
+        zfsLocalPv:
+          enabled: true
+        csi:
+          volumeSnapshots:
+            enabled: false
