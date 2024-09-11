@@ -1,9 +1,8 @@
----
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: HelmRepository
 metadata:
-  name: stakater
+  name: democratic-csi
   namespace: flux-system
 spec:
-  interval: 1h
-  url: https://stakater.github.io/stakater-charts
+  interval: 10m
+  url: "https://democratic-csi.github.io/charts/"
