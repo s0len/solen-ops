@@ -11,6 +11,7 @@ resources:
   - ./coredns.yaml
   - ./democratic-csi.yaml
   - ./grafana.yaml
+  - ./intel.yaml
   - ./jetstack.yaml
   - ./k8s-gateway.yaml
   - ./node-feature-discovery.yaml
