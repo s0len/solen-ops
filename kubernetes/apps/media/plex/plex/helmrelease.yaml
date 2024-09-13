@@ -65,8 +65,7 @@ spec:
               allowPrivilegeEscalation: false
               readOnlyRootFilesystem: true
               capabilities: { drop: ["ALL"] }
-            # podSecurityContext:
-            #   supplementalGroups: [44, 109] # group IDs from host
+              supplementalGroups: [x, 44] # group IDs from host
             resources:
               requests:
                 cpu: 100m
