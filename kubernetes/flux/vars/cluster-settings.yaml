@@ -5,4 +5,14 @@ metadata:
   name: cluster-settings
   namespace: flux-system
 data:
-  SETTING_EXAMPLE: Global settings for your cluster go in this file, this file is NOT encrypted
+  CLUSTER_NAME: solen-cluster
+  TIMEZONE: "Europe/Stockholm"
+  CLUSTER_CLOUDFLARE_TUNNEL_ID: 64368854-db82-408e-9b92-db90dae200ea
+  TRUENAS_IP:         192.168.10.98
+  K8S_GATEWAY_IP:     192.168.10.82
+  NGINX_INTERNAL_IP:  192.168.10.81
+  # NGINX_EXTERNAL_IP:  192.168.201.130
+  # CLOUDNATIVE_PG_IP:  192.168.201.200
+  PLEX_IP:            192.168.10.80
+  # JELLYFIN_IP:        192.168.201.211
+  # VALHEIM_IP:         192.168.201.220
