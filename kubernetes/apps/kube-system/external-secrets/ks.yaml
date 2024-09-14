@@ -10,7 +10,7 @@ spec:
   prune: true
   sourceRef:
     kind: GitRepository
-    name: home-cluster
+    name: home-kubernetes
   wait: true
   dependsOn:
     - name: cert-manager-self-signed-issuers
@@ -25,7 +25,7 @@ spec:
   prune: true
   sourceRef:
     kind: GitRepository
-    name: home-cluster
+    name: home-kubernetes
   wait: true
   interval: 30m
   postBuild:
@@ -45,7 +45,7 @@ spec:
   prune: true
   sourceRef:
     kind: GitRepository
-    name: home-cluster
+    name: home-kubernetes
   wait: true
   interval: 30m
   dependsOn:
