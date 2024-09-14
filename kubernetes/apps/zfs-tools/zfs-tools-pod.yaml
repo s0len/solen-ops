@@ -6,7 +6,7 @@ metadata:
 spec:
   containers:
     - name: zfs-tools
-      image: ubuntu:22.04
+      image: ubuntu:24.04
       command: ["/bin/sh", "-c", "apt update && apt install -y zfsutils-linux smartmontools nvme-cli && sleep infinity"]
       securityContext:
         privileged: true
