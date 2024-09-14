@@ -18,7 +18,7 @@ creation_rules:
     key_groups:
       - age:
           - age1w9dv5enm6meku23cr82tfdgdmkqntrg0mnw5qyt7azyd59qvnc0q0xunp8
-  - path_regex: apps/external-secrets/bitwarden-secrets-manager/app/bitwarden.+\.sops\.ya?ml
+  - path_regex: apps/external-secrets/onepassword-connect/app/.+\.sops\.ya?ml
     input_type: yaml
     encrypted_regex: ^(token|ORG_ID)$
     key_groups:

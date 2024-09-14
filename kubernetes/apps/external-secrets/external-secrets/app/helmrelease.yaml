@@ -1,11 +1,11 @@
 ---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/helm.toolkit.fluxcd.io/helmrelease_v2.json
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: external-secrets
-  namespace: kube-system
 spec:
-  interval: 15m
+  interval: 30m
   chart:
     spec:
       chart: external-secrets
@@ -14,15 +14,17 @@ spec:
         kind: HelmRepository
         name: external-secrets
         namespace: flux-system
-  maxHistory: 2
   install:
-    createNamespace: true
     remediation:
       retries: 3
   upgrade:
     cleanupOnFail: true
     remediation:
+      strategy: rollback
       retries: 3
+  dependsOn:
+    - name: onepassword-connect
+      namespace: external-secrets
   values:
     installCRDs: true
     serviceMonitor:
@@ -36,8 +38,3 @@ spec:
       serviceMonitor:
         enabled: true
         interval: 1m
-    # will be available in next version
-    # cert-manager creates the selfsigned ca
-    # https://cert-manager.io/docs/configuration/selfsigned/#bootstrapping-ca-issuers
-    bitwarden-sdk-server:
-      enabled: true
