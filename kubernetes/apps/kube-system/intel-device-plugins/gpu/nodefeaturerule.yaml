@@ -13,4 +13,4 @@ spec:
         - feature: pci.device
           matchExpressions:
             vendor: {op: In, value: ["8086"]}
-            class: {op: In, value: ["0300", "0380"]}
+            class: {op: In, value: ["0300", "4690"]}
