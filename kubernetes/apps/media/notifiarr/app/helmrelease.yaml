@@ -41,6 +41,11 @@ spec:
               TMPDIR: /tmp
               DN_RADARR_0_URL: http://radarr.media.svc.cluster.local
               DN_SONARR_0_URL: http://sonarr.media.svc.cluster.local
+              DN_RADARR_1_URL: http://radarr-kids.media.svc.cluster.local
+              DN_SONARR_1_URL: http://sonarr-kids.media.svc.cluster.local
+              DN_RADARR_2_URL: http://radarr-anime.media.svc.cluster.local
+              DN_SONARR_2_URL: http://sonarr-anime.media.svc.cluster.local
+              DN_SONARR_3_URL: http://sonarr-sport.media.svc.cluster.local
               DN_PLEX_URL: http://plex.media.svc.cluster.local:32400
               DN_TAUTULLI_URL: http://tautulli.media.svc.cluster.local
             envFrom:
