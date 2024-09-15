@@ -1,5 +1,3 @@
----
-# yaml-language-server: $schema=https://kube-schemas.pages.dev/nfd.k8s-sigs.io/nodefeaturerule_v1alpha1.json
 apiVersion: nfd.k8s-sigs.io/v1alpha1
 kind: NodeFeatureRule
 metadata:
@@ -8,9 +6,10 @@ spec:
   rules:
     - name: intel.gpu
       labels:
-        intel.feature.node.kubernetes.io/gpu: "true"
+        gpu.intel.com/i915: "true"
+        gpu.intel.com/cards: "1"
       matchFeatures:
         - feature: pci.device
           matchExpressions:
             vendor: {op: In, value: ["8086"]}
-            class: {op: In, value: ["0300", "4690"]}
+            class: {op: In, value: ["0300", "0380"]}
