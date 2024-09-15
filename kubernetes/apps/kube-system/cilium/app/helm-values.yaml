@@ -1,27 +1,29 @@
 ---
 autoDirectNodeRoutes: true
+bandwidthManager:
+  enabled: true
+  bbr: true
 bpf:
-  masquerade: false # Required for Talos `.machine.features.hostDNS.forwardKubeDNSToHost`
+  masquerade: true
+  tproxy: true
+  # TODO: uncomment once on kernel 6.8 or greater
+  # https://docs.cilium.io/en/stable/operations/performance/tuning/#netkit-device-mode
+  # datapathMode: netkit
 cgroup:
   automount:
     enabled: false
   hostRoot: /sys/fs/cgroup
 cluster:
   id: 1
-  name: "solen-cluster"
-cni:
-  exclusive: false
-# NOTE: devices might need to be set if you have more than one active NIC on your hosts
-# devices: eno+ eth+
+  name: solen-cluster
+devices: enp2s0
 endpointRoutes:
   enabled: true
-envoy:
-  enabled: false
 hubble:
   enabled: false
 ipam:
   mode: kubernetes
-ipv4NativeRoutingCIDR: "10.69.0.0/16"
+ipv4NativeRoutingCIDR: 10.69.0.0/16
 k8sServiceHost: 127.0.0.1
 k8sServicePort: 7445
 kubeProxyReplacement: true
@@ -30,11 +32,15 @@ l2announcements:
   enabled: true
 loadBalancer:
   algorithm: maglev
-  mode: snat
+  mode: dsr
 localRedirectPolicy: true
 operator:
-  replicas: 1
   rollOutPods: true
+  replicas: 1
+dashboards:
+  enabled: true
+  annotations:
+    grafana_folder: Cilium
 rollOutCiliumPods: true
 routingMode: native
 securityContext:
