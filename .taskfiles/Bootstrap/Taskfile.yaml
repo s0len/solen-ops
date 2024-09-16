@@ -54,7 +54,6 @@ tasks:
       - talosctl --context {{.CLUSTER}} config info >/dev/null 2>&1
 
   flux:
-    internal: true
     cmds:
       - kubectl --context {{.CLUSTER}} apply --server-side --kustomize {{.KUBERNETES_DIR}}/bootstrap/flux
       - sops --decrypt {{.KUBERNETES_DIR}}/bootstrap/flux/age-key.secret.sops.yaml | kubectl --context {{.CLUSTER}} apply --server-side --filename -
