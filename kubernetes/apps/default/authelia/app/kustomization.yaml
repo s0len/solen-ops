@@ -5,7 +5,8 @@ kind: Kustomization
 resources:
   - ./externalsecret.yaml
   - ./helmrelease.yaml
-  - ../../../../templates/gatus/external
+  # TODO: Uncomment once pushover is setup
+  # - ../../../../templates/gatus/external
 configMapGenerator:
   - name: authelia-configmap
     files:
