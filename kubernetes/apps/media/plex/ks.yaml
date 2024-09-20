@@ -1,34 +1,34 @@
 ---
 # yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/kustomize.toolkit.fluxcd.io/kustomization_v1.json
-# apiVersion: kustomize.toolkit.fluxcd.io/v1
-# kind: Kustomization
-# metadata:
-#   name: &app plex
-#   namespace: flux-system
-# spec:
-#   targetNamespace: media
-#   commonMetadata:
-#     labels:
-#       app.kubernetes.io/name: *app
-#   dependsOn:
-#     - name: external-secrets-stores
-#     # - name: nvidia-plugin
-#   path: ./kubernetes/apps/media/plex/plex
-#   prune: true
-#   sourceRef:
-#     kind: GitRepository
-#     name: home-kubernetes
-#   wait: false
-#   interval: 30m
-#   retryInterval: 1m
-#   timeout: 5m
-#   postBuild:
-#     substitute:
-#       APP: *app
-#       GATUS_PATH: /web/index.html
-#       GATUS_SUBDOMAIN: plex
-#       VOLSYNC_CAPACITY: 200Gi
-# ---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: &app plex
+  namespace: flux-system
+spec:
+  targetNamespace: media
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: *app
+  dependsOn:
+    - name: external-secrets-stores
+    # - name: nvidia-plugin
+  path: ./kubernetes/apps/media/plex/plex
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: home-kubernetes
+  wait: false
+  interval: 30m
+  retryInterval: 1m
+  timeout: 5m
+  postBuild:
+    substitute:
+      APP: *app
+      GATUS_PATH: /web/index.html
+      GATUS_SUBDOMAIN: plex
+      VOLSYNC_CAPACITY: 200Gi
+---
 # yaml-language-server: $schema=https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/kustomization-kustomize-v1.json
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
