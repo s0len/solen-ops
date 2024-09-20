@@ -49,8 +49,8 @@ notifier:
   smtp:
     username: "{{ .SMTP_USER }}"
     password: "{{ .SMTP_PASS }}"
-    address: "submissions://smtp.migadu.com:465"
-    sender: "auth@${SECRET_DOMAIN}"
+    address: "submission://smtp.gmail.com:587"
+    sender: "{{ .SMTP_USER }}"
     startup_check_address: test@authelia.com
     subject: "[Authelia] {title}"
     timeout: 5s
@@ -65,13 +65,6 @@ webauthn:
   attestation_conveyance_preference: "indirect"
   user_verification: "preferred"
   timeout: "60s"
-
-duo_api:
-  disable: false
-  hostname: "{{ .DUO_HOSTNAME }}"
-  integration_key: "{{ .DUO_INTEGRATION_KEY }}"
-  secret_key: "{{ .DUO_SECRET_KEY }}"
-  enable_self_enrollment: true
 
 access_control:
   default_policy: two_factor
