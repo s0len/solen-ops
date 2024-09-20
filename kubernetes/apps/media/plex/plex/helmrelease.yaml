@@ -74,7 +74,6 @@ spec:
               limits:
                 memory: 40Gi
                 gpu.intel.com/i915: 1
-                # nvidia.com/gpu: 1
     defaultPodOptions:
       securityContext:
         runAsNonRoot: true
