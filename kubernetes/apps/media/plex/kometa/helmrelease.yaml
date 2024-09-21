@@ -47,7 +47,7 @@ spec:
               - -c
             args:
               - |
-                python3 kometa.py --run --read-only-config --run-libraries "Anime Series|Anime Movies"
+                python3 kometa.py --run --read-only-config --run-libraries "Anime Serier|Anime Filmer"
             env:
               TZ: *timeZone
               KOMETA_CONFIG: /config/config.yaml
@@ -79,31 +79,31 @@ spec:
             <<: *container_app
             args:
               - |
-                python3 kometa.py --run --read-only-config --overlays-only --run-libraries "Anime Series|Anime Movies"
+                python3 kometa.py --run --read-only-config --overlays-only --run-libraries "Anime Serier|Anime Filmer"
 
       standard-series:
         type: *type
         cronjob:
           <<: *cronjob
-          schedule: "10 4,16 * * *"
+          schedule: "10 4,11,16 * * *"
         containers:
           app:
             <<: *container_app
             args:
               - |
-                python3 kometa.py --run --read-only-config --run-libraries "Series"
+                python3 kometa.py --run --read-only-config --run-libraries "Serier"
 
       standard-movies:
         type: *type
         cronjob:
           <<: *cronjob
-          schedule: "20 4,16 * * *"
+          schedule: "20 4,11,16 * * *"
         containers:
           app:
             <<: *container_app
             args:
               - |
-                python3 kometa.py --run --read-only-config --run-libraries "Movies"
+                python3 kometa.py --run --read-only-config --run-libraries "Filmer"
                 python3 kometa.py --read-only-config --run-files "Movies_Metadata.yaml"
 
     defaultPodOptions:
