@@ -728,7 +728,7 @@ libraries:
     #       vertical_align: top
     operations:
       assets_for_all: true
-  Sports:
+  Sport:
     collection_files:
     - url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/collection_files/formula1_2024.yml
     - url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/collection_files/motogp_2024.yml
