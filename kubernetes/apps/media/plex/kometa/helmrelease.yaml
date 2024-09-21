@@ -47,7 +47,7 @@ spec:
               - -c
             args:
               - |
-                python3 kometa.py --run --read-only-config --run-libraries "Anime Serier|Anime Filmer"
+                python3 kometa.py --run --read-only-config --run-libraries "Animeserier|Animefilmer"
             env:
               TZ: *timeZone
               KOMETA_CONFIG: /config/config.yaml
@@ -79,7 +79,7 @@ spec:
             <<: *container_app
             args:
               - |
-                python3 kometa.py --run --read-only-config --overlays-only --run-libraries "Anime Serier|Anime Filmer"
+                python3 kometa.py --run --read-only-config --overlays-only --run-libraries "Animeserier|Animefilmer"
 
       standard-series:
         type: *type

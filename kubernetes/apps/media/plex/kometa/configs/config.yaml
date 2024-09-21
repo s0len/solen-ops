@@ -548,7 +548,7 @@ libraries:
     operations:
       assets_for_all: true
 
-  Anime Filmer:
+  Animefilmer:
     remove_overlays: false
     reapply_overlays: false
     #reset_overlays: false
@@ -625,7 +625,7 @@ libraries:
     #           #vertical_align: top
     operations:
       assets_for_all: true
-  Anime Serier:
+  Animeserier:
     remove_overlays: false
     reapply_overlays: false
     #reset_overlays: false
