@@ -6,7 +6,7 @@ resources:
   - ./externalsecret.yaml
   - ./helmrelease.yaml
   # TODO: Uncomment once pushover is setup
-  # - ../../../../templates/gatus/external
+  - ../../../../templates/gatus/external
 configMapGenerator:
   - name: authelia-configmap
     files:
