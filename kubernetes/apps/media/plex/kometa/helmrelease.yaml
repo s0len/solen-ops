@@ -106,6 +106,19 @@ spec:
                 python3 kometa.py --run --read-only-config --run-libraries "Filmer"
                 python3 kometa.py --read-only-config --run-files "Movies_Metadata.yaml"
 
+      sport:
+        type: *type
+        cronjob:
+          <<: *cronjob
+          schedule: "30 */3 * * *"
+        containers:
+          app:
+            <<: *container_app
+            args:
+              - |
+                python3 kometa.py --run --read-only-config --run-libraries "Sport"
+                python3 kometa.py --read-only-config --run-files "Movies_Metadata.yaml"
+
     defaultPodOptions:
       securityContext:
         runAsNonRoot: true
