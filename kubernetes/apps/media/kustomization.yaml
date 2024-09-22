@@ -16,7 +16,7 @@ resources:
   - ./sonarr-anime/ks.yaml
   - ./sonarr-sport/ks.yaml
 #  - ./qbittorrent/ks.yaml
-#  - ./radarr/ks.yaml
+  - ./radarr/ks.yaml
   - ./recyclarr/ks.yaml
 #  - ./requestrr/ks.yaml
   - ./prowlarr/ks.yaml
