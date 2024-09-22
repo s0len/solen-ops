@@ -19,27 +19,27 @@ instances:
     # Instance name can be whatever you want, it just needs to match the name used in other sections
     radarr_standard:
       url: http://radarr.media.svc.cluster.local
-      api: "{{ .RADARR_STANDARD_API_KEY }}"
+      api: "{{ .RADARR_API_KEY }}"
     radarr_kids:
       url: http://radarr-kids.media.svc.cluster.local
-      api: "{{ .RADARR_KIDS_API_KEY }}"
+      api: "{{ .RADARR_API_KEY }}"
     radarr_anime:
       url: http://radarr-anime.media.svc.cluster.local
-      api: "{{ .RADARR_ANIME_API_KEY }}"
+      api: "{{ .RADARR_API_KEY }}"
   sonarr:
     # Instance name can be whatever you want, it just needs to match the name used in other sections
     sonarr_standard:
       url: http://sonarr.media.svc.cluster.local:8989
-      api: "{{ .SONARR_STANDARD_API_KEY }}"
+      api: "{{ .SONARR_API_KEY }}"
     sonarr_kids:
       url: http://sonarr-kids.media.svc.cluster.local:8990
-      api: "{{ .SONARR_KIDS_API_KEY }}"
+      api: "{{ .SONARR_API_KEY }}"
     sonarr_anime:
       url: http://sonarr-anime.media.svc.cluster.local:8991
-      api: "{{ .SONARR_ANIME_API_KEY }}"
+      api: "{{ .SONARR_API_KEY }}"
     sonarr_sport:
       url: http://sonarr-sport.media.svc.cluster.local:8992
-      api: "{{ .SONARR_SPORT_API_KEY }}"
+      api: "{{ .SONARR_API_KEY }}"
   plex:
     plex_standard:
       # API key can be found here: https://support.plex.tv/articles/204059436-finding-an-authentication-token-x-plex-token/

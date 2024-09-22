@@ -19,7 +19,7 @@ sonarr:
   sonarr-standard:
     # Set the URL/API Key to your actual instance
     base_url: http://sonarr.media.svc.cluster.local:8989
-    api_key: !env_var SONARR_STANDARD_API_KEY
+    api_key: !env_var SONARR_API_KEY
 
     delete_old_custom_formats: true
     replace_existing_custom_formats: false
@@ -104,7 +104,7 @@ sonarr:
   sonarr-sport:
     # Set the URL/API Key to your actual instance
     base_url: http://sonarr-sport.media.svc.cluster.local:8992
-    api_key: !env_var SONARR_SPORT_API_KEY
+    api_key: !env_var SONARR_API_KEY
 
     delete_old_custom_formats: false
     replace_existing_custom_formats: false
@@ -159,7 +159,7 @@ sonarr:
   sonarr-kids:
     # Set the URL/API Key to your actual instance
     base_url: http://sonarr-kids.media.svc.cluster.local:8990
-    api_key: !env_var SONARR_KIDS_API_KEY
+    api_key: !env_var SONARR_API_KEY
 
     delete_old_custom_formats: true
     replace_existing_custom_formats: false
@@ -210,7 +210,7 @@ sonarr:
   sonarr-anime:
     # Set the URL/API Key to your actual instance
     base_url: http://sonarr-anime.media.svc.cluster.local:8991
-    api_key: !env_var SONARR_ANIME_API_KEY
+    api_key: !env_var SONARR_API_KEY
 
     delete_old_custom_formats: true
     replace_existing_custom_formats: false
@@ -255,7 +255,7 @@ radarr:
   radarr-anime:
     # Set the URL/API Key to your actual instance
     base_url: http://radarr-anime.media.svc.cluster.local:7880
-    api_key: !env_var RADARR_ANIME_API_KEY
+    api_key: !env_var RADARR_API_KEY
 
     delete_old_custom_formats: true
     replace_existing_custom_formats: false
@@ -311,7 +311,7 @@ radarr:
 
   radarr-standard:
     base_url: http://radarr.media.svc.cluster.local:7878
-    api_key: !env_var RADARR_STANDARD_API_KEY
+    api_key: !env_var RADARR_API_KEY
 
     delete_old_custom_formats: true
     replace_existing_custom_formats: false
@@ -417,7 +417,7 @@ radarr:
 
   radarr-kids:
     base_url: http://radarr-kids.media.svc.cluster.local:7879
-    api_key: !env_var RADARR_KIDS_API_KEY
+    api_key: !env_var RADARR_API_KEY
 
     delete_old_custom_formats: true
     replace_existing_custom_formats: false
