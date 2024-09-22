@@ -41,7 +41,7 @@ spec:
         seccompProfile: { type: RuntimeDefault }
 
     controllers:
-      sonarr:
+      sonarr-kids:
         annotations:
           reloader.stakater.com/auto: "true"
 
