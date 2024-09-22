@@ -11,7 +11,7 @@ resources:
   - ./plex/ks.yaml
 #  - ./podgrab/ks.yaml
 #  - ./sabnzbd/ks.yaml
-  # - ./sonarr-standard/ks.yaml
+  - ./sonarr-standard/ks.yaml
   # - ./sonarr-kids/ks.yaml
 #  - ./qbittorrent/ks.yaml
 #  - ./radarr/ks.yaml
