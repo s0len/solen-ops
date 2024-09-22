@@ -13,6 +13,8 @@ resources:
 #  - ./sabnzbd/ks.yaml
   - ./sonarr-standard/ks.yaml
   - ./sonarr-kids/ks.yaml
+  - ./sonarr-anime/ks.yaml
+  - ./sonarr-sport/ks.yaml
 #  - ./qbittorrent/ks.yaml
 #  - ./radarr/ks.yaml
   - ./recyclarr/ks.yaml
