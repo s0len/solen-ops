@@ -268,6 +268,13 @@ radarr:
     quality_definition:
       type: movie
 
+    quality_profiles:
+      - name: Anime
+        reset_unmatched_scores:
+          enabled: true
+          # except:
+          #   - "!Personal LQ list"
+
     custom_formats:
       - trash_ids:
           - fb3ccc5d5cc8f77c9055d4cb4561dded # Anime BD T1
@@ -307,7 +314,7 @@ radarr:
           - name: Anime
 
   radarr-standard:
-    base_url: http://radarr.media.svc.cluster.local
+    base_url: http://radarr-standard.media.svc.cluster.local
     api_key: !env_var RADARR_API_KEY
 
     delete_old_custom_formats: true
