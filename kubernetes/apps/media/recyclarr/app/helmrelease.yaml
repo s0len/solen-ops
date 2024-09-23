@@ -25,9 +25,19 @@ spec:
   dependsOn:
     - name: volsync
       namespace: volsync-system
-    - name: sonarr
+    - name: sonarr-standard
       namespace: media
-    - name: radarr
+    - name: sonarr-kids
+      namespace: media
+    - name: sonarr-anime
+      namespace: media
+    - name: sonarr-sport
+      namespace: media
+    - name: radarr-standard
+      namespace: media
+    - name: radarr-kids
+      namespace: media
+    - name: radarr-anime
       namespace: media
   values:
     controllers:
