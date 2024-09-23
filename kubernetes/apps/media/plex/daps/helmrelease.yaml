@@ -82,12 +82,11 @@ spec:
         runAsGroup: 568
         fsGroup: 568
         fsGroupChangePolicy: Always
+
     persistence:
       config:
-        type: persistentVolumeClaim
-        accessMode: ReadWriteOnce
-        storageClass: openebs-zfs
-        size: 50Gi
+        type: emptyDir
+        medium: Memory
         globalMounts:
           - path: /config
 
@@ -97,6 +96,7 @@ spec:
         path: /mnt/rust/posters
         globalMounts:
           - path: /posters
+            readOnly: false
 
       assets:
         type: persistentVolumeClaim
