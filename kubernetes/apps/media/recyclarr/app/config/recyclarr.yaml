@@ -18,7 +18,7 @@
 sonarr:
   sonarr-standard:
     # Set the URL/API Key to your actual instance
-    base_url: http://sonarr.media.svc.cluster.local:8989
+    base_url: http://sonarr.media.svc.cluster.local
     api_key: !env_var SONARR_API_KEY
 
     delete_old_custom_formats: true
@@ -103,7 +103,7 @@ sonarr:
 
   sonarr-sport:
     # Set the URL/API Key to your actual instance
-    base_url: http://sonarr-sport.media.svc.cluster.local:8992
+    base_url: http://sonarr-sport.media.svc.cluster.local
     api_key: !env_var SONARR_API_KEY
 
     delete_old_custom_formats: false
@@ -155,7 +155,7 @@ sonarr:
 
   sonarr-kids:
     # Set the URL/API Key to your actual instance
-    base_url: http://sonarr-kids.media.svc.cluster.local:8990
+    base_url: http://sonarr-kids.media.svc.cluster.local
     api_key: !env_var SONARR_API_KEY
 
     delete_old_custom_formats: true
@@ -206,7 +206,7 @@ sonarr:
 
   sonarr-anime:
     # Set the URL/API Key to your actual instance
-    base_url: http://sonarr-anime.media.svc.cluster.local:8991
+    base_url: http://sonarr-anime.media.svc.cluster.local
     api_key: !env_var SONARR_API_KEY
 
     delete_old_custom_formats: true
@@ -251,7 +251,7 @@ sonarr:
 radarr:
   radarr-anime:
     # Set the URL/API Key to your actual instance
-    base_url: http://radarr-anime.media.svc.cluster.local:7880
+    base_url: http://radarr-anime.media.svc.cluster.local
     api_key: !env_var RADARR_API_KEY
 
     delete_old_custom_formats: true
@@ -307,7 +307,7 @@ radarr:
           - name: Anime
 
   radarr-standard:
-    base_url: http://radarr.media.svc.cluster.local:7878
+    base_url: http://radarr.media.svc.cluster.local
     api_key: !env_var RADARR_API_KEY
 
     delete_old_custom_formats: true
@@ -413,7 +413,7 @@ radarr:
 
 
   radarr-kids:
-    base_url: http://radarr-kids.media.svc.cluster.local:7879
+    base_url: http://radarr-kids.media.svc.cluster.local
     api_key: !env_var RADARR_API_KEY
 
     delete_old_custom_formats: true
