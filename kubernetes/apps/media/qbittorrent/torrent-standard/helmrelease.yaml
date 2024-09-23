@@ -3,7 +3,7 @@
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: &app qbittorrent-standard
+  name: &app qbit-standard
 spec:
   interval: 30m
   chart:
@@ -17,7 +17,7 @@ spec:
 
   values:
     controllers:
-      qbittorrent:
+      qbit-standard:
         annotations:
           reloader.stakater.com/auto: "true"
 
@@ -40,7 +40,7 @@ spec:
               QBT_BitTorrent__Session__InterfaceName: tun0
               QBT_Preferences__WebUI__AuthSubnetWhitelistEnabled: true
               QBT_Preferences__WebUI__AuthSubnetWhitelist: |-
-                10.69.0.0/16, 10.96.0.0/16, 192.168.200.0/23
+                10.69.0.0/16, 10.96.0.0/16, 192.168.10.0/24
               QBT_Preferences__WebUI__LocalHostAuth: false
               QBT_Preferences__WebUI__AlternativeUIEnabled: true
               QBT_Preferences__WebUI__RootFolder: /addons/VueTorrent
@@ -100,10 +100,12 @@ spec:
               VPN_TYPE: wireguard
               VPN_INTERFACE: tun0
               VPN_SERVICE_PROVIDER: custom
+              VPN_PORT_FORWARDING: on
+              VPN_PORT_FORWARDING_PROVIDER: protonvpn
               WIREGUARD_MTU: 8900
             envFrom:
               - secretRef:
-                  name: torguard-secret
+                  name: protonvpn-secret
             probes:
               liveness:
                 enabled: true
@@ -166,7 +168,7 @@ spec:
       config:
         existingClaim: *app
         advancedMounts:
-          qbittorrent:
+          qbit-standard:
             app:
               - path: /config
 

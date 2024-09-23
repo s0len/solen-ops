@@ -3,14 +3,14 @@
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: &app qbittorrent-standard
+  name: &app qbit-standard
   namespace: flux-system
 spec:
   targetNamespace: media
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
-  path: ./kubernetes/apps/media/qbittorrent/qbittorrent-standard
+  path: ./kubernetes/apps/media/qbittorrent/torrent-standard
   prune: true
   sourceRef:
     kind: GitRepository

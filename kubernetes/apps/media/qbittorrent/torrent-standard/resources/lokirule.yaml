@@ -1,10 +1,10 @@
 ---
 groups:
-  - name: qbittorrent-standard
+  - name: qbit-standard
     rules:
       - alert: QbittorrentFastResumeRejected
         expr: |
-          sum by (app) (count_over_time({app="qbittorrent-standard"} |~ "(?i)fast resume rejected"[1h])) > 0
+          sum by (app) (count_over_time({app="qbit-standard"} |~ "(?i)fast resume rejected"[1h])) > 0
         for: 2m
         labels:
           severity: critical
