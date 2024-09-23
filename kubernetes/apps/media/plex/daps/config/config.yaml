@@ -1,16 +1,16 @@
 schedule:
-
+  # No in-script schedules since we run these manually with a cronjob
   border_replacerr:
   health_checkarr:
   labelarr:
   nohl:
   sync_gdrive:
   poster_cleanarr:
-  poster_renamerr: daily(05:18|09:23|12:00|14:00|16:00)
+  poster_renamerr:
   queinatorr:
-  renameinatorr: cron(20 1 * * *)
-  unmatched_assets: cron(0 2 * * *)
-  upgradinatorr: cron(30 */3 * * *)
+  renameinatorr:
+  unmatched_assets:
+  upgradinatorr:
   nohl_bash:
   jduparr:
 
@@ -18,7 +18,7 @@ instances:
   radarr:
     # Instance name can be whatever you want, it just needs to match the name used in other sections
     radarr_standard:
-      url: http://radarr.media.svc.cluster.local
+      url: http://radarr-standard.media.svc.cluster.local
       api: "{{ .RADARR_API_KEY }}"
     radarr_kids:
       url: http://radarr-kids.media.svc.cluster.local
@@ -29,16 +29,16 @@ instances:
   sonarr:
     # Instance name can be whatever you want, it just needs to match the name used in other sections
     sonarr_standard:
-      url: http://sonarr.media.svc.cluster.local:8989
+      url: http://sonarr-standard.media.svc.cluster.local
       api: "{{ .SONARR_API_KEY }}"
     sonarr_kids:
-      url: http://sonarr-kids.media.svc.cluster.local:8990
+      url: http://sonarr-kids.media.svc.cluster.local
       api: "{{ .SONARR_API_KEY }}"
     sonarr_anime:
-      url: http://sonarr-anime.media.svc.cluster.local:8991
+      url: http://sonarr-anime.media.svc.cluster.local
       api: "{{ .SONARR_API_KEY }}"
     sonarr_sport:
-      url: http://sonarr-sport.media.svc.cluster.local:8992
+      url: http://sonarr-sport.media.svc.cluster.local
       api: "{{ .SONARR_API_KEY }}"
   plex:
     plex_standard:
@@ -48,19 +48,19 @@ instances:
   qbittorrent:
     # Instance name can be whatever you want, it just needs to match the name used in other sections
     qbittorrent_standard:
-      url: http://qbittorrent.media.svc.cluster.local:10095
+      url: http://qbittorrent-standard.media.svc.cluster.local
       username: "{{ .QBIT_USER }}"
       password: "{{ .QBIT_PASS }}"
     qbittorrent_kids:
-      url: http://qbittorrent.media.svc.cluster.local:10096
+      url: http://qbittorrent-kids.media.svc.cluster.local
       username: "{{ .QBIT_USER }}"
       password: "{{ .QBIT_PASS }}"
     qbittorrent_anime:
-      url: http://qbittorrent.media.svc.cluster.local:10097
+      url: http://qbittorrent-anime.media.svc.cluster.local
       username: "{{ .QBIT_USER }}"
       password: "{{ .QBIT_PASS }}"
     qbittorrent_sport:
-      url: http://qbittorrent.media.svc.cluster.local:10098
+      url: http://qbittorrent-sport.media.svc.cluster.local
       username: "{{ .QBIT_USER }}"
       password: "{{ .QBIT_PASS }}"
 
@@ -76,39 +76,39 @@ discord:
   notifiarr_webhook:
   # Main is used for version notifications
   main:
-    discord_webhook:
+    discord_webhook: "{{ .DISCORD_DAPS_WEBHOOK_URL }}"
     channel_id:
   renameinatorr:
     # Will notify items that have been renamed
-    discord_webhook: "{{ .NOTIFIARR_DAPS_WEBHOOK_URL }}"
+    discord_webhook: "{{ .DISCORD_DAPS_WEBHOOK_URL }}"
     channel_id:
   upgradinatorr:
     # Will notify if an upgrade has been found
-    discord_webhook: "{{ .NOTIFIARR_DAPS_WEBHOOK_URL }}"
+    discord_webhook: "{{ .DISCORD_DAPS_WEBHOOK_URL }}"
     channel_id:
   poster_renamerr:
     # Note: It is recommended for a fresh run to not use a notifications channel, as it will spam the channel with all the matched assets
-    discord_webhook: "{{ .NOTIFIARR_DAPS_WEBHOOK_URL }}"
+    discord_webhook: "{{ .DISCORD_DAPS_WEBHOOK_URL }}"
     channel_id:
   nohl:
     # Will notify if non-hardlinked files are found/searched for
-    discord_webhook: "{{ .NOTIFIARR_DAPS_WEBHOOK_URL }}"
+    discord_webhook: "{{ .DISCORD_DAPS_WEBHOOK_URL }}"
     channel_id:
   queinatorr:
     # Will notify if a torrent/queue item has been handled
-    discord_webhook: "{{ .NOTIFIARR_DAPS_WEBHOOK_URL }}"
+    discord_webhook: "{{ .DISCORD_DAPS_WEBHOOK_URL }}"
     channel_id:
   labelarr:
     # Will notify if a label has been added/removed to a movie or series
-    discord_webhook: "{{ .NOTIFIARR_DAPS_WEBHOOK_URL }}"
+    discord_webhook: "{{ .DISCORD_DAPS_WEBHOOK_URL }}"
     channel_id:
   nohl_bash:
     # Will notify if a non-hardlinked file has been found
-    discord_webhook: "{{ .NOTIFIARR_DAPS_WEBHOOK_URL }}"
+    discord_webhook: "{{ .DISCORD_DAPS_WEBHOOK_URL }}"
     channel_id:
   jduparr:
     # Will notify if a duplicate file has been found and relinked
-    discord_webhook: "{{ .NOTIFIARR_DAPS_WEBHOOK_URL }}"
+    discord_webhook: "{{ .DISCORD_DAPS_WEBHOOK_URL }}"
     channel_id:
 
 sync_gdrive:
@@ -242,7 +242,7 @@ border_replacerr:
   # "#808080" - Gray
   # To remove borders set the border_colors to nothing.
   # Example: border_colors:
-  border_colors: "#000000"
+  border_colors:
   schedule:
     # You can make any holiday you want for any occasion. For the schedule please use the range(month/date-month/date) option
     christmas:
@@ -339,7 +339,7 @@ poster_cleanarr:
 upgradinatorr:
   # A script to upgrade Sonarr/Radarr libraries to the keep in line with trash-guides
   log_level: info
-  dry_run: false
+  dry_run: true
   instances:
     radarr_standard:
       count: 2
@@ -387,6 +387,7 @@ renameinatorr:
     - sonarr_standard
     - sonarr_kids
     - sonarr_anime
+    - sonarr_sport
 
 nohl:
   # This script will find all files that are not hardlinked and will process them in radarr
@@ -466,8 +467,11 @@ health_checkarr:
   log_level: info
   dry_run: true
   instances:
-    - radarr_1
-    - sonarr_1
+    - radarr_standard
+    - radarr_kids
+    - radarr_anime
+    - sonarr_standard
+    - sonarr_kids
     - sonarr_anime
 
 bash_scripts:
