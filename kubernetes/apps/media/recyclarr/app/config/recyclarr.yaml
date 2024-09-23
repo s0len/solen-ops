@@ -274,6 +274,34 @@ radarr:
           enabled: true
           # except:
           #   - "!Personal LQ list"
+        qualities:
+          - name: Remux-1080p
+            qualities:
+            - Bluray-1080p
+            - Remux-1080p
+          - name: WEB 1080p
+            qualities:
+            - WEBDL-1080p
+            - WEBRip-1080p
+            - HDTV-1080p
+          - name: Bluray-720p
+            qualities:
+            - Bluray-720p
+          - name: WEB 720p
+            qualities:
+            - WEBRip-720p
+            - WEBDL-720p
+            - HDTV-720p
+          - name: Bluray-576p
+            qualities:
+            - Bluray-576p
+          - name: Bluray-480p
+            qualities:
+            - Bluray-480p
+          - name: WEB 480p
+            qualities:
+            - WEBRip-480p
+            - WEBDL-480p
 
     custom_formats:
       - trash_ids:
