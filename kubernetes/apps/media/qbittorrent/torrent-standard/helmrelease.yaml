@@ -67,6 +67,10 @@ spec:
               capabilities:
                 drop:
                   - ALL
+            lifecycle:
+              postStart:
+                exec:
+                  command: ["/bin/sh", "-c", "ip -6 rule del priority 101 || true"]
 
           vuetorrent:
             dependsOn: app
