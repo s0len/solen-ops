@@ -90,7 +90,7 @@ spec:
               tag: v3.39.0@sha256:2f011a9aca767af62008d879eefcbc80a8645bd4fd4466ab312cc941cb658ad1
             env:
               DOT: "off"
-              # DNS_ADDRESS: "127.0.0.2"
+              DNS_KEEP_NAMESERVER: "on"
               VPN_SERVICE_PROVIDER: custom
               VPN_TYPE: wireguard
               VPN_INTERFACE: tun0
