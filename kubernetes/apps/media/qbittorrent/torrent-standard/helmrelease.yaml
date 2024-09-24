@@ -186,7 +186,7 @@ spec:
       empty-config:
         type: emptyDir
         advancedMounts:
-          qbittorrent:
+          qbit-standard:
             port-forward:
               - path: /config
 
