@@ -91,7 +91,7 @@ spec:
           gluetun:
             image:
               repository: ghcr.io/qdm12/gluetun
-              tag: v3.39.0@sha256:2f011a9aca767af62008d879eefcbc80a8645bd4fd4466ab312cc941cb658ad1
+              tag: v3.38.0
             env:
               DNS_KEEP_NAMESERVER: "on"
               DOT: "off"
