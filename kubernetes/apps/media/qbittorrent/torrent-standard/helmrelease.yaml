@@ -40,7 +40,7 @@ spec:
               QBT_BitTorrent__Session__InterfaceName: tun0
               QBT_Preferences__WebUI__AuthSubnetWhitelistEnabled: true
               QBT_Preferences__WebUI__AuthSubnetWhitelist: |-
-                10.69.0.0/16, 10.96.0.0/16, 192.168.10.0/24
+                ${CLUSTER_CIDR}, ${NODE_CIDR}, 192.168.10.0/24
               QBT_Preferences__WebUI__LocalHostAuth: false
               QBT_Preferences__WebUI__AlternativeUIEnabled: true
               QBT_Preferences__WebUI__RootFolder: /addons/VueTorrent
@@ -86,23 +86,18 @@ spec:
           gluetun:
             image:
               repository: ghcr.io/qdm12/gluetun
-              tag: v3.39.0
+              tag: v3.39.0@sha256:2f011a9aca767af62008d879eefcbc80a8645bd4fd4466ab312cc941cb658ad1
             env:
-              DNS_KEEP_NAMESERVER: "on"
-              DOT: "off"
-              FIREWALL_VPN_INPUT_PORTS: 52885
-              FIREWALL_OUTBOUND_SUBNETS: 10.69.0.0/16,10.96.0.0/16
-              FIREWALL_INPUT_PORTS: 80,8888,9999
-              HTTPPROXY: "on"
-              HTTPPROXY_LISTENING_ADDRESS: :8888
-              HEALTH_SERVER_ADDRESS: :9999
-              HTTPPROXY_LOG: "on"
-              VPN_TYPE: wireguard
-              VPN_INTERFACE: tun0
+              # DOT: "off"
+              # DNS_ADDRESS: "127.0.0.2"
               VPN_SERVICE_PROVIDER: custom
+              VPN_TYPE: wireguard
+              VPN_INTERFACE: wg0
+              WIREGUARD_ENDPOINT_PORT: 51820
               VPN_PORT_FORWARDING: on
               VPN_PORT_FORWARDING_PROVIDER: protonvpn
-              WIREGUARD_MTU: 8900
+              FIREWALL_INPUT_PORTS: &port 80
+              FIREWALL_OUTBOUND_SUBNETS: ${CLUSTER_CIDR},${NODE_CIDR} # Allow access to k8s subnets
             envFrom:
               - secretRef:
                   name: protonvpn-secret
@@ -130,6 +125,26 @@ spec:
                 add:
                   - NET_ADMIN
               allowPrivilegeEscalation: false
+
+          port-forward:
+            image:
+              repository: ghcr.io/bjw-s-labs/gluetun-qb-port-sync
+              tag: 0.0.2@sha256:3e800b1eb0ea5b8e5aa70d37f9a012bd6d50f1a7cf4e2e6833cd921d1ef0d994
+            env:
+              GLUETUN_CONTROL_SERVER_HOST: localhost
+              GLUETUN_CONTROL_SERVER_PORT: 8000
+              QBITTORRENT_HOST: localhost
+              QBITTORRENT_WEBUI_PORT: *port
+              CRON_ENABLED: true
+              CRON_SCHEDULE: "*/5 * * * *"
+              LOG_TIMESTAMP: false
+            securityContext:
+              runAsUser: 568
+              runAsGroup: 568
+              runAsNonRoot: true
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities: { drop: ["ALL"] }
 
     service:
       app:
