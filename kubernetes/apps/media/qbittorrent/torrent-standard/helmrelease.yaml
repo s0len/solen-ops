@@ -89,7 +89,7 @@ spec:
               repository: ghcr.io/qdm12/gluetun
               tag: v3.39.0@sha256:2f011a9aca767af62008d879eefcbc80a8645bd4fd4466ab312cc941cb658ad1
             env:
-              # DOT: "off"
+              DOT: "off"
               # DNS_ADDRESS: "127.0.0.2"
               VPN_SERVICE_PROVIDER: custom
               VPN_TYPE: wireguard
@@ -97,7 +97,7 @@ spec:
               WIREGUARD_ENDPOINT_PORT: 51820
               VPN_PORT_FORWARDING: on
               VPN_PORT_FORWARDING_PROVIDER: protonvpn
-              FIREWALL_INPUT_PORTS: &port 80
+              FIREWALL_INPUT_PORTS: *port
               FIREWALL_OUTBOUND_SUBNETS: ${CLUSTER_CIDR},${NODE_CIDR} # Allow access to k8s subnets
             envFrom:
               - secretRef:
@@ -132,10 +132,7 @@ spec:
               repository: ghcr.io/bjw-s-labs/gluetun-qb-port-sync
               tag: 0.0.2@sha256:3e800b1eb0ea5b8e5aa70d37f9a012bd6d50f1a7cf4e2e6833cd921d1ef0d994
             env:
-              GLUETUN_CONTROL_SERVER_HOST: localhost
-              GLUETUN_CONTROL_SERVER_PORT: 8000
-              QBITTORRENT_HOST: localhost
-              QBITTORRENT_WEBUI_PORT: *port
+              QBITTORRENT_WEBUI_PORT: 80
               CRON_ENABLED: true
               CRON_SCHEDULE: "*/5 * * * *"
               LOG_TIMESTAMP: false
@@ -154,13 +151,6 @@ spec:
         ports:
           http:
             port: *port
-
-      gluetun:
-        controller: *app
-        nameOverride: gluetun
-        ports:
-          http:
-            port: 8888
 
     ingress:
       app:
@@ -186,6 +176,13 @@ spec:
         advancedMounts:
           qbit-standard:
             app:
+              - path: /config
+
+      empty-config:
+        type: emptyDir
+        advancedMounts:
+          qbittorrent:
+            port-forward:
               - path: /config
 
       media:
