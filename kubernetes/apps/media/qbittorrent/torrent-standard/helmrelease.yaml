@@ -130,6 +130,10 @@ spec:
             resources:
               limits:
                 kernel.org/tun: 1
+            lifecycle:
+              postStart:
+                exec:
+                  command: ["/bin/sh", "-c", "ip -6 rule del priority 101 || true"]
 
           port-forward:
             image:
