@@ -825,7 +825,7 @@ tmdb: # REQUIRED for the script to run
 
 tautulli: # Can be individually specified per library as well
   url: http://tautulli.media.svc.cluster.local
-  apikey: <<KOMETA_TAUTULLI_API_KEY>>
+  apikey: <<TAUTULLI_API_KEY>>
 
 omdb:
   apikey: <<OMDB_API_KEY>>
