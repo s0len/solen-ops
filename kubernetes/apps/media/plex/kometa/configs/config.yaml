@@ -814,7 +814,7 @@ plex: # Can be individually specified per library as well; REQUIRED for the scri
   clean_bundles: true
   empty_trash: true
   optimize: true
-  db_cache: 1024
+  db_cache: 100
   verify_ssl:
 
 tmdb: # REQUIRED for the script to run
