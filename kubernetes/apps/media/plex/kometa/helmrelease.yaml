@@ -32,7 +32,7 @@ spec:
       anime:
         type: &type cronjob
         cronjob: &cronjob
-          schedule: "30 4 * * *"
+          schedule: "30 6,17 * * *"
           timeZone: &timeZone ${TIMEZONE}
           concurrencyPolicy: Forbid
           successfulJobsHistory: 1
@@ -64,12 +64,12 @@ spec:
               allowPrivilegeEscalation: false
               readOnlyRootFilesystem: true
               capabilities: { drop: ["ALL"] }
-            lifecycle:
-              postStart:
-                exec:
-                  command: ["/bin/bash", "-c", "mkdir -p /config/assets/{anime,awards,decades,genres,holidays,networks,suggestions,posters}"]
+            # lifecycle:
+            #   postStart:
+            #     exec:
+            #       command: ["/bin/bash", "-c", "mkdir -p /config/assets/{anime,awards,decades,genres,holidays,networks,suggestions,posters}"]
 
-      anime-overlays:
+      kids:
         type: *type
         cronjob:
           <<: *cronjob
@@ -79,7 +79,7 @@ spec:
             <<: *container_app
             args:
               - |
-                python3 kometa.py --run --read-only-config --overlays-only --run-libraries "Animeserier|Animefilmer"
+                python3 kometa.py --run --read-only-config --run-libraries "Barnfilmer|Barnserier"
 
       standard-series:
         type: *type
@@ -97,27 +97,25 @@ spec:
         type: *type
         cronjob:
           <<: *cronjob
-          schedule: "20 */3 * * *"
+          schedule: "45 */6 * * *"
         containers:
           app:
             <<: *container_app
             args:
               - |
                 python3 kometa.py --run --read-only-config --run-libraries "Filmer"
-                python3 kometa.py --read-only-config --run-files "Movies_Metadata.yaml"
 
       sport:
         type: *type
         cronjob:
           <<: *cronjob
-          schedule: "30 */3 * * *"
+          schedule: "0 */3 * * *"
         containers:
           app:
             <<: *container_app
             args:
               - |
                 python3 kometa.py --run --read-only-config --run-libraries "Sport"
-                python3 kometa.py --read-only-config --run-files "Movies_Metadata.yaml"
 
     defaultPodOptions:
       securityContext:
