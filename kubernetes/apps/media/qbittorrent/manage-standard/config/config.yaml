@@ -26,10 +26,10 @@ settings:
   force_retag_all: false
 directory:
   root_dir: /data/torrents/standard
-  remote_dir: /data
-  recycle_bin: /data/.RecycleBin
+  remote_dir: /data/torrents/standard
+  recycle_bin: /data/torrents/standard.RecycleBin
   torrents_dir: /qbit-standard/qBittorrent/BT_backup
-  orphaned_dir: /data/orphaned_data
+  orphaned_dir: /data/torrents/standard/orphaned_data
   cross_seed:
 
 cat:
