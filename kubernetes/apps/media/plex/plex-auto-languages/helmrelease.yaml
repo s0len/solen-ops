@@ -34,8 +34,8 @@ spec:
         containers:
           app:
             image:
-              repository: docker.io/remirigal/plex-auto-languages
-              tag: v1.2.3
+              repository: docker.io/journeyover/plex-auto-languages
+              tag: latest
             env:
               TZ: ${TIMEZONE}
               PLEX_URL: http://plex.media.svc.cluster.local:32400
