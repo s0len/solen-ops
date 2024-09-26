@@ -132,10 +132,10 @@ spec:
         type: emptyDir
         medium: Memory
 
-      media:
-        type: nfs
-        server: ${TRUENAS_IP}
-        path: /mnt/rust/data/media
-        globalMounts:
-          - path: /media
-            readOnly: true
+      # media:
+      #   type: nfs
+      #   server: ${TRUENAS_IP}
+      #   path: /mnt/rust/data/media
+      #   globalMounts:
+      #     - path: /media
+      #       readOnly: true
