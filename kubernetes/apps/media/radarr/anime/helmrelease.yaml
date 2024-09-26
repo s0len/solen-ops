@@ -136,7 +136,7 @@ spec:
         type: emptyDir
         medium: Memory
 
-      media:
+      data:
         type: nfs
         server: ${TRUENAS_IP}
         path: /mnt/rust/data
