@@ -18,5 +18,5 @@ resources:
 #  - ./requestrr/ks.yaml
   - ./prowlarr/ks.yaml
   - ./overseerr/ks.yaml
-  - ./unpackerr/ks.yaml
+  # - ./unpackerr/ks.yaml
   - ./wizarr/ks.yaml
