@@ -52,7 +52,7 @@ spec:
               tag: 5.10.4.9218@sha256:f986ba978d450226de00d8174552f62cc877aca7693bb1b32e7ac70af62f8f8d
 
             env:
-              RADARR__APP__INSTANCENAME: Radarr anime
+              RADARR__APP__INSTANCENAME: "Radarr Anime"
               RADARR__APP__THEME: dark
               RADARR__AUTH__METHOD: External
               RADARR__AUTH__REQUIRED: DisabledForLocalAddresses
