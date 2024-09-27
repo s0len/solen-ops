@@ -29,10 +29,10 @@ spec:
       namespace: media
   values:
     controllers:
-      anime:
+      all:
         type: &type cronjob
         cronjob: &cronjob
-          schedule: "30 6,17 * * *"
+          schedule: "35 10 * * *"
           timeZone: &timeZone ${TIMEZONE}
           concurrencyPolicy: Forbid
           successfulJobsHistory: 1
@@ -47,7 +47,7 @@ spec:
               - -c
             args:
               - |
-                python3 kometa.py --run --read-only-config --run-libraries "Animeserier|Animefilmer"
+                python3 kometa.py --run --read-only-config"
             env:
               TZ: *timeZone
               KOMETA_CONFIG: /config/config.yaml
@@ -68,6 +68,18 @@ spec:
             #   postStart:
             #     exec:
             #       command: ["/bin/bash", "-c", "mkdir -p /config/assets/{anime,awards,decades,genres,holidays,networks,suggestions,posters}"]
+
+      anime:
+        type: *type
+        cronjob:
+          <<: *cronjob
+          schedule: "0 6,17 * * *"
+        containers:
+          app:
+            <<: *container_app
+            args:
+              - |
+                python3 kometa.py --run --read-only-config --run-libraries "Animeserier|Animefilmer"
 
       kids:
         type: *type
