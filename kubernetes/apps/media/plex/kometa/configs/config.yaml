@@ -797,7 +797,7 @@ settings:
   - overlays
   overlay_artwork_filetype: jpg
   overlay_artwork_quality:
-  config_repo:
+  # config_repo:
 
 webhooks: # Can be individually specified per library as well
   error: notifiarr
