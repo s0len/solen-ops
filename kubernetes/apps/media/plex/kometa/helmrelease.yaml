@@ -32,7 +32,7 @@ spec:
       main:
         type: &type cronjob
         cronjob: &cronjob
-          schedule: "0 11 * * *"
+          schedule: "0 5 * * *"
           timeZone: &timeZone ${TIMEZONE}
           concurrencyPolicy: Forbid
           successfulJobsHistory: 1
@@ -73,7 +73,7 @@ spec:
         type: *type
         cronjob:
           <<: *cronjob
-          schedule: "20 5,17 * * *"
+          schedule: "20 11,17 * * *"
         containers:
           app:
             <<: *container_app
@@ -85,7 +85,7 @@ spec:
         type: *type
         cronjob:
           <<: *cronjob
-          schedule: "0 6,17 * * *"
+          schedule: "0 15 * * *"
         containers:
           app:
             <<: *container_app
@@ -97,7 +97,7 @@ spec:
         type: *type
         cronjob:
           <<: *cronjob
-          schedule: "10 */3 * * *"
+          schedule: "10 11,16,20 * * *"
         containers:
           app:
             <<: *container_app
@@ -109,7 +109,7 @@ spec:
         type: *type
         cronjob:
           <<: *cronjob
-          schedule: "45 */6 * * *"
+          schedule: "45 11,16 * * *"
         containers:
           app:
             <<: *container_app
@@ -121,7 +121,7 @@ spec:
         type: *type
         cronjob:
           <<: *cronjob
-          schedule: "0 */3 * * *"
+          schedule: "0 */2 * * *"
         containers:
           app:
             <<: *container_app
