@@ -46,7 +46,7 @@ spec:
                 custom: true
                 spec:
                   httpGet:
-                    path: /api/v2/app/version
+                    path: /health
                     port: &port 80
                   initialDelaySeconds: 0
                   periodSeconds: 10
