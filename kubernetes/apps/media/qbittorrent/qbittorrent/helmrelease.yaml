@@ -3,7 +3,7 @@
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: &app qbit-standard
+  name: &app qbittorrent
 spec:
   interval: 30m
   chart:
@@ -17,7 +17,7 @@ spec:
 
   values:
     controllers:
-      qbit-standard:
+      qbittorrent:
         annotations:
           configmap.reloader.stakater.com/reload: qbittorrent-scripts,qbittorrent-dnsdist
           secret.reloader.stakater.com/reload: qbittorrent-secret
@@ -29,17 +29,13 @@ spec:
 
         containers:
           app:
-            nameOverride: *app
+            nameOverride: qbittorrent
             image:
               repository: ghcr.io/onedr0p/qbittorrent
               tag: 4.6.7@sha256:5391f94b321d563c3b44136a5e799b7e4e4888926c1c31d3081a1cf3e74a9aec
             env:
               UMASK: "022"
-              TZ: ${TIMEZONE}
-              QBITTORRENT__PORT: &port 80
-              # QBT_BitTorrent__Session__Port: 52885
-              # QBT_BitTorrent__Session__Interface: tun0
-              # QBT_BitTorrent__Session__InterfaceName: tun0
+              QBITTORRENT__PORT: &port 8080
               QBT_Preferences__WebUI__AuthSubnetWhitelistEnabled: true
               QBT_Preferences__WebUI__AuthSubnetWhitelist: |-
                 ${CLUSTER_CIDR}, ${NODE_CIDR}, 192.168.1.0/24, 192.168.10.0/24
@@ -47,18 +43,10 @@ spec:
               QBT_Preferences__WebUI__AlternativeUIEnabled: true
               QBT_Preferences__WebUI__RootFolder: /addons/VueTorrent
             probes:
-              liveness: &probes
+              liveness:
                 enabled: true
-                custom: true
-                spec:
-                  httpGet:
-                    path: /api/v2/app/version
-                    port: *port
-                  initialDelaySeconds: 0
-                  periodSeconds: 10
-                  timeoutSeconds: 1
-                  failureThreshold: 3
-              readiness: *probes
+              readiness:
+                enabled: true
               startup:
                 enabled: true
                 spec:
@@ -79,10 +67,6 @@ spec:
               capabilities:
                 drop:
                   - ALL
-            lifecycle:
-              postStart:
-                exec:
-                  command: ["/bin/sh", "-c", "ip -6 rule del priority 101 || true"]
 
           dnsdist:
             image:
@@ -107,48 +91,29 @@ spec:
           gluetun:
             image:
               repository: ghcr.io/qdm12/gluetun
-              tag: v3.39.0
+              tag: v3.39.1
             env:
               DOT: "off"
               DNS_ADDRESS: "127.0.0.2"
-              FIREWALL_INPUT_PORTS: 80,9999
-              FIREWALL_OUTBOUND_SUBNETS: ${CLUSTER_CIDR},${NODE_CIDR}
-              HEALTH_SERVER_ADDRESS: :9999
-              VPN_INTERFACE: tun0
-              VPN_PORT_FORWARDING: on
-              VPN_PORT_FORWARDING_PROVIDER: protonvpn
               VPN_SERVICE_PROVIDER: custom
               VPN_TYPE: wireguard
+              VPN_INTERFACE: tun0
               WIREGUARD_ENDPOINT_PORT: 51820
+              VPN_PORT_FORWARDING: on
+              VPN_PORT_FORWARDING_PROVIDER: protonvpn
+              FIREWALL_INPUT_PORTS: 8080
+              FIREWALL_OUTBOUND_SUBNETS: 10.96.0.0/12,10.244.0.0/16 # Allow access to k8s subnets
             envFrom:
               - secretRef:
-                  name: protonvpn-secret
-            # probes:
-            #   liveness:
-            #     enabled: true
-            #     custom: true
-            #     spec:
-            #       httpGet:
-            #         path: /
-            #         port: 9999
-            #   startup:
-            #     enabled: true
-            #     custom: true
-            #     spec:
-            #       httpGet:
-            #         path: /
-            #         port: 9999
-            #       initialDelaySeconds: 10
-            #       periodSeconds: 10
-            #       failureThreshold: 5
+                  name: qbittorrent-secret
+            resources:
+              limits:
+                kernel.org/tun: 1
             securityContext:
               capabilities:
                 add:
                   - NET_ADMIN
               allowPrivilegeEscalation: false
-            resources:
-              limits:
-                kernel.org/tun: 1
 
           port-forward:
             image:
@@ -162,14 +127,15 @@ spec:
               CRON_ENABLED: true
               CRON_SCHEDULE: "*/5 * * * *"
               LOG_TIMESTAMP: false
-            restartPolicy: Always
             securityContext:
               runAsUser: 568
               runAsGroup: 568
               runAsNonRoot: true
               allowPrivilegeEscalation: false
               readOnlyRootFilesystem: true
-              capabilities: { drop: ["ALL"] }
+              capabilities:
+                drop:
+                  - ALL
 
     service:
       app:
@@ -190,7 +156,7 @@ spec:
           nginx.ingress.kubernetes.io/auth-snippet: proxy_set_header X-Forwarded-Method $request_method;
         className: external
         hosts:
-          - host: "qbit-standard.${SECRET_DOMAIN}"
+          - host: "qbit.${SECRET_DOMAIN}"
             paths:
               - path: /
                 service:
@@ -201,23 +167,33 @@ spec:
       config:
         existingClaim: *app
         advancedMounts:
-          qbit-standard:
+          qbittorrent:
             app:
               - path: /config
 
       empty-config:
         type: emptyDir
         advancedMounts:
-          qbit-standard:
+          qbittorrent:
             port-forward:
               - path: /config
 
-      data-torrents-standard:
+      media:
         type: nfs
         server: ${TRUENAS_IP}
-        path: /mnt/rust/data/torrents/standard
+        path: /mnt/rust/data/torrents
         globalMounts:
-          - path: /data/torrents/standard
+          - path: /data/torrents
+
+      dnsdist:
+        type: configMap
+        name: qbittorrent-dnsdist
+        advancedMounts:
+          qbittorrent:
+            dnsdist:
+              - path: /etc/dnsdist/dnsdist.conf
+                subPath: dnsdist.conf
+                readOnly: true
 
       addons:
         type: emptyDir

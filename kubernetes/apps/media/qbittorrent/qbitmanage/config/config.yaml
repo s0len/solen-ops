@@ -1,5 +1,5 @@
 qbt:
-  host: qbit-standard.media.svc.cluster.local
+  host: qbittorrent.media.svc.cluster.local
   user:
   pass:
 
@@ -28,7 +28,7 @@ directory:
   root_dir: /data/torrents/standard
   remote_dir: /data/torrents/standard
   recycle_bin: /data/torrents/standard.RecycleBin
-  torrents_dir: /qbit-standard/qBittorrent/BT_backup
+  torrents_dir: /qbittorrent/qBittorrent/BT_backup
   orphaned_dir: /data/torrents/standard/orphaned_data
   cross_seed:
 

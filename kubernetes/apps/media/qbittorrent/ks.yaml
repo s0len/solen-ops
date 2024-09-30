@@ -10,7 +10,7 @@ spec:
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
-  path: ./kubernetes/apps/media/qbittorrent/torrent-standard
+  path: ./kubernetes/apps/media/qbittorrent/qbittorrent
   prune: true
   sourceRef:
     kind: GitRepository
@@ -37,7 +37,7 @@ spec:
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
-  path: ./kubernetes/apps/media/qbittorrent/manage-standard
+  path: ./kubernetes/apps/media/qbittorrent/qbitmanage
   prune: true
   sourceRef:
     kind: GitRepository
