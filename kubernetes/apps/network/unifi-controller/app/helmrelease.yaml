@@ -2,9 +2,10 @@
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: &app unifi-controller
+  name: unifi-controller
+  namespace: default
 spec:
-  interval: 30m
+  interval: 15m
   chart:
     spec:
       chart: app-template
@@ -13,75 +14,77 @@ spec:
         kind: HelmRepository
         name: bjw-s
         namespace: flux-system
-  maxHistory: 2
+  maxHistory: 3
   install:
+    createNamespace: true
     remediation:
       retries: 3
   upgrade:
     cleanupOnFail: true
     remediation:
-      strategy: rollback
       retries: 3
-  dependsOn:
-    - name: volsync
-      namespace: storage
+  uninstall:
+    keepHistory: false
   values:
     controllers:
-      unifi-controller:
-        annotations:
-          reloader.stakater.com/auto: "true"
+      main:
         containers:
-          app:
+          main:
             image:
-              repository: ghcr.io/goofball222/unifi
-              tag: 8.4
+              repository: jacobalberty/unifi
+              tag: v8.4.62
             env:
-              TZ: ${TIMEZONE}
-              RUNAS_UID0: false
-              PUID: 568
-              PGID: 568
-              LOGSTDOUT: true
-              JVM_MAX_HEAP_SIZE: 1024M
-            resources:
-              requests:
-                cpu: 10m
-                memory: 250Mi
-              limits:
-                memory: 1024Mi
-        pod:
-          securityContext:
-            runAsUser: 568
-            runAsGroup: 568
-            fsGroup: 568
-            fsGroupChangePolicy: OnRootMismatch
+              TZ: "Europe/Dublin"
+              RUNAS_UID0: "false"
+              UNIFI_UID: "911"
+              UNIFI_GID: "911"
+              UNIFI_STDOUT: "true"
+              JVM_INIT_HEAP_SIZE: 1024M
+              JVM_MAX_HEAP_SIZE: 2048M
+            probes:
+              liveness:
+                enabled: false
+              readiness:
+                enabled: false
+              startup:
+                enabled: false
     service:
-      app:
-        controller: unifi-controller
-        primary: true
-        annotations:
-          external-dns.alpha.kubernetes.io/hostname: "internal.${SECRET_DOMAIN}"
-          io.cilium/lb-ipam-ips: "${NGINX_INTERNAL_IP}"
+      main:
+        controller: main
         ports:
           http:
+            protocol: HTTPS
             port: 8443
-      unifi:
-        controller: unifi-controller
-        type: LoadBalancer
-        annotations:
-          external-dns.alpha.kubernetes.io/hostname: "unifi.internal.${SECRET_DOMAIN_INTERNAL}"
-          io.cilium/lb-ipam-ips: "${UNIFI_LB_ADDR}"
-        externalTrafficPolicy: Cluster
-        ports:
-          controller:
+          unifi-stun:
+            port: 3478
+            protocol: UDP
+          unifi-discovery:
+            port: 10001
+            protocol: UDP
+          unifi-device-discovery:
+            port: 1900
+            protocol: UDP
+          unifi-device-comms:
             port: 8080
             protocol: TCP
-          stun:
-            port: 3478
+          unifi-guest-portal:
+            port: 8880
+            protocol: TCP
+          unifi-guest-portal-https:
+            port: 8843
+            protocol: TCP
+          unifi-mobile-throughput:
+            port: 6789
+            protocol: TCP
+          unifi-syslog:
+            port: 5514
             protocol: UDP
     ingress:
       app:
         className: external
         annotations:
+          hajimari.io/icon: arcticons:unifi-network
+          nginx.ingress.kubernetes.io/whitelist-source-range: ${wl_source_range}
           external-dns.alpha.kubernetes.io/target: "external.${SECRET_DOMAIN}"
           nginx.ingress.kubernetes.io/auth-method: GET
           nginx.ingress.kubernetes.io/auth-url: "https://auth.${SECRET_DOMAIN}/api/verify"
@@ -100,10 +103,9 @@ spec:
                   port: http
     persistence:
       config:
-        existingClaim: unifi-controller
+        type: persistentVolumeClaim
+        accessMode: ReadWriteOnce
+        size: 1Gi
         globalMounts:
-          - path: /usr/lib/unifi/data
-      logs:
-        type: emptyDir
-        globalMounts:
-          - path: /usr/lib/unifi/logs
+          - path: /unifi
+            readOnly: false
