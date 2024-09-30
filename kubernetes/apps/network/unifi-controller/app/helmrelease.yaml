@@ -80,11 +80,11 @@ spec:
             port: 5514
             protocol: UDP
     ingress:
-      app:
+      main:
         className: external
         annotations:
           hajimari.io/icon: arcticons:unifi-network
-          nginx.ingress.kubernetes.io/whitelist-source-range: ${wl_source_range}
+          nginx.ingress.kubernetes.io/whitelist-source-range: ${WL_SOURCE_RANGE}
           external-dns.alpha.kubernetes.io/target: "external.${SECRET_DOMAIN}"
           nginx.ingress.kubernetes.io/auth-method: GET
           nginx.ingress.kubernetes.io/auth-url: "https://auth.${SECRET_DOMAIN}/api/verify"
