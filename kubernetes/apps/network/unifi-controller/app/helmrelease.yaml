@@ -80,7 +80,7 @@ spec:
             port: 5514
             protocol: UDP
     ingress:
-      main:
+      app:
         className: external
         annotations:
           hajimari.io/icon: arcticons:unifi-network
