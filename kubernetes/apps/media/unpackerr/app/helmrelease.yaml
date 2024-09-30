@@ -52,12 +52,12 @@ spec:
               UN_RADARR_1_PATHS_0: /data/torrents/kidsmovies
               UN_RADARR_2_URL: http://radarr-anime.media.svc.cluster.local
               UN_RADARR_2_PATHS_0: /data/torrents/animemovies
-              UN_LIDARR_0_URL: http://lidarr.media.svc.cluster.local
-              UN_LIDARR_0_PATHS_0: /data/torrents/music
-              UN_READARR_0_URL: http://readarr-books.media.svc.cluster.local
-              UN_READARR_0_PATHS_0: /data/torrents/books
-              UN_READARR_1_URL: http://readarr-audio.media.svc.cluster.local
-              UN_READARR_1_PATHS_0: /data/torrents/audiobooks
+              # UN_LIDARR_0_URL: http://lidarr.media.svc.cluster.local
+              # UN_LIDARR_0_PATHS_0: /data/torrents/music
+              # UN_READARR_0_URL: http://readarr-books.media.svc.cluster.local
+              # UN_READARR_0_PATHS_0: /data/torrents/books
+              # UN_READARR_1_URL: http://readarr-audio.media.svc.cluster.local
+              # UN_READARR_1_PATHS_0: /data/torrents/audiobooks
               UN_WEBHOOK_0_NAME: notifiarr
               UN_WEBHOOK_0_IGNORE_SSL: "false"
               UN_WEBHOOK_0_SILENT: "false"
@@ -78,7 +78,7 @@ spec:
               requests:
                 cpu: 500m
               limits:
-                memory: 4Gi
+                memory: 8Gi
 
     defaultPodOptions:
       securityContext:
