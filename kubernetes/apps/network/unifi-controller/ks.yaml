@@ -5,7 +5,7 @@ metadata:
   name: &app unifi-controller
   namespace: flux-system
 spec:
-  targetNamespace: networking
+  targetNamespace: network
   dependsOn:
     - name: external-secrets-stores
   path: ./kubernetes/apps/network/unifi-controller/app
