@@ -39,25 +39,25 @@ spec:
               UN_WEBSERVER_LOG_FILE: /logs/webserver.log
               UN_ACTIVITY: true
               UN_SONARR_0_URL: http://sonarr-standard.media.svc.cluster.local
-              UN_SONARR_0_PATHS_0: /data/torrents/standard/series
+              UN_SONARR_0_PATHS_0: /data/torrents/series
               UN_SONARR_1_URL: http://sonarr-kids.media.svc.cluster.local
-              UN_SONARR_1_PATHS_0: /data/torrents/kids/series
+              UN_SONARR_1_PATHS_0: /data/torrents/kidsseries
               UN_SONARR_2_URL: http://sonarr-anime.media.svc.cluster.local
-              UN_SONARR_2_PATHS_0: /data/torrents/anime/series
+              UN_SONARR_2_PATHS_0: /data/torrents/animeseries
               UN_SONARR_3_URL: http://sonarr-sport.media.svc.cluster.local
               UN_SONARR_3_PATHS_0: /data/torrents/sport/series
               UN_RADARR_0_URL: http://radarr-standard.media.svc.cluster.local
-              UN_RADARR_0_PATHS_0: /data/torrents/standard/movies
+              UN_RADARR_0_PATHS_0: /data/torrents/movies
               UN_RADARR_1_URL: http://radarr-kids.media.svc.cluster.local
-              UN_RADARR_1_PATHS_0: /data/torrents/kids/movies
+              UN_RADARR_1_PATHS_0: /data/torrents/kidsmovies
               UN_RADARR_2_URL: http://radarr-anime.media.svc.cluster.local
-              UN_RADARR_2_PATHS_0: /data/torrents/anime/movies
+              UN_RADARR_2_PATHS_0: /data/torrents/animemovies
               UN_LIDARR_0_URL: http://lidarr.media.svc.cluster.local
-              UN_LIDARR_0_PATHS_0: /data/torrents/standard/music
+              UN_LIDARR_0_PATHS_0: /data/torrents/music
               UN_READARR_0_URL: http://readarr-books.media.svc.cluster.local
-              UN_READARR_0_PATHS_0: /data/torrents/standard/books
+              UN_READARR_0_PATHS_0: /data/torrents/books
               UN_READARR_1_URL: http://readarr-audio.media.svc.cluster.local
-              UN_READARR_1_PATHS_0: /data/torrents/standard/audiobooks
+              UN_READARR_1_PATHS_0: /data/torrents/audiobooks
               UN_WEBHOOK_0_NAME: notifiarr
               UN_WEBHOOK_0_IGNORE_SSL: "false"
               UN_WEBHOOK_0_SILENT: "false"
