@@ -25,11 +25,11 @@ settings:
   tag_nohardlinks_filter_completed: true
   force_retag_all: false
 directory:
-  root_dir: /data/torrents/standard
-  remote_dir: /data/torrents/standard
-  recycle_bin: /data/torrents/standard.RecycleBin
+  root_dir: /data/torrents
+  remote_dir: /data/torrents
+  recycle_bin: /data/torrents/.RecycleBin
   torrents_dir: /qbittorrent/qBittorrent/BT_backup
-  orphaned_dir: /data/torrents/standard/orphaned_data
+  orphaned_dir: /data/torrents/orphaned_data
   cross_seed:
 
 cat:
@@ -65,12 +65,12 @@ orphaned:
   - '**/@eaDir'
   - '**/*.!qB'
   - '**/*_unpackerred'
-  - /data/temp/**
-  - /data/BT_backup/**
-  - /data/completed/**
-  - /data/cross-seeds/**
-  - /data/usedforseeding/**
-  - /data/links/**
+  - /data/torrents/temp/**
+  - /data/torrents/BT_backup/**
+  - /data/torrents/completed/**
+  - /data/torrents/cross-seeds/**
+  - /data/torrents/usedforseeding/**
+  - /data/torrents/links/**
   - '**/*.torrent'
 
 notifiarr:
