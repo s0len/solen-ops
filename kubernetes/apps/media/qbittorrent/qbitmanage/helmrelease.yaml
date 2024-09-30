@@ -26,7 +26,7 @@ spec:
       retries: 3
 
   dependsOn:
-    - name: qbit-standard
+    - name: qbittorrent
       namespace: media
 
   values:
@@ -105,7 +105,7 @@ spec:
         globalMounts:
           - path: /data/torrents/standard
 
-      qbit-standard:
-        existingClaim: qbit-standard
+      qbittorrent:
+        existingClaim: qbittorrent
         globalMounts:
-          - path: /qbit-standard
+          - path: /qbittorrent
