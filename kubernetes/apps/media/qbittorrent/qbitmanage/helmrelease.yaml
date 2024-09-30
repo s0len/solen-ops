@@ -3,7 +3,7 @@
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: qbitmanage-standard
+  name: qbitmanage
 spec:
   interval: 30m
   chart:
@@ -31,7 +31,7 @@ spec:
 
   values:
     controllers:
-      qbitmanage-standard:
+      qbitmanage:
         type: cronjob
         cronjob:
           schedule: "*/30 * * * *"
