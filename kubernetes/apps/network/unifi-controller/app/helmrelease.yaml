@@ -34,7 +34,7 @@ spec:
               repository: jacobalberty/unifi
               tag: v8.4.62
             env:
-              TZ: "Europe/Dublin"
+              TZ: ${TIMEZONE}
               RUNAS_UID0: "false"
               UNIFI_UID: "911"
               UNIFI_GID: "911"
