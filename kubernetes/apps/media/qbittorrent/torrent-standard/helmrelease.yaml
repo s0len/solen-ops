@@ -19,7 +19,8 @@ spec:
     controllers:
       qbit-standard:
         annotations:
-          reloader.stakater.com/auto: "true"
+          configmap.reloader.stakater.com/reload: qbittorrent-scripts,qbittorrent-dnsdist
+          secret.reloader.stakater.com/reload: qbittorrent-secret
 
         pod:
           securityContext:
@@ -58,6 +59,17 @@ spec:
                   timeoutSeconds: 1
                   failureThreshold: 3
               readiness: *probes
+              startup:
+                enabled: true
+                spec:
+                  failureThreshold: 30
+                  periodSeconds: 5
+            resources:
+              requests:
+                cpu: 49m
+                memory: 1024Mi
+              limits:
+                memory: 8192Mi
             securityContext:
               runAsUser: 568
               runAsGroup: 568
@@ -71,6 +83,11 @@ spec:
               postStart:
                 exec:
                   command: ["/bin/sh", "-c", "ip -6 rule del priority 101 || true"]
+
+          dnsdist:
+            image:
+              repository: docker.io/powerdns/dnsdist-19
+              tag: 1.9.6
 
           vuetorrent:
             dependsOn: app
@@ -92,8 +109,8 @@ spec:
               repository: ghcr.io/qdm12/gluetun
               tag: v3.39.0
             env:
-              DNS_KEEP_NAMESERVER: "on"
               DOT: "off"
+              DNS_ADDRESS: "127.0.0.2"
               FIREWALL_INPUT_PORTS: 80,9999
               FIREWALL_OUTBOUND_SUBNETS: ${CLUSTER_CIDR},${NODE_CIDR}
               HEALTH_SERVER_ADDRESS: :9999
@@ -106,25 +123,24 @@ spec:
             envFrom:
               - secretRef:
                   name: protonvpn-secret
-            probes:
-              liveness:
-                enabled: true
-                custom: true
-                spec:
-                  httpGet:
-                    path: /
-                    port: 9999
-              startup:
-                enabled: true
-                custom: true
-                spec:
-                  httpGet:
-                    path: /
-                    port: 9999
-                  initialDelaySeconds: 10
-                  periodSeconds: 10
-                  failureThreshold: 5
-            restartPolicy: Always
+            # probes:
+            #   liveness:
+            #     enabled: true
+            #     custom: true
+            #     spec:
+            #       httpGet:
+            #         path: /
+            #         port: 9999
+            #   startup:
+            #     enabled: true
+            #     custom: true
+            #     spec:
+            #       httpGet:
+            #         path: /
+            #         port: 9999
+            #       initialDelaySeconds: 10
+            #       periodSeconds: 10
+            #       failureThreshold: 5
             securityContext:
               capabilities:
                 add:
