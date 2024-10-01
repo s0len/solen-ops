@@ -21,3 +21,4 @@ spec:
     substitute:
       APP: *app
       GATUS_SUBDOMAIN: unifi-controller
+      VOLSYNC_CAPACITY: 2Gi
