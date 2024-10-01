@@ -28,6 +28,7 @@ spec:
       namespace: volsync-system
   uninstall:
     keepHistory: false
+
   values:
     controllers:
       main:
@@ -35,12 +36,12 @@ spec:
           main:
             image:
               repository: jacobalberty/unifi
-              tag: v8.4.62
+              tag: v8.4.62@sha256:a107953e86227abd2fee4eff85c674337a0c08f704b14d7fe5c707f3ee4fd19e
             env:
               TZ: ${TIMEZONE}
               RUNAS_UID0: "false"
-              UNIFI_UID: "911"
-              UNIFI_GID: "911"
+              UNIFI_UID: "999"
+              UNIFI_GID: "999"
               UNIFI_STDOUT: "true"
               JVM_INIT_HEAP_SIZE: 1024M
               JVM_MAX_HEAP_SIZE: 2048M
@@ -51,6 +52,13 @@ spec:
                 enabled: false
               startup:
                 enabled: false
+        pod:
+          securityContext:
+            runAsUser: 999
+            runAsGroup: 999
+            fsGroup: 999
+            fsGroupChangePolicy: OnRootMismatch
+
     service:
       app:
         controller: main
@@ -82,21 +90,19 @@ spec:
           unifi-syslog:
             port: 5514
             protocol: UDP
+
     ingress:
       app:
         className: external
         annotations:
-          hajimari.io/icon: arcticons:unifi-network
-          nginx.ingress.kubernetes.io/whitelist-source-range: ${WL_SOURCE_RANGE}
+          # nginx.ingress.kubernetes.io/whitelist-source-range: ${WL_SOURCE_RANGE}
           external-dns.alpha.kubernetes.io/target: "external.${SECRET_DOMAIN}"
           nginx.ingress.kubernetes.io/auth-method: GET
           nginx.ingress.kubernetes.io/auth-url: "https://auth.${SECRET_DOMAIN}/api/verify"
           nginx.ingress.kubernetes.io/auth-signin: "https://auth.${SECRET_DOMAIN}/?rm=$request_method"
           nginx.ingress.kubernetes.io/auth-response-headers: Remote-User,Remote-Name,Remote-Groups,Remote-Email
           nginx.ingress.kubernetes.io/auth-snippet: proxy_set_header X-Forwarded-Method $request_method;
-          nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
-          nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
-          nginx.ingress.kubernetes.io/proxy-connect-timeout: "600"
+          nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
         hosts:
           - host: "{{ .Release.Name }}.${SECRET_DOMAIN}"
             paths:
@@ -104,9 +110,15 @@ spec:
                 service:
                   identifier: app
                   port: http
+
     persistence:
       config:
         existingClaim: *app
         globalMounts:
-          - path: /unifi
+          - path: /unifi/data
             readOnly: false
+
+      log:
+        type: emptyDir
+        globalMounts:
+          - path: /unifi
