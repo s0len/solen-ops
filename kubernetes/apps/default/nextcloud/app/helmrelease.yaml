@@ -56,8 +56,8 @@ spec:
 
       mail:
         enabled: true
-        fromAddress: ${SMTP_USERNAME}
-        domain: ${SMTP_DOMAIN}
+        fromAddress: ${SECRET_USERNAME}
+        domain: gmail.com
         smtp:
           host: smtp.gmail.com
           port: 587
