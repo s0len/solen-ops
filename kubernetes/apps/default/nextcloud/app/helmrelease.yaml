@@ -50,7 +50,7 @@ spec:
         passwordKey: NEXTCLOUD_PASSWORD
         smtpUsernameKey: SMTP_USER
         smtpPasswordKey: SMTP_PASS
-        smtpHostKey: smtp.gmail.com
+        smtpHostKey: SMTP_HOST
 
       host: cloud.${SECRET_DOMAIN}
 
