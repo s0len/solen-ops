@@ -77,13 +77,13 @@ spec:
       manga:
         type: nfs
         server: ${TRUENAS_IP}
-        path: /mnt/rust/media/manga
+        path: /mnt/rust/data/media/manga
         globalMounts:
           - path: /manga
 
       magazines:
         type: nfs
         server: ${TRUENAS_IP}
-        path: /mnt/rust/media/magazines
+        path: /mnt/rust/data/media/magazines
         globalMounts:
           - path: /magazines

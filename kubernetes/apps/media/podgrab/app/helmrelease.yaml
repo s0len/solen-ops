@@ -104,6 +104,6 @@ spec:
       assets:
         type: nfs
         server: ${TRUENAS_IP}
-        path: /mnt/rust/torrents/podcast
+        path: /mnt/rust/data/torrents/podcast
         globalMounts:
           - path: /assets
