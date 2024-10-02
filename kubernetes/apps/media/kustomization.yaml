@@ -6,7 +6,7 @@ resources:
   - ./autobrr/ks.yaml
   - ./bazarr/ks.yaml
   - ./flaresolverr/ks.yaml
-#  - ./komga/ks.yaml
+  - ./komga/ks.yaml
   - ./notifiarr/ks.yaml
   - ./plex/ks.yaml
   - ./podgrab/ks.yaml
@@ -14,7 +14,6 @@ resources:
   - ./qbittorrent/ks.yaml
   - ./radarr/ks.yaml
   - ./recyclarr/ks.yaml
-#  - ./requestrr/ks.yaml
   - ./prowlarr/ks.yaml
   - ./overseerr/ks.yaml
   - ./unpackerr/ks.yaml
