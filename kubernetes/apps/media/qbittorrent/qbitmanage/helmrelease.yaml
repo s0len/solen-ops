@@ -101,9 +101,9 @@ spec:
       data:
         type: nfs
         server: ${TRUENAS_IP}
-        path: /mnt/rust/data/torrents/standard
+        path: /mnt/rust/data/torrents
         globalMounts:
-          - path: /data/torrents/standard
+          - path: /data/torrents
 
       qbittorrent:
         existingClaim: qbittorrent
