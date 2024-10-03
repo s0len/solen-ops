@@ -60,7 +60,7 @@ spec:
         domain: gmail.com
         smtp:
           host: smtp.gmail.com
-          port: 587
+          port: 465
           authtype: LOGIN
           secure: ssl
 
