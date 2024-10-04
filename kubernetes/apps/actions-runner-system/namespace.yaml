@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: flux-system
+  name: actions-runner-system
   annotations:
     kustomize.toolkit.fluxcd.io/prune: disabled
     volsync.backube/privileged-movers: "true"
@@ -12,7 +12,7 @@ apiVersion: notification.toolkit.fluxcd.io/v1beta3
 kind: Provider
 metadata:
   name: alert-manager
-  namespace: flux-system
+  namespace: actions-runner-system
 spec:
   type: alertmanager
   address: http://alertmanager-operated.observability.svc.cluster.local:9093/api/v2/alerts/
@@ -22,21 +22,13 @@ apiVersion: notification.toolkit.fluxcd.io/v1beta3
 kind: Alert
 metadata:
   name: alert-manager
-  namespace: flux-system
+  namespace: actions-runner-system
 spec:
   providerRef:
     name: alert-manager
   eventSeverity: error
   eventSources:
-    - kind: GitRepository
-      name: "*"
     - kind: HelmRelease
-      name: "*"
-    - kind: HelmRepository
-      name: "*"
-    - kind: Kustomization
-      name: "*"
-    - kind: OCIRepository
       name: "*"
   exclusionList:
     - "error.*lookup github\\.com"
