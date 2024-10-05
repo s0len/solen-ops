@@ -42,6 +42,7 @@ spec:
               QBT_Preferences__WebUI__LocalHostAuth: false
               QBT_Preferences__WebUI__AlternativeUIEnabled: true
               QBT_Preferences__WebUI__RootFolder: /addons/VueTorrent
+              LOG_LEVEL: debug
             probes:
               liveness:
                 enabled: true
