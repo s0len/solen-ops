@@ -4,6 +4,7 @@ apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: spegel
+  namespace: flux-system
 spec:
   interval: 30m
   chart:
@@ -30,3 +31,8 @@ spec:
       enabled: true
     serviceMonitor:
       enabled: true
+    # TODO: Remove after spegel is stable on Talos 1.8
+    # https://github.com/spegel-org/spegel/releases
+    image:
+      repository: ghcr.io/deedee-ops/spegel
+      digest: sha256:267dc3b79750dfca9a961be1f6f9b39997e598f6ee4b2cac7a98641d163a7a78
