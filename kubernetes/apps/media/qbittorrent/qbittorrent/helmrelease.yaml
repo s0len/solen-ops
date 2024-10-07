@@ -39,7 +39,7 @@ spec:
             env:
               UMASK: "022"
               # QBITTORRENT__PORT: &port 80
-              QBT_WEBUI_PORT: &port 80
+              QBT_WEBUI_PORT: &port 8080
               QBT_Preferences__WebUI__AuthSubnetWhitelistEnabled: true
               QBT_Preferences__WebUI__AuthSubnetWhitelist: |-
                 10.69.0.0/16, 10.96.0.0/16, 192.168.1.0/24, 192.168.10.0/24
