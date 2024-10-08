@@ -48,19 +48,19 @@ instances:
   qbittorrent:
     # Instance name can be whatever you want, it just needs to match the name used in other sections
     qbittorrent_standard:
-      url: http://qbittorrent-standard.media.svc.cluster.local
+      url: http://qbittorrent.media.svc.cluster.local
       username: "{{ .QBIT_USER }}"
       password: "{{ .QBIT_PASS }}"
     qbittorrent_kids:
-      url: http://qbittorrent-kids.media.svc.cluster.local
+      url: http://qbittorrent.media.svc.cluster.local
       username: "{{ .QBIT_USER }}"
       password: "{{ .QBIT_PASS }}"
     qbittorrent_anime:
-      url: http://qbittorrent-anime.media.svc.cluster.local
+      url: http://qbittorrent.media.svc.cluster.local
       username: "{{ .QBIT_USER }}"
       password: "{{ .QBIT_PASS }}"
     qbittorrent_sport:
-      url: http://qbittorrent-sport.media.svc.cluster.local
+      url: http://qbittorrent.media.svc.cluster.local
       username: "{{ .QBIT_USER }}"
       password: "{{ .QBIT_PASS }}"
 
