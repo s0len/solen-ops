@@ -157,7 +157,7 @@ spec:
         controller: *app
         nameOverride: gluetun
         ports:
-          http:
+          gluetun-http:
             port: 8888
 
     ingress:
