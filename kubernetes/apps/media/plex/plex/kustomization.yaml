@@ -5,8 +5,7 @@ kind: Kustomization
 resources:
   - ./pvc.yaml
   - ./helmrelease.yaml
-  # TODO: Uncomment once pushover is setup
-  # - ../../../../templates/gatus/external
+  - ../../../../templates/gatus/external
   - ../../../../templates/volsync
 configMapGenerator:
   - name: plex-loki-rules
