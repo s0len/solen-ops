@@ -16,7 +16,8 @@ cgroup:
 cluster:
   id: 1
   name: solen-cluster
-devices: enp1s0f0
+devices: enp+
+enableRuntimeDeviceDetection: true
 endpointRoutes:
   enabled: true
 hubble:
