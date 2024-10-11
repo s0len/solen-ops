@@ -16,7 +16,7 @@ cgroup:
 cluster:
   id: 1
   name: solen-cluster
-devices: enp2s0
+devices: enp1s0f0
 endpointRoutes:
   enabled: true
 hubble:
