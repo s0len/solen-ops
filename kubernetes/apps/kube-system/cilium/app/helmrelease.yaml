@@ -16,7 +16,7 @@ spec:
         namespace: flux-system
   install:
     remediation:
-      retries: 3 # Don't delete shit
+      retries: 3
   upgrade:
     cleanupOnFail: true
     remediation:
