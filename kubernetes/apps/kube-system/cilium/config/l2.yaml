@@ -6,7 +6,7 @@ metadata:
   name: l2-policy
 spec:
   loadBalancerIPs: true
-  interfaces: ["^enp.*"]
+  # interfaces: ["^enp.*"]
   #   - ^eno[0-9]+
   #   - ^eth[0-9]+
   nodeSelector:
