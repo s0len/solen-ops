@@ -41,14 +41,14 @@ In this example we changed from postgres16-01 -> postgres16-02 and restored from
 
 3. Copy my cert manager config, while making any of your own changes as needed
 
-    https://github.com/Heavybullets8/heavy-ops/tree/main/kubernetes/apps/cert-manager
+    [cert-manager](https://github.com/Heavybullets8/heavy-ops/tree/main/kubernetes/apps/cert-manager)
 
 4. Create kubernetes/apps/network/nginx/certificates
-    Ex: https://github.com/Heavybullets8/heavy-ops/tree/main/kubernetes/apps/network/nginx/certificates
+    Ex: [certificates](https://github.com/Heavybullets8/heavy-ops/tree/main/kubernetes/apps/network/nginx/certificates)
 
 5. Change your depends in kubernetes/apps/network/nginx/ks.yaml and add the cert manager
 
-   You can see mine here: https://github.com/Heavybullets8/heavy-ops/blob/main/kubernetes/apps/network/nginx/ks.yaml
+   You can see mine here: [ks.yaml](https://github.com/Heavybullets8/heavy-ops/blob/main/kubernetes/apps/network/nginx/ks.yaml)
 
 6. In kubernetes/apps/network/nginx/external/helmrelease.yaml AND kubernetes/apps/network/nginx/internal/helmrelease.yaml make sure you are using the cert in the network namespace
 
