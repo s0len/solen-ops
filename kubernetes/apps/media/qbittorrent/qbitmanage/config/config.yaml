@@ -66,12 +66,10 @@ orphaned:
   - '**/*.!qB'
   - '**/*_unpackerred'
   - /data/torrents/temp/**
-  - /data/torrents/BT_backup/**
   - /data/torrents/completed/**
   - /data/torrents/cross-seeds/**
   - /data/torrents/usedforseeding/**
   - /data/torrents/links/**
-  - '**/*.torrent'
 
 notifiarr:
   apikey: "{{ .NOTIFIARR_QBITMANAGE_API_KEY }}"
