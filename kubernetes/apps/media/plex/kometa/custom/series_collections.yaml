@@ -6,9 +6,24 @@ collections:
     collection_mode: hide
     sort_title: "!07_Viaplay"
 
-  Universe Trends - AI-Curated Collection of Trendsetting Shows:
+  Recommended TV Shows:
+    trakt_list: https://trakt.tv/users/solentankar/lists/tv-based-on-recently-watched-couchmoney-tv?sort=rank,asc
+    sync_mode: sync
+    smart_label:
+      sort_by: added.asc
+      all:
+        label: <<smart_label>>
+    summary:
+      This collection of TV Shows is maintained by an awesome AI which looks at recently watched TV Shows of Uniflix
+      users and then creates recommendations based on what it thinks we would appreciate.
+    visible_library: true
+    visible_home: true
+    visible_shared: true
+    sort_title: "!017_recommended_series"
+    collection_mode: hide
+
+  Trending TV Shows:
     trakt_list: https://trakt.tv/users/solentankar/lists/tv-trending-couchmoney-tv?sort=rank,asc
-    #file_poster: config/posters/uniflix_trendsetters.jpg
     sync_mode: sync
     smart_label:
       sort_by: added.asc
@@ -16,12 +31,29 @@ collections:
         label: <<smart_label>>
     summary:
       This collection of TV Shows is maintained by an awesome AI which looks at the whole wide worlds trending
-      series and their ratings and then creates it's own version of what should be the most trendy movies
+      series and their ratings and then creates it's own version of what should be the most trendy tv shows in
       the whole Universe!
     visible_library: true
     visible_home: true
     visible_shared: true
     sort_title: "!018_trendy_series"
+    collection_mode: hide
+
+  Popular TV Shows:
+    trakt_list: https://trakt.tv/users/solentankar/lists/tv-recommendations-couchmoney-tv?sort=rank,asc
+    sync_mode: sync
+    smart_label:
+      sort_by: added.asc
+      all:
+        label: <<smart_label>>
+    summary:
+      This collection of TV Shows is maintained by an awesome AI which looks at the whole wide worlds most popular
+      series and their ratings and then creates it's own version of what should be the most popular tv shows in
+      the whole Universe!
+    visible_library: true
+    visible_home: true
+    visible_shared: true
+    sort_title: "!019_popular_series"
     collection_mode: hide
 
   ⭐ - Dreadful Duds:
