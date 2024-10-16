@@ -73,13 +73,13 @@ spec:
         type: *type
         cronjob:
           <<: *cronjob
-          schedule: "20 0 * * *"
+          schedule: "20 15 * * *"
         containers:
           app:
             <<: *container_app
             args:
               - |
-                python3 kometa.py --run --read-only-config --run-libraries "Animeserier|Animefilmer"
+                python3 kometa.py --run --read-only-config --overlays-only --run-libraries "Animeserier|Animefilmer"
 
       kids:
         type: *type
@@ -91,7 +91,7 @@ spec:
             <<: *container_app
             args:
               - |
-                python3 kometa.py --run --read-only-config --run-libraries "Barnfilmer|Barnserier"
+                python3 kometa.py --run --read-only-config --overlays-only --run-libraries "Barnfilmer|Barnserier"
 
       standard-series:
         type: *type
@@ -103,7 +103,7 @@ spec:
             <<: *container_app
             args:
               - |
-                python3 kometa.py --run --read-only-config --run-libraries "Serier"
+                python3 kometa.py --run --read-only-config --overlays-only --run-libraries "Serier"
 
       standard-movies:
         type: *type
@@ -115,7 +115,7 @@ spec:
             <<: *container_app
             args:
               - |
-                python3 kometa.py --run --read-only-config --run-libraries "Filmer"
+                python3 kometa.py --run --read-only-config --overlays-only --run-libraries "Filmer"
 
       sport:
         type: *type
