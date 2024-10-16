@@ -43,51 +43,20 @@ collections:
     sort_title: "!018_trendy_movies"
     collection_mode: hide
 
-  ⭐ - Dreadful Duds:
-    trakt_list: https://trakt.tv/users/solentankar/lists/uniflix-1-star
-    letterboxd_list: https://letterboxd.com/bionithrin/list/uniflix-4/
+  ⭐⭐⭐⭐⭐ - Exceptional Epics:
+    trakt_list: https://trakt.tv/users/solentankar/lists/uniflix-5-stars
+    letterboxd_list: https://letterboxd.com/bionithrin/list/uniflix-3/
+    #file_poster: config/posters/Exceptional Epics.jpg
     sync_mode: sync
     smart_label:
       sort_by: added.asc
       all:
         label: <<smart_label>>
-    summary: Should be avoided at any cost.
+    summary: This is a MUST watch!
     visible_library: true
     visible_home: true
     visible_shared: true
-    sort_title: "!025_Dreadful_Duds"
-
-  ⭐⭐ - Mediocre Misses:
-    trakt_list:
-      - https://trakt.tv/users/solentankar/lists/uniflix-2-stars
-    letterboxd_list: https://letterboxd.com/bionithrin/list/uniflix-2/
-    sync_mode: sync
-    #file_poster: config/posters/Mediocre Misses.jpg
-    smart_label:
-      sort_by: added.asc
-      all:
-        label: <<smart_label>>
-    summary: Only for those with a special interest in the genre, actor or similar.
-    visible_library: true
-    visible_home: true
-    visible_shared: true
-    sort_title: "!024_Mediocre_Misses"
-
-  ⭐⭐⭐ - Average Aces:
-    trakt_list:
-      - https://trakt.tv/users/solentankar/lists/uniflix-3-stars
-    letterboxd_list: https://letterboxd.com/bionithrin/list/uniflix/
-    sync_mode: sync
-    #file_poster: config/posters/Average Aces.jpg
-    smart_label:
-      sort_by: added.asc
-      all:
-        label: <<smart_label>>
-    summary: General recommendation to watch this one. Though maybe not twice.
-    visible_library: true
-    visible_home: true
-    visible_shared: true
-    sort_title: "!023_Average_Aces"
+    sort_title: "!021_Exceptional_Epics"
 
   ⭐⭐⭐⭐ - Remarkable Reels:
     trakt_list:
@@ -105,17 +74,47 @@ collections:
     visible_shared: true
     sort_title: "!022_Remarkable_Reels"
 
-  ⭐⭐⭐⭐⭐ - Exceptional Epics:
-    trakt_list: https://trakt.tv/users/solentankar/lists/uniflix-5-stars
-    letterboxd_list: https://letterboxd.com/bionithrin/list/uniflix-3/
-    #file_poster: config/posters/Exceptional Epics.jpg
+  ⭐⭐⭐ - Average Aces:
+    trakt_list:
+      - https://trakt.tv/users/solentankar/lists/uniflix-3-stars
+    letterboxd_list: https://letterboxd.com/bionithrin/list/uniflix/
+    sync_mode: sync
+    #file_poster: config/posters/Average Aces.jpg
+    smart_label:
+      sort_by: added.asc
+      all:
+        label: <<smart_label>>
+    summary: General recommendation to watch this one. Though maybe not twice.
+    visible_library: true
+    visible_home: true
+    visible_shared: true
+    sort_title: "!023_Average_Aces"
+
+  ⭐⭐ - Mediocre Misses:
+    trakt_list:
+      - https://trakt.tv/users/solentankar/lists/uniflix-2-stars
+    letterboxd_list: https://letterboxd.com/bionithrin/list/uniflix-2/
+    sync_mode: sync
+    #file_poster: config/posters/Mediocre Misses.jpg
+    smart_label:
+      sort_by: added.asc
+      all:
+        label: <<smart_label>>
+    summary: Only for those with a special interest in the genre, actor or similar.
+    visible_library: true
+    visible_home: true
+    visible_shared: true
+    sort_title: "!024_Mediocre_Misses"
+  ⭐ - Dreadful Duds:
+    trakt_list: https://trakt.tv/users/solentankar/lists/uniflix-1-star
+    letterboxd_list: https://letterboxd.com/bionithrin/list/uniflix-4/
     sync_mode: sync
     smart_label:
       sort_by: added.asc
       all:
         label: <<smart_label>>
-    summary: This is a MUST watch!
+    summary: Should be avoided at any cost.
     visible_library: true
     visible_home: true
     visible_shared: true
-    sort_title: "!021_Exceptional_Epics"
+    sort_title: "!025_Dreadful_Duds"

@@ -56,52 +56,19 @@ collections:
     sort_title: "!019_popular_series"
     collection_mode: hide
 
-  ⭐ - Dreadful Duds:
-    trakt_list: https://trakt.tv/users/solentankar/lists/uniflix-1-star
+  ⭐⭐⭐⭐⭐ - Exceptional Epics:
+    trakt_list: https://trakt.tv/users/solentankar/lists/uniflix-5-stars
     sync_mode: sync
-    #file_poster: config/posters/Dreadful Duds.jpg
-    #    smart_label:
-    #      sort_by: added.asc
-    #      all:
-    #        label: <<smart_label>>
-    #        unplayed: true
-    summary: Should be avoided at any cost.
+    #file_poster: config/posters/Exceptional Epics.jpg
+    smart_label:
+      sort_by: added.asc
+      all:
+        label: <<smart_label>>
+    summary: This is a MUST watch!
     visible_library: true
     visible_home: true
     visible_shared: true
-    sort_title: "!025_Dreadful_Duds"
-
-  ⭐⭐ - Mediocre Misses:
-    trakt_list:
-      - https://trakt.tv/users/solentankar/lists/uniflix-2-stars
-    sync_mode: sync
-    #file_poster: config/posters/Mediocre Misses.jpg
-    #    smart_label:
-    #      sort_by: added.asc
-    #      all:
-    #        label: <<smart_label>>
-    #        unplayed: true
-    summary: Only for those with a special interest in the genre, actor or similar.
-    visible_library: true
-    visible_home: true
-    visible_shared: true
-    sort_title: "!024_Mediocre_Misses"
-
-  ⭐⭐⭐ - Average Aces:
-    trakt_list:
-      - https://trakt.tv/users/solentankar/lists/uniflix-3-stars
-    sync_mode: sync
-    #file_poster: config/posters/Average Aces.jpg
-    #    smart_label:
-    #      sort_by: added.asc
-    #      all:
-    #        label: <<smart_label>>
-    #        unplayed: true
-    summary: General recommendation to watch this one. Though maybe not twice.
-    visible_library: true
-    visible_home: true
-    visible_shared: true
-    sort_title: "!023_Average_Aces"
+    sort_title: "!021_Exceptional_Epics"
 
   ⭐⭐⭐⭐ - Remarkable Reels:
     trakt_list:
@@ -119,16 +86,49 @@ collections:
     visible_shared: true
     sort_title: "!022_Remarkable_Reels"
 
-  ⭐⭐⭐⭐⭐ - Exceptional Epics:
-    trakt_list: https://trakt.tv/users/solentankar/lists/uniflix-5-stars
+  ⭐⭐⭐ - Average Aces:
+    trakt_list:
+      - https://trakt.tv/users/solentankar/lists/uniflix-3-stars
     sync_mode: sync
-    #file_poster: config/posters/Exceptional Epics.jpg
-    smart_label:
-      sort_by: added.asc
-      all:
-        label: <<smart_label>>
-    summary: This is a MUST watch!
+    #file_poster: config/posters/Average Aces.jpg
+    #    smart_label:
+    #      sort_by: added.asc
+    #      all:
+    #        label: <<smart_label>>
+    #        unplayed: true
+    summary: General recommendation to watch this one. Though maybe not twice.
     visible_library: true
     visible_home: true
     visible_shared: true
-    sort_title: "!021_Exceptional_Epics"
+    sort_title: "!023_Average_Aces"
+
+  ⭐⭐ - Mediocre Misses:
+    trakt_list:
+      - https://trakt.tv/users/solentankar/lists/uniflix-2-stars
+    sync_mode: sync
+    #file_poster: config/posters/Mediocre Misses.jpg
+    #    smart_label:
+    #      sort_by: added.asc
+    #      all:
+    #        label: <<smart_label>>
+    #        unplayed: true
+    summary: Only for those with a special interest in the genre, actor or similar.
+    visible_library: true
+    visible_home: true
+    visible_shared: true
+    sort_title: "!024_Mediocre_Misses"
+
+  ⭐ - Dreadful Duds:
+    trakt_list: https://trakt.tv/users/solentankar/lists/uniflix-1-star
+    sync_mode: sync
+    #file_poster: config/posters/Dreadful Duds.jpg
+    #    smart_label:
+    #      sort_by: added.asc
+    #      all:
+    #        label: <<smart_label>>
+    #        unplayed: true
+    summary: Should be avoided at any cost.
+    visible_library: true
+    visible_home: true
+    visible_shared: true
+    sort_title: "!025_Dreadful_Duds"
