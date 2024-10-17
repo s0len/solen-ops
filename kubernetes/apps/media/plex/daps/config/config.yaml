@@ -159,6 +159,16 @@ sync_gdrive:
       location: /posters/IamSpartacus
     - id: 1wOhY88zc0wdQU-QQmhm4FzHL9QiCQnpu # zarox - Can contain white text versions of black text MM2K posters
       location: /posters/zarox
+    - id: 1qBC7p9K4zur5dOCf3F6VTyUROVvHQoSb
+      location: /posters/jpalenz77
+    - id: 1ZhcV8Ybja4sJRrVze-twOmb8fEZfZ2Ci
+      location: /posters/miniMyself
+    - id: 1Kb1kFZzzKKlq5N_ob8AFxJvStvm9PdiL
+      location: /posters/kalyanrajnish
+    - id: 1KJlsnMz-z2RAfNxKZp7sYP_U0SD1V6lS
+      location: /posters/tokenminal
+    - id: 1hEY9qEdXVDzIbnQ4z9Vpo0SVXXuZBZR-
+      location: /posters/mareau
 
 poster_renamerr:
   # This script will rename your posters to match Plex-Meta-Manager's naming scheme from TPDB's naming utilizing Radarr/Sonarr as a source.
@@ -190,6 +200,11 @@ poster_renamerr:
   # The order is 100% personal preference
   source_dirs:
     - /posters/solens-collection
+    - /posters/jpalenz77
+    - /posters/miniMyself
+    - /posters/kalyanrajnish
+    - /posters/tokenminal
+    - /posters/mareau
     - /posters/overbook874
     - /posters/quafley
     - /posters/chrisdc
