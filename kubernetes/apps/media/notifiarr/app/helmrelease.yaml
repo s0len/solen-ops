@@ -39,8 +39,8 @@ spec:
               TZ: ${TIMEZONE}
               DN_UPSTREAMS_0: "[10.96.0.0/16,10.69.0.0/16]"
               TMPDIR: /tmp
-              DN_RADARR_0_URL: http://radarr.media.svc.cluster.local
-              DN_SONARR_0_URL: http://sonarr.media.svc.cluster.local
+              DN_RADARR_0_URL: http://radarr-standard.media.svc.cluster.local
+              DN_SONARR_0_URL: http://sonarr-standard.media.svc.cluster.local
               DN_RADARR_1_URL: http://radarr-kids.media.svc.cluster.local
               DN_SONARR_1_URL: http://sonarr-kids.media.svc.cluster.local
               DN_RADARR_2_URL: http://radarr-anime.media.svc.cluster.local
