@@ -42,7 +42,7 @@ spec:
               PLEX_TOKEN:
                 valueFrom:
                   secretKeyRef:
-                    name: plex-trakt-sync
+                    name: plex-trakt-sync-secret
                     key: PLEX_TOKEN
               TRAKT_USERNAME: Solentankar
             probes:
