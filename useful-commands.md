@@ -57,3 +57,74 @@ In this example we changed from postgres16-01 -> postgres16-02 and restored from
     ```yaml
     default-ssl-certificate: "network/${SECRET_DOMAIN//./-}-tls"
     ```
+
+## Creating a zfs pool
+
+1. Create the pod
+
+Create a file named **zfs-tools-pod.yaml** with the following content:
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: zfs-tools
+  namespace: kube-system
+spec:
+  containers:
+    - name: zfs-tools
+      image: ubuntu:22.04
+      command: ["/bin/sh", "-c", "apt update && apt install -y zfsutils-linux smartmontools nvme-cli && sleep infinity"]
+      securityContext:
+        privileged: true
+      volumeMounts:
+        - name: host-dev
+          mountPath: /dev
+  volumes:
+    - name: host-dev
+      hostPath:
+        path: /dev
+  hostNetwork: true
+  hostPID: true
+  restartPolicy: Never
+```
+
+2. Apply the pod
+
+```sh
+kubectl apply -f zfs-tools-pod.yaml
+```
+
+3. Shell into the pod
+
+```sh
+kubectl exec -it -n kube-system zfs-tools -- bash
+```
+
+## Format Disk (Optional)
+
+1. Find The Disk
+
+```sh
+lsblk
+```
+
+2. You can follow this guide: (https://openzfs.github.io/openzfs-docs/Performance%20and%20Tuning/Hardware.html#nvme-low-level-formatting)[https://openzfs.github.io/openzfs-docs/Performance%20and%20Tuning/Hardware.html#nvme-low-level-formatting]
+
+> This is only really needed if you are using an NVME it appears. But id check out the docs anyway to see if it applies to the SSD you are using. You can skip this step if you want. It doesn't need to be reformatted to the larger sector size.
+
+3. Create a ZFS Pool
+
+```sh
+zpool create -o ashift=12 <POOL_NAME> /dev/<DISK>
+```
+
+> DISK is gotten from the lsblk command above
+> POOL_NAME is anything you want.. i just chose "speed".. eh
+> Added ashift=12 since thats what most ssd's use. During pool creation this is also the time to add any other on-creation options you might need. But this is likely it.
+
+4. Verify it's running
+
+```sh
+zpool status
+```
