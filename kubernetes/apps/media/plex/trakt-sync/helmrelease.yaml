@@ -39,6 +39,11 @@ spec:
               PLEX_BASEURL: http://plex.media.svc.cluster.local:32400
               PLEX_LOCALURL: http://plex.media.svc.cluster.local:32400
               PLEX_USERNAME: zooLen
+              PLEX_TOKEN:
+                valueFrom:
+                  secretKeyRef:
+                    name: plex-trakt-sync-secret
+                    key: PLEX_TOKEN
               TRAKT_USERNAME: Solentankar
             probes:
               liveness:
