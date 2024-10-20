@@ -129,6 +129,18 @@ spec:
               - |
                 python3 kometa.py --run --read-only-config --run-libraries "Sport"
 
+      motorsport:
+        type: *type
+        cronjob:
+          <<: *cronjob
+          schedule: "*/10 * * * *"
+        containers:
+          app:
+            <<: *container_app
+            args:
+              - |
+                python3 kometa.py --run --read-only-config --run-libraries "Motorsport"
+
     defaultPodOptions:
       securityContext:
         runAsNonRoot: true

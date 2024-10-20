@@ -742,6 +742,10 @@ libraries:
       assets_for_all: true
     minimum_items: 1
 
+  Motorsport:
+    metadata_files:
+    - url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/metadata_files/motogp_2024.yaml
+
   #Musik:
   #  collection_files:
   #  - file: config/Music.yml   # This is a local file THAT YOU MIGHT CREATE
