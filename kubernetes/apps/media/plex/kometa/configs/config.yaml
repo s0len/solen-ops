@@ -745,6 +745,7 @@ libraries:
   Motorsport:
     metadata_files:
     - url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/metadata_files/motogp_2024.yaml
+    - url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/metadata_files/erc_2024.yaml
 
   #Musik:
   #  collection_files:
