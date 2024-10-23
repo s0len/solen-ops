@@ -133,7 +133,7 @@ spec:
         type: *type
         cronjob:
           <<: *cronjob
-          schedule: "*/10 * * * *"
+          schedule: "10 */1 * * *"
         containers:
           app:
             <<: *container_app
