@@ -96,5 +96,3 @@ spec:
       tmp:
         type: emptyDir
 
-      config:
-        existingClaim: *app
