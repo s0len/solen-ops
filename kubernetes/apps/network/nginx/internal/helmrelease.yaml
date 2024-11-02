@@ -4,6 +4,8 @@ apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: nginx-internal
+  annotations:
+    secret.reloader.stakater.com/reload: "${SECRET_DOMAIN//./-}-tls"
 spec:
   interval: 30m
   chart:
@@ -29,7 +31,7 @@ spec:
       service:
         annotations:
           external-dns.alpha.kubernetes.io/hostname: "internal.${SECRET_DOMAIN}"
-          io.cilium/lb-ipam-ips: "${NGINX_INTERNAL_IP}"
+          lbipam.cilium.io/ips: "${NGINX_INTERNAL_IP}"
       ingressClassResource:
         name: internal
         default: true

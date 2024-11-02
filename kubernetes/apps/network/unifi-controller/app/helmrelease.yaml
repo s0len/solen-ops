@@ -64,7 +64,7 @@ spec:
         controller: main
         type: LoadBalancer
         annotations:
-          io.cilium/lb-ipam-ips: "${UNIFI_IP}"
+          lbipam.cilium.io/ips: "${UNIFI_IP}"
         ports:
           http:
             protocol: HTTPS
