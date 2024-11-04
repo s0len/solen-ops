@@ -38,7 +38,7 @@ spec:
               QBT_BitTorrent__Session__HashingThreadsCount: 5
               QBT_BitTorrent__Session__Interface: tun0
               QBT_BitTorrent__Session__InterfaceName: tun0
-              QBT_BitTorrent__Session__Port: 50723
+              QBT_BitTorrent__Session__Port: 26088
               QBT_BitTorrent__Session__SendBufferLowWatermark: 64
               QBT_BitTorrent__Session__SendBufferWatermark: 1024
               QBT_Preferences__WebUI__AlternativeUIEnabled: true
@@ -95,7 +95,7 @@ spec:
             env:
               DNS_ADDRESS: "127.0.0.2"
               DOT: "off"
-              FIREWALL_VPN_INPUT_PORTS: 50723
+              FIREWALL_VPN_INPUT_PORTS: 26088
               FIREWALL_OUTBOUND_SUBNETS: 10.69.0.0/16,10.96.0.0/16
               FIREWALL_INPUT_PORTS: 80,8888,9999
               HTTPPROXY: "on"
