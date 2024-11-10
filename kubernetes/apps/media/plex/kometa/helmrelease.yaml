@@ -32,7 +32,7 @@ spec:
       main:
         type: &type cronjob
         cronjob: &cronjob
-          schedule: "2 10 * * *"
+          schedule: "12 11 * * *"
           timeZone: &timeZone ${TIMEZONE}
           concurrencyPolicy: Forbid
           successfulJobsHistory: 1
@@ -47,7 +47,7 @@ spec:
               - -c
             args:
               - |
-                python3 kometa.py --run --read-only-config
+                python3 kometa.py --run
             env:
               TZ: *timeZone
               KOMETA_CONFIG: /config/config.yaml
@@ -69,47 +69,47 @@ spec:
             #     exec:
             #       command: ["/bin/bash", "-c", "mkdir -p /config/assets/{anime,awards,decades,genres,holidays,networks,suggestions,posters}"]
 
-      anime:
-        type: *type
-        cronjob:
-          <<: *cronjob
-          schedule: "0 9 * * *"
-        containers:
-          app:
-            <<: *container_app
-            args:
-              - |
-                python3 kometa.py --run --read-only-config --overlays-only --run-libraries "Animeserier|Animefilmer"
+      # anime:
+      #   type: *type
+      #   cronjob:
+      #     <<: *cronjob
+      #     schedule: "0 9 * * *"
+      #   containers:
+      #     app:
+      #       <<: *container_app
+      #       args:
+      #         - |
+      #           python3 kometa.py --run --read-only-config --overlays-only --run-libraries "Animeserier|Animefilmer"
 
-      kids:
-        type: *type
-        cronjob:
-          <<: *cronjob
-          schedule: "0 1 * * *"
-        containers:
-          app:
-            <<: *container_app
-            args:
-              - |
-                python3 kometa.py --run --read-only-config --overlays-only --run-libraries "Barnfilmer|Barnserier"
+      # kids:
+      #   type: *type
+      #   cronjob:
+      #     <<: *cronjob
+      #     schedule: "0 1 * * *"
+      #   containers:
+      #     app:
+      #       <<: *container_app
+      #       args:
+      #         - |
+      #           python3 kometa.py --run --read-only-config --overlays-only --run-libraries "Barnfilmer|Barnserier"
 
-      standard-series:
-        type: *type
-        cronjob:
-          <<: *cronjob
-          schedule: "10 2,13 * * *"
-        containers:
-          app:
-            <<: *container_app
-            args:
-              - |
-                python3 kometa.py --run --read-only-config --overlays-only --run-libraries "Serier"
+      # standard-series:
+      #   type: *type
+      #   cronjob:
+      #     <<: *cronjob
+      #     schedule: "10 13 * * *"
+      #   containers:
+      #     app:
+      #       <<: *container_app
+      #       args:
+      #         - |
+      #           python3 kometa.py --run --read-only-config --overlays-only --run-libraries "Serier"
 
       standard-movies:
         type: *type
         cronjob:
           <<: *cronjob
-          schedule: "45 11,16 * * *"
+          schedule: "0 11,16 * * *"
         containers:
           app:
             <<: *container_app
