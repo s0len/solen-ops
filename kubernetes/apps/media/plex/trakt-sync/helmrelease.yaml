@@ -5,6 +5,11 @@ kind: HelmRelease
 metadata:
   name: &app plex-trakt-sync
 spec:
+  dependsOn:
+    - name: plex
+      namespace: media
+    - name: volsync
+      namespace: volsync-system
   chart:
     spec:
       chart: app-template

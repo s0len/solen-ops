@@ -29,6 +29,8 @@ spec:
   dependsOn:
     - name: plex
       namespace: media
+    - name: volsync
+      namespace: volsync-system
   values:
     controllers:
       daps:
