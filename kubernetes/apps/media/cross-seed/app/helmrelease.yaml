@@ -25,9 +25,7 @@ spec:
       retries: 3
   uninstall:
     keepHistory: false
-  dependsOn:
-    - name: qbittorrent
-      namespace: media
+
   values:
     controllers:
       cross-seed:
