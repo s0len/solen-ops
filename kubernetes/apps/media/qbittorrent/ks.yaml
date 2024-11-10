@@ -13,9 +13,7 @@ spec:
       app.kubernetes.io/name: *app
   dependsOn:
     - name: external-secrets-stores
-    - name: openebs
-    - name: volsync
-  wait: true
+  wait: false
   path: ./kubernetes/apps/media/qbittorrent/qbittorrent
   prune: true
   sourceRef:
@@ -41,12 +39,14 @@ spec:
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
+  dependsOn:
+    - name: external-secrets-stores
+  wait: false
   path: ./kubernetes/apps/media/qbittorrent/qbitmanage
   prune: true
   sourceRef:
     kind: GitRepository
     name: home-kubernetes
-  wait: false
   interval: 30m
   retryInterval: 1m
   timeout: 5m
