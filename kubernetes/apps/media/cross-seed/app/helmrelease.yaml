@@ -68,7 +68,8 @@ spec:
 
     persistence:
       config:
-        existingClaim: *app
+        enabled: true
+        type: emptyDir
 
       config-file:
         type: configMap
