@@ -8,7 +8,7 @@ resources:
   - ../../../../templates/volsync
 
 configMapGenerator:
-  - name: cross-seed-config
+  - name: cross-seed-configmap
     files:
       - ./config/config.js
 generatorOptions:

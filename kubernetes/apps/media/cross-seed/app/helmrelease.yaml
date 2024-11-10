@@ -72,7 +72,7 @@ spec:
 
       config-file:
         type: configMap
-        name: cross-seed-config
+        name: cross-seed-configmap
         globalMounts:
           - path: /config/config.js
             subPath: config.js
