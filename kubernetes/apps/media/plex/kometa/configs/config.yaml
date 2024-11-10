@@ -864,7 +864,7 @@ trakt:
     refresh_token: <<TRAKT_REFRESH_TOKEN>>
     scope: public
     created_at: <<TRAKT_CREATED_AT>>
-  pin:
+  pin: 22124592
 
 mal:
   client_id: <<MYANIMELIST_CLIENT_ID>>

@@ -32,7 +32,7 @@ spec:
       main:
         type: &type cronjob
         cronjob: &cronjob
-          schedule: "0 5 * * *"
+          schedule: "2 10 * * *"
           timeZone: &timeZone ${TIMEZONE}
           concurrencyPolicy: Forbid
           successfulJobsHistory: 1
@@ -47,7 +47,7 @@ spec:
               - -c
             args:
               - |
-                python3 kometa.py --run --read-only-config --delete-collections
+                python3 kometa.py --run --read-only-config
             env:
               TZ: *timeZone
               KOMETA_CONFIG: /config/config.yaml
@@ -59,7 +59,7 @@ spec:
                 cpu: 10m
                 memory: 10M
               limits:
-                memory: 5120M
+                memory: 10G
             securityContext:
               allowPrivilegeEscalation: false
               readOnlyRootFilesystem: true
@@ -73,7 +73,7 @@ spec:
         type: *type
         cronjob:
           <<: *cronjob
-          schedule: "20 15 * * *"
+          schedule: "0 10 * * *"
         containers:
           app:
             <<: *container_app
@@ -97,7 +97,7 @@ spec:
         type: *type
         cronjob:
           <<: *cronjob
-          schedule: "10 2,12 * * *"
+          schedule: "10 2,13 * * *"
         containers:
           app:
             <<: *container_app
@@ -109,7 +109,7 @@ spec:
         type: *type
         cronjob:
           <<: *cronjob
-          schedule: "45 5,11,16 * * *"
+          schedule: "45 11,16 * * *"
         containers:
           app:
             <<: *container_app
