@@ -32,7 +32,7 @@ spec:
       main:
         type: &type cronjob
         cronjob: &cronjob
-          schedule: "22 11 * * *"
+          schedule: "22 4 * * *"
           timeZone: &timeZone ${TIMEZONE}
           concurrencyPolicy: Forbid
           successfulJobsHistory: 1
@@ -47,7 +47,7 @@ spec:
               - -c
             args:
               - |
-                python3 kometa.py --run
+                python3 kometa.py --run --read-only-config
             env:
               TZ: *timeZone
               KOMETA_CONFIG: /config/config.yaml
@@ -121,7 +121,7 @@ spec:
         type: *type
         cronjob:
           <<: *cronjob
-          schedule: "0 */2 * * *"
+          schedule: "0 8,10,12,14,16,18 * * *"
         containers:
           app:
             <<: *container_app
@@ -133,7 +133,7 @@ spec:
         type: *type
         cronjob:
           <<: *cronjob
-          schedule: "10 */1 * * *"
+          schedule: "15 8,12,15,18,21 * * *"
         containers:
           app:
             <<: *container_app
