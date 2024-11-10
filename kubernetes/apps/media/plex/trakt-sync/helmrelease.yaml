@@ -18,26 +18,27 @@ spec:
   values:
     controllers:
       plex-trakt-sync:
+        type: cronjob
         annotations:
           reloader.stakater.com/auto: "true"
-
+        cronjob:
+          schedule: "@daily"
         pod:
           securityContext:
             runAsUser: 568
             runAsGroup: 568
             fsGroup: 568
             fsGroupChangePolicy: "OnRootMismatch"
-
         containers:
           app:
             image:
               repository: ghcr.io/taxel/plextraktsync
               tag: 0.32.1
             args:
-              - watch
+              - sync
             env:
-              PLEX_BASEURL: http://plex.media.svc.cluster.local:32400
-              PLEX_LOCALURL: http://plex.media.svc.cluster.local:32400
+              PLEX_BASEURL: http://plex.default.svc.cluster.local:32400
+              PLEX_LOCALURL: http://plex.default.svc.cluster.local:32400
               PLEX_USERNAME: zooLen
               TRAKT_USERNAME: Solentankar
             probes:
@@ -51,11 +52,10 @@ spec:
               requests:
                 cpu: 5m
                 memory: 128M
-              limits:
-                memory: 512M
 
     persistence:
       config:
+        enabled: true
         existingClaim: *app
         advancedMounts:
           plex-trakt-sync:
