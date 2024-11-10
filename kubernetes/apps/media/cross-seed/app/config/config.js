@@ -21,7 +21,7 @@ module.exports = {
 
   port: 2468,
 
-  notificationWebhookUrl: undefined,
+  notificationWebhookUrl: "https://notifiarr.com/api/v1/notification/crossSeed/ec5a2bee-6875-4828-9ce9-2805780dc3c3",
 
   rtorrentRpcUrl: undefined,
 
