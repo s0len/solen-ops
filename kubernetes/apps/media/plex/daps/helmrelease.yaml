@@ -77,6 +77,19 @@ spec:
                 export RCLONE_CONFIG="/config/rclone.conf"
                 python3 /app/main.py unmatched_assets
 
+      upgradinatorr:
+        type: *type
+        cronjob:
+          <<: *cronjob
+          schedule: "30 */3 * * *"
+        containers:
+          app:
+            <<: *container_app
+            args:
+              - |
+                export RCLONE_CONFIG="/config/rclone.conf"
+                python3 /app/main.py upgradinatorr
+
     defaultPodOptions:
       securityContext:
         runAsNonRoot: true
