@@ -130,3 +130,13 @@ zpool create -o ashift=12 <POOL_NAME> /dev/<DISK>
 ```sh
 zpool status
 ```
+
+## When you need to start a pod and freeze it
+
+Perfect when you want to deploy a pod which crashed becouse it required authentication before being able to start.
+
+```yaml
+command:
+- sleep
+- infinity
+```
