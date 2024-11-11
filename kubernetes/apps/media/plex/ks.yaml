@@ -86,7 +86,7 @@ spec:
   targetNamespace: media
   commonMetadata:
     labels:
-      app.kubernetes.io/name: *appname
+      app.kubernetes.io/name: *app
   interval: 30m
   timeout: 5m
   path: "./kubernetes/apps/media/plex/trakt-sync"
