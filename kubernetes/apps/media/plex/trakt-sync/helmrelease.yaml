@@ -3,7 +3,7 @@
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: plex-trakt-sync
+  name: &app plex-trakt-sync
 spec:
   chart:
     spec:
@@ -23,9 +23,9 @@ spec:
 
         pod:
           securityContext:
-            runAsUser: 1000
-            runAsGroup: 1000
-            fsGroup: 1000
+            runAsUser: 568
+            runAsGroup: 568
+            fsGroup: 568
             fsGroupChangePolicy: "OnRootMismatch"
 
         containers:
@@ -56,8 +56,8 @@ spec:
 
     persistence:
       config:
+        existingClaim: *app
         enabled: true
-        existingClaim: plex-trakt-sync-config
         advancedMounts:
           plex-trakt-sync:
             app:

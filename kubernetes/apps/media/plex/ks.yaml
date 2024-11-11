@@ -96,15 +96,12 @@ spec:
     name: home-ops-kubernetes
   wait: false
   dependsOn:
-    - name: volsync
     - name: external-secrets-stores
-    - name: plex
   postBuild:
     substitute:
-      APP: *appname
+      APP: *app
       APP_UID: "568"
       APP_GID: "568"
-      VOLSYNC_CLAIM: plex-trakt-sync-config
       VOLSYNC_CAPACITY: 1Gi
 ---
 # yaml-language-server: $schema=https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/kustomization-kustomize-v1.json
