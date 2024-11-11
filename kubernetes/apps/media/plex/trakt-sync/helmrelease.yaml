@@ -3,13 +3,8 @@
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: &app plex-trakt-sync
+  name: plex-trakt-sync
 spec:
-  dependsOn:
-    - name: plex
-      namespace: media
-    - name: volsync
-      namespace: volsync-system
   chart:
     spec:
       chart: app-template
@@ -23,27 +18,26 @@ spec:
   values:
     controllers:
       plex-trakt-sync:
-        type: cronjob
         annotations:
           reloader.stakater.com/auto: "true"
-        cronjob:
-          schedule: "@daily"
+
         pod:
           securityContext:
-            runAsUser: 568
-            runAsGroup: 568
-            fsGroup: 568
+            runAsUser: 1000
+            runAsGroup: 1000
+            fsGroup: 1000
             fsGroupChangePolicy: "OnRootMismatch"
+
         containers:
           app:
             image:
               repository: ghcr.io/taxel/plextraktsync
               tag: 0.32.1
             args:
-              - sync
+              - watch
             env:
-              PLEX_BASEURL: http://plex.default.svc.cluster.local:32400
-              PLEX_LOCALURL: http://plex.default.svc.cluster.local:32400
+              PLEX_BASEURL: http://${PLEX_IP}:32400
+              PLEX_LOCALURL: http://${PLEX_IP}:32400
               PLEX_USERNAME: zooLen
               TRAKT_USERNAME: Solentankar
             probes:
@@ -57,18 +51,20 @@ spec:
               requests:
                 cpu: 5m
                 memory: 128M
+              limits:
+                memory: 512M
 
     persistence:
       config:
         enabled: true
-        existingClaim: *app
+        existingClaim: plex-trakt-sync-config
         advancedMounts:
           plex-trakt-sync:
             app:
               - path: /app/config
       config-yaml:
         type: configMap
-        name: plex-trakt-sync-configmap
+        name: plex-tract-sync-configmap
         globalMounts:
           - path: /app/config/config.yml
             subPath: config.yml

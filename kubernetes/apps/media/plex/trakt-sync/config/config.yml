@@ -36,5 +36,5 @@ watch:
   username_filter: true
 
 xbmc-providers:
-  movies: tmdb
+  movies: imdb
   shows: tvdb
