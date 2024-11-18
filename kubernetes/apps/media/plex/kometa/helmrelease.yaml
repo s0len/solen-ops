@@ -34,7 +34,7 @@ spec:
       main:
         type: &type cronjob
         cronjob: &cronjob
-          schedule: "22 4 * * *"
+          schedule: "4 4 * * *"
           timeZone: &timeZone ${TIMEZONE}
           concurrencyPolicy: Forbid
           successfulJobsHistory: 1
