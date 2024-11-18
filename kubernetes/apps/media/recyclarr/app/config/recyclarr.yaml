@@ -56,12 +56,12 @@ sonarr:
 
       - trash_ids:
           # Uncomment the next six lines to allow x265 HD releases with HDR/DV
-          # - 47435ece6b99a0b477caf360e79ba0bb # x265 (HD)
-        # quality_profiles:
-          # - name: WEB-1080p
-            # score: 0
-      # - trash_ids:
-          # - 9b64dff695c2115facf1b6ea59c9bd07 # x265 (no HDR/DV)
+          - 47435ece6b99a0b477caf360e79ba0bb # x265 (HD)
+        assign_scores_to:
+          - name: WEB-1080p
+            score: 0
+      - trash_ids:
+          - 9b64dff695c2115facf1b6ea59c9bd07 # x265 (no HDR/DV)
         assign_scores_to:
           - name: WEB-1080p
 
@@ -70,28 +70,28 @@ sonarr:
           # Comment out the next line if you and all of your users' setups are fully DV compatible
           - 9b27ab6498ec0f31a3353992e19434ca # DV (WEBDL)
           # HDR10Plus Boost - Uncomment the next line if any of your devices DO support HDR10+
-          # - 0dad0a507451acddd754fe6dc3a7f5e7 # HDR10Plus Boost
+          - 0dad0a507451acddd754fe6dc3a7f5e7 # HDR10Plus Boost
         assign_scores_to:
           - name: WEB-2160p
 
       # Optional
       - trash_ids:
-          # - 32b367365729d530ca1c124a0b180c64 # Bad Dual Groups
-          # - 82d40da2bc6923f41e14394075dd4b03 # No-RlsGroup
-          # - e1a997ddb54e3ecbfe06341ad323c458 # Obfuscated
-          # - 06d66ab109d4d2eddb2794d21526d140 # Retags
+          - 32b367365729d530ca1c124a0b180c64 # Bad Dual Groups
+          - 82d40da2bc6923f41e14394075dd4b03 # No-RlsGroup
+          - e1a997ddb54e3ecbfe06341ad323c458 # Obfuscated
+          - 06d66ab109d4d2eddb2794d21526d140 # Retags
           # - 1b3994c551cbb92a2c781af061f4ab44 # Scene
         assign_scores_to:
           - name: WEB-2160p
 
       - trash_ids:
           # Uncomment the next six lines to allow x265 HD releases with HDR/DV
-          # - 47435ece6b99a0b477caf360e79ba0bb # x265 (HD)
-        # assign_scores_to:
-          # - name: WEB-2160p
-            # score: 0
-      # - trash_ids:
-          # - 9b64dff695c2115facf1b6ea59c9bd07 # x265 (no HDR/DV)
+          - 47435ece6b99a0b477caf360e79ba0bb # x265 (HD)
+        assign_scores_to:
+          - name: WEB-2160p
+            score: 0
+      - trash_ids:
+          - 9b64dff695c2115facf1b6ea59c9bd07 # x265 (no HDR/DV)
         assign_scores_to:
           - name: WEB-2160p
 
@@ -189,12 +189,12 @@ sonarr:
 
       - trash_ids:
           # Uncomment the next six lines to allow x265 HD releases with HDR/DV
-          # - 47435ece6b99a0b477caf360e79ba0bb # x265 (HD)
-        # quality_profiles:
-          # - name: WEB-1080p
-            # score: 0
-      # - trash_ids:
-          # - 9b64dff695c2115facf1b6ea59c9bd07 # x265 (no HDR/DV)
+          - 47435ece6b99a0b477caf360e79ba0bb # x265 (HD)
+        assign_scores_to:
+          - name: WEB-1080p
+            score: 0
+      - trash_ids:
+          - 9b64dff695c2115facf1b6ea59c9bd07 # x265 (no HDR/DV)
         assign_scores_to:
           - name: WEB-1080p
     quality_profiles:
@@ -392,7 +392,7 @@ radarr:
 
     # Custom scoring on top of templates above
     custom_formats:
-      # Add some specific release groups bumps as we prefe them over others
+      # Add some specific release groups bumps as we prefer them over others
       - trash_ids:
           - 5153ec7413d9dae44e24275589b5e944 # BHDStudio
           - 7a0d1ad358fee9f5b074af3ef3f9d9ef # hallowed
