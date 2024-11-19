@@ -90,6 +90,18 @@ spec:
                 export RCLONE_CONFIG="/config/rclone.conf"
                 python3 /app/main.py upgradinatorr
 
+      renameinatorr:
+        type: *type
+        cronjob:
+          <<: *cronjob
+          schedule: "5 1 */7 * *"
+        containers:
+          app:
+            <<: *container_app
+            args:
+              - |
+                python3 /app/main.py renameinatorr
+
     defaultPodOptions:
       securityContext:
         runAsNonRoot: true
