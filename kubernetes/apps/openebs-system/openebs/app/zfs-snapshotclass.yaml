@@ -2,6 +2,6 @@
 kind: VolumeSnapshotClass
 apiVersion: snapshot.storage.k8s.io/v1
 metadata:
-  name: openebs-zfs-1m
+  name: openebs-zfs
 driver: zfs.csi.openebs.io
 deletionPolicy: Delete

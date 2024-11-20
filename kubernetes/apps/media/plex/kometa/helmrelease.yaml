@@ -156,7 +156,7 @@ spec:
         type: persistentVolumeClaim
         accessMode: ReadWriteOnce
         size: 75Gi
-        storageClass: openebs-zfs-1m
+        storageClass: openebs-zfs
         globalMounts:
           - path: /config/assets
 
