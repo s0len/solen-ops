@@ -72,7 +72,7 @@ spec:
                 cpu: 100m
                 memory: 500Mi
               limits:
-                memory: 20Gi
+                memory: 40Gi
                 gpu.intel.com/i915: 1
     defaultPodOptions:
       securityContext:
@@ -83,7 +83,6 @@ spec:
         fsGroupChangePolicy: OnRootMismatch
         supplementalGroups: [44, 10000]
         seccompProfile: { type: RuntimeDefault }
-      # runtimeClassName: nvidia
       nodeSelector:
         intel.feature.node.kubernetes.io/gpu: "true"
     service:
@@ -100,7 +99,7 @@ spec:
         className: external
         annotations:
           external-dns.alpha.kubernetes.io/target: "external.${SECRET_DOMAIN}"
-        # nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+          nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
         hosts:
           - host: "{{ .Release.Name }}.${SECRET_DOMAIN}"
             paths:
@@ -111,8 +110,9 @@ spec:
     persistence:
       config:
         existingClaim: *app
-        globalMounts:
-          - path: /config/Library/Application Support/Plex Media Server
+        # TODO: If setting up Plex for the first time, you'll want to add the globalMounts section
+        # globalMounts:
+        #   - path: /config/Library/Application Support/Plex Media Server
 
       cache:
         existingClaim: plex-cache
