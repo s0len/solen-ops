@@ -70,7 +70,7 @@ spec:
                 cpu: 100m
                 memory: 500Mi
               limits:
-                memory: 25Gi
+                memory: 40Gi
                 gpu.intel.com/i915: 1
     defaultPodOptions:
       securityContext:
@@ -126,10 +126,7 @@ spec:
         medium: Memory
 
       transcode:
-        type: hostPath
-        hostPath: /transcode
-        globalMounts:
-          - path: /transcode
+        type: emptyDir
 
       media:
         type: nfs
