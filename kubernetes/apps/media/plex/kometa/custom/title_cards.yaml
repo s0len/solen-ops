@@ -1,4 +1,28 @@
 metadata:
+  426501: # TVDB id for Cross. Set by willtong93 on MediUX. https://mediux.pro/sets/28198
+    url_poster: https://api.mediux.pro/assets/34e9cefe-b8e0-40e0-a97d-40cb8b968521
+    url_background: https://api.mediux.pro/assets/86ebdf05-fc0c-4f85-80b1-c7550cdff914
+    seasons:
+      1:
+        url_poster: https://api.mediux.pro/assets/229bbf18-cdde-4689-b55d-b6694a4d3d26
+        episodes:
+          1:
+            url_poster: https://api.mediux.pro/assets/45df03c6-5852-4cd3-8e97-7642a00d5660
+          2:
+            url_poster: https://api.mediux.pro/assets/152ad21b-e240-4638-a48f-b9472a1a39d6
+          3:
+            url_poster: https://api.mediux.pro/assets/d3398b3e-ab41-42d4-85c4-ecf7c5d9c870
+          4:
+            url_poster: https://api.mediux.pro/assets/503a9dc5-1109-4b7d-b3c4-3be25608f1d4
+          5:
+            url_poster: https://api.mediux.pro/assets/f5759d16-177a-4196-a373-efa7b9a71f1d
+          6:
+            url_poster: https://api.mediux.pro/assets/44df4dc9-5ecc-45db-96a9-47c4da2f5496
+          7:
+            url_poster: https://api.mediux.pro/assets/f7077310-4f48-4568-abdd-0cb1ff0e01ae
+          8:
+            url_poster: https://api.mediux.pro/assets/9de53eb1-664e-48ce-bfca-b8e28034f40d
+
   415239: # TVDB id for The Diplomat. Set by willtong93 on MediUX. https://mediux.pro/sets/13156
     url_poster: https://api.mediux.pro/assets/84dca53b-0ea7-44ce-91c6-11ca4a4c6f72
     url_background: https://api.mediux.pro/assets/fb681144-e2e1-4e23-b33b-ab4e50918077
@@ -184,15 +208,26 @@ metadata:
           9:
             url_poster: https://api.mediux.pro/assets/a5203bb6-fc03-47f3-9711-98ec243da6c3
 
-  367118: # TVDB id for Dune: Prophecy. Set by willtong93 on MediUX. https://mediux.pro/sets/27760
-    url_poster: https://api.mediux.pro/assets/c2f38497-9170-4109-97b7-7d2da926ba96
-    url_background: https://api.mediux.pro/assets/ee2fcf41-9efa-42b2-ae56-0c9a450d9fcc
+  367118: # TVDB id for Dune: Prophecy. Set by jdlips on MediUX. https://mediux.pro/sets/28232
+    url_poster: https://api.mediux.pro/assets/6add94e5-9e26-43e0-b301-ff6878bc1c80
+    url_background: https://api.mediux.pro/assets/4759fe0c-0ee3-48c5-bc36-d518f3dcdb3e
     seasons:
       1:
-        url_poster: https://api.mediux.pro/assets/64f05c31-8747-40dc-951c-60f024a88c0e
+        url_poster: https://api.mediux.pro/assets/96c20576-edd0-44b4-a380-33f596c45614
         episodes:
           1:
-            url_poster: https://api.mediux.pro/assets/c9fe6c08-6faa-419d-b2d1-c4369d577dab
+            url_poster: https://api.mediux.pro/assets/a83d19f3-35be-4156-b401-a5328f88d6e1
+          2:
+            url_poster: https://api.mediux.pro/assets/fc8ac3fd-5796-4d30-a9da-c60fefd95da1
+          3:
+            url_poster: https://api.mediux.pro/assets/c6ba8288-322d-47ee-b502-3a2669160ebe
+          4:
+            url_poster: https://api.mediux.pro/assets/cf326ba5-7ec8-4b35-b4aa-49965e99d888
+          5:
+            url_poster: https://api.mediux.pro/assets/0116d1bf-8bd7-4364-98c3-a691b8ec9fb0
+          6:
+            url_poster: https://api.mediux.pro/assets/6068e0d0-bafd-454f-ae07-f14f190b4170
+
 
   413215: # TVDB id for Tulsa King. Set by willtong93 on MediUX. https://mediux.pro/sets/22609
     url_poster: https://api.mediux.pro/assets/c2b23ac6-3a9d-403c-bb09-0916da42cf02
@@ -320,6 +355,8 @@ metadata:
             url_poster: https://api.mediux.pro/assets/d2ae301d-c01c-4877-8553-d7ea0e9040f1
           7:
             url_poster: https://api.mediux.pro/assets/678eda70-7e59-45be-8ff2-28b013ad13dc
+          8:
+            url_poster: https://api.mediux.pro/assets/ad326b69-19df-4849-bf27-2ea7375e8544
 
   361563: # TVDB id for The Morning Show. Set by willtong93 on MediUX. https://mediux.pro/sets/16062
     url_poster: https://api.mediux.pro/assets/5ee0335e-9827-4519-a18a-7a8b969f0629
@@ -6753,6 +6790,18 @@ metadata:
             url_poster: https://api.mediux.pro/assets/6a175fb2-92f6-469a-9bdd-6e43aa1f0a5c
           4:
             url_poster: https://api.mediux.pro/assets/a8a9ad98-d79e-4813-bca8-df76f76a24ab
+          5:
+            url_poster: https://api.mediux.pro/assets/6f34ac40-2ca9-4408-998c-3698d2a45cb7
+          6:
+            url_poster: https://api.mediux.pro/assets/6f4f2a17-da26-4521-917d-ab2d7df0707f
+          7:
+            url_poster: https://api.mediux.pro/assets/6339b824-4c0d-484c-a073-15d4acd0f8a8
+          8:
+            url_poster: https://api.mediux.pro/assets/563258d9-a907-4ccd-8039-dc5cbd126d0e
+          9:
+            url_poster: https://api.mediux.pro/assets/56f23fe6-237d-4897-967e-fc538f8fe6b2
+          10:
+            url_poster: https://api.mediux.pro/assets/24b472e2-645e-49a7-8dce-746dc444ae9d
 
   427464: # TVDB id for The Walking Dead: Daryl Dixon. Set by willtong93 on MediUX. https://mediux.pro/sets/23021
     url_poster: https://api.mediux.pro/assets/5071fb52-3204-409b-8047-f09c0166fb77
@@ -7018,3 +7067,18 @@ metadata:
             url_poster: https://api.mediux.pro/assets/78c3ddba-834f-4ef8-9725-bdf2775ef56d
           3:
             url_poster: https://api.mediux.pro/assets/f40253e7-9198-4962-a5e4-d9f78fe2b221
+          4:
+            url_poster: https://api.mediux.pro/assets/05b5dfa7-6728-44cf-b40e-fb7f25973157
+          5:
+            url_poster: https://api.mediux.pro/assets/96dd02e1-44ca-4ca1-a319-46151409897e
+          6:
+            url_poster: https://api.mediux.pro/assets/09ff1647-fbed-4f2c-a2c3-1acab9811f53
+          7:
+            url_poster: https://api.mediux.pro/assets/2d80a90f-7549-4ab3-832f-6dbb3a0361ba
+          8:
+            url_poster: https://api.mediux.pro/assets/7a9a6832-3de7-410b-93f0-a43ab4b1fb81
+          9:
+            url_poster: https://api.mediux.pro/assets/e79f3cf5-e1b9-4fe4-b5b0-1a5dde0eb35b
+          10:
+            url_poster: https://api.mediux.pro/assets/818348e9-59df-4ad8-bc16-c565fb52d0fd
+
