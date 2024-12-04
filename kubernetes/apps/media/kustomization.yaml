@@ -11,7 +11,7 @@ resources:
   - ./komga/ks.yaml
   - ./notifiarr/ks.yaml
   - ./plex/ks.yaml
-  - ./podgrab/ks.yaml
+  # - ./podgrab/ks.yaml
   - ./sonarr/ks.yaml
   - ./qbittorrent/ks.yaml
   - ./radarr/ks.yaml
