@@ -7,6 +7,52 @@ kubectl get deployments --all-namespaces -o jsonpath='{range .items[*]}{.metadat
 kubectl get daemonsets --all-namespaces -o jsonpath='{range .items[*]}{.metadata.namespace}{" "}{.metadata.name}{"\n"}{end}' | xargs -n2 bash -c 'kubectl rollout restart daemonset -n $0 $1'
 ```
 
+## How to drop a database
+
+1. Delete the app by uncommenting it from your kustomization.
+
+2. Delete it from your bucket
+
+    ```sh
+    aws s3 rm s3://backup/nextcloud --endpoint-url https://{SECRET_-_ID}.r2.cloudflarestorage.com --recursive --dryrun
+    ```
+
+3. k9s into CNPG pod and delete the database for plex
+
+should be a pod like:
+
+```txt
+postgres16-1
+```
+
+type:
+
+```sh
+psql
+```
+
+Then type:
+
+```sh
+\l
+```
+
+> press `q` to exit
+
+Find the name of the database to drop. then drop it with:
+
+```sh
+DROP DATABASE your_database_name;
+```
+
+ex:
+
+```sh
+DROP DATABASE nextcloud;
+```
+
+1. Exit k9s. Redeploy nextcloud
+
 ## MAC address of the NIC for this node
 
 talosctl get links -n <ip> --insecure
