@@ -61,7 +61,7 @@ spec:
                 cpu: 10m
                 memory: 10M
               limits:
-                memory: 8G
+                memory: 10G
             securityContext:
               allowPrivilegeEscalation: false
               readOnlyRootFilesystem: true
@@ -111,13 +111,13 @@ spec:
         type: *type
         cronjob:
           <<: *cronjob
-          schedule: "0 11,16 * * *"
+          schedule: "0 10,16 * * *"
         containers:
           app:
             <<: *container_app
             args:
               - |
-                python3 kometa.py --run --read-only-config --overlays-only --run-libraries "Filmer"
+                python3 kometa.py --run --read-only-config --collections-only --run-libraries "Filmer"
 
       sport:
         type: *type
