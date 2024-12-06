@@ -6,7 +6,6 @@ resources:
   - ./externalsecret.yaml
   - ./helmrelease.yaml
   - ../../../../templates/volsync
-  - ./custom/arial.ttf
 configMapGenerator:
   - name: kometa-configmap
     files:

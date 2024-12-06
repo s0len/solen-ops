@@ -383,7 +383,7 @@ libraries:
         - en
         - sv
         style: square
-        font: config/arial.ttf
+        # font: config/arial.ttf
         back_color: '#00000080'
         position:
         - horizontal_offset: 30
@@ -415,7 +415,7 @@ libraries:
         back_color: '#00000000'
         font_size: 70
         back_width: 60
-        font: config/arial.ttf
+        # font: config/arial.ttf
         addon_offset: 50
     operations:
       assets_for_all: true
@@ -477,7 +477,7 @@ libraries:
         - en
         - sv
         style: square
-        font: config/arial.ttf
+        # font: config/arial.ttf
         back_color: '#00000000'
         font_color: '#00000000'
         position:
@@ -511,7 +511,7 @@ libraries:
         font_color: '#FFFFFF00'
         font_size: 70
         back_width: 45
-        font: config/arial.ttf
+        # font: config/arial.ttf
         addon_offset: 50
 
 
@@ -606,7 +606,7 @@ libraries:
     #     - en
     #     - ja
     #     style: square
-    #     font: config/arial.ttf
+    #     # font: config/arial.ttf
     #     back_color:     #00000080
     #     horizontal_offset: 25
     #     horizontal_align: left
@@ -619,7 +619,7 @@ libraries:
     #     - en
     #     - ja
     #     style: square
-    #     font: config/arial.ttf
+    #     # font: config/arial.ttf
     #     back_color:     #00000080
     #     horizontal_offset: 25
     #           #horizontal_align: left
@@ -705,7 +705,7 @@ libraries:
     #     - en
     #     - ja
     #     style: square
-    #     font: config/arial.ttf
+    #     # font: config/arial.ttf
     #     back_color: '#00000080'
     #     position:
     #     - horizontal_offset: 30
