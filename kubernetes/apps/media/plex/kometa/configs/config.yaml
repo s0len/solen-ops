@@ -383,7 +383,7 @@ libraries:
         - en
         - sv
         style: square
-        font: config/fonts/ARIAL.TTF
+        font: config/arial.ttf
         back_color: '#00000080'
         position:
         - horizontal_offset: 30
@@ -415,7 +415,7 @@ libraries:
         back_color: '#00000000'
         font_size: 70
         back_width: 60
-        font: config/fonts/ARIAL.TTF
+        font: config/arial.ttf
         addon_offset: 50
     operations:
       assets_for_all: true
@@ -477,7 +477,7 @@ libraries:
         - en
         - sv
         style: square
-        font: config/fonts/ARIAL.TTF
+        font: config/arial.ttf
         back_color: '#00000000'
         font_color: '#00000000'
         position:
@@ -511,7 +511,7 @@ libraries:
         font_color: '#FFFFFF00'
         font_size: 70
         back_width: 45
-        font: config/fonts/ARIAL.TTF
+        font: config/arial.ttf
         addon_offset: 50
 
 
@@ -606,7 +606,7 @@ libraries:
     #     - en
     #     - ja
     #     style: square
-    #     font: config/fonts/ARIAL.TTF
+    #     font: config/arial.ttf
     #     back_color:     #00000080
     #     horizontal_offset: 25
     #     horizontal_align: left
@@ -619,7 +619,7 @@ libraries:
     #     - en
     #     - ja
     #     style: square
-    #     font: config/fonts/ARIAL.TTF
+    #     font: config/arial.ttf
     #     back_color:     #00000080
     #     horizontal_offset: 25
     #           #horizontal_align: left
@@ -705,7 +705,7 @@ libraries:
     #     - en
     #     - ja
     #     style: square
-    #     font: config/fonts/ARIAL.TTF
+    #     font: config/arial.ttf
     #     back_color: '#00000080'
     #     position:
     #     - horizontal_offset: 30
@@ -733,11 +733,11 @@ libraries:
   Sport:
     collection_files:
     - url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/collection_files/formula1_2024.yml
-    - url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/collection_files/motogp_2024.yml
+    # - url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/collection_files/motogp_2024.yml
     metadata_files:
     - url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/metadata_files/formula1_title_cards_2024.yml
-    - url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/metadata_files/motogp_posters_and_title_cards.yml
-    - url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/metadata_files/isle_of_man_tt.yml
+    # - url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/metadata_files/motogp_posters_and_title_cards.yml
+    # - url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/metadata_files/isle_of_man_tt.yml
     operations:
       assets_for_all: true
     minimum_items: 1

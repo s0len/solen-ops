@@ -12,6 +12,7 @@ configMapGenerator:
       - ./configs/config.yaml
   - name: kometa-custom-configs
     files:
+      - ./custom/arial.ttf
       - ./custom/best-of.yaml
       - ./custom/movies_collections.yaml
       - ./custom/series_collections.yaml
