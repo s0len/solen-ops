@@ -1,0 +1,202 @@
+# Indicates the schema used to decode the contents.
+version: v1alpha1
+# Enable verbose logging to the console.
+debug: false
+persist: true
+# Provides machine specific configuration options.
+machine:
+    # Defines the role of the machine within the cluster.
+    type: worker
+    # The `token` is used by a machine to join the PKI of the cluster.
+    token: yqd4ft.2hcprq63eqc0nowz
+    # The root certificate authority of the PKI.
+    ca:
+        crt: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUJQekNCOHFBREFnRUNBaEVBaUZyUzgzeVprWE05b3FTYnJESDRMREFGQmdNclpYQXdFREVPTUF3R0ExVUUKQ2hNRmRHRnNiM013SGhjTk1qUXdPVEU0TVRneU1EVTFXaGNOTXpRd09URTJNVGd5TURVMVdqQVFNUTR3REFZRApWUVFLRXdWMFlXeHZjekFxTUFVR0F5dGxjQU1oQUsybUJURVlzZDQxQ0k0ZC8vZG5vWFBIMDRsYWYxNWk3UWJ2ClgxZ0tmVHZDbzJFd1h6QU9CZ05WSFE4QkFmOEVCQU1DQW9Rd0hRWURWUjBsQkJZd0ZBWUlLd1lCQlFVSEF3RUcKQ0NzR0FRVUZCd01DTUE4R0ExVWRFd0VCL3dRRk1BTUJBZjh3SFFZRFZSME9CQllFRkRpWE5qOTRHMmY5bU5aNQpieDJKZTZDNWgveVlNQVVHQXl0bGNBTkJBTUQ0TG9oZk8zLyt5clVRSkZzMUEwRk1iRkZST3UxUWlRVkJ4YW5iCnNBRlZLOGVvL2wzYVZqZC84c1VCN01udDBVd1oyazVjaldRcW5QdEZIV0JBOHdFPQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==
+        key: LS0tLS1CRUdJTiBFRDI1NTE5IFBSSVZBVEUgS0VZLS0tLS0KTUM0Q0FRQXdCUVlESzJWd0JDSUVJT05mTmd5Njh0VE1QQS9tM20wRmw1c29pbTdGWk1zTmNjSVlabTFZUnRlSAotLS0tLUVORCBFRDI1NTE5IFBSSVZBVEUgS0VZLS0tLS0K
+    certSANs:
+        - 192.168.10.80
+        - 127.0.0.1
+    kubelet:
+        image: ghcr.io/siderolabs/kubelet:${KUBERNETES_VERSION}
+        extraArgs:
+            rotate-server-certificates: "true"
+        extraConfig:
+            maxPods: 150
+        extraMounts:
+            - destination: /var/openebs/local
+              type: bind
+              source: /var/openebs/local
+              options:
+                - bind
+                - rshared
+                - rw
+        defaultRuntimeSeccompProfileEnabled: true
+        nodeIP:
+            validSubnets:
+                - 192.168.10.0/24
+        disableManifestsDirectory: true
+    kernel:
+        modules:
+            - name: zfs
+    network:
+        hostname: worker-1
+        interfaces:
+            - deviceSelector:
+                hardwareAddr: ac:1f:6b:2d:f2:94
+              addresses:
+                - 192.168.10.79/24
+              routes:
+                - network: 0.0.0.0/0
+                  gateway: 192.168.10.1
+              mtu: 9000
+              dhcp: false
+              vip:
+                ip: 192.168.10.80
+        nameservers:
+            - 1.1.1.1
+            - 1.0.0.1
+        disableSearchDomain: true
+    install:
+        disk: /dev/sda
+        image: factory.talos.dev/installer/${TALOS_SCHEMATIC_ID}:${TALOS_VERSION}
+        wipe: false
+    files:
+        - content: |
+            [plugins."io.containerd.grpc.v1.cri"]
+              enable_unprivileged_ports = true
+              enable_unprivileged_icmp = true
+            [plugins."io.containerd.grpc.v1.cri".containerd]
+              discard_unpacked_layers = false
+            [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]
+              discard_unpacked_layers = false
+          permissions: 0
+          path: /etc/cri/conf.d/20-customization.part
+          op: create
+        - content: |
+            [ NFSMount_Global_Options ]
+            hard=True
+            noatime=True
+            nodiratime=True
+            nconnect=8
+          permissions: 420
+          path: /etc/nfsmount.conf
+          op: overwrite
+        - op: overwrite
+          path: /sys/kernel/mm/lru_gen/enabled
+          permissions: 420
+          content: |
+            0
+    sysctls:
+        fs.inotify.max_queued_events: "65536"
+        fs.inotify.max_user_instances: "8192"
+        fs.inotify.max_user_watches: "524288"
+        net.core.default_qdisc: fq
+        net.core.rmem_max: "16777216"
+        net.core.wmem_max: "16777216"
+        net.core.rmem_default: "8388608"
+        net.core.wmem_default: "8388608"
+        net.core.netdev_max_backlog: "250000"
+        net.ipv4.tcp_congestion_control: bbr
+        net.ipv4.tcp_max_syn_backlog: "8192"
+        net.ipv4.tcp_rmem: 4096 131072 16777216
+        net.ipv4.tcp_wmem: 4096 65536 16777216
+    features:
+        rbac: true
+        stableHostname: true
+        kubernetesTalosAPIAccess:
+            enabled: true
+            allowedRoles:
+                - os:admin
+            allowedKubernetesNamespaces:
+                - system-upgrade
+        apidCheckExtKeyUsage: true
+        diskQuotaSupport: true
+        kubePrism:
+            enabled: true
+            port: 7445
+        hostDNS:
+            enabled: true
+            forwardKubeDNSToHost: false
+            resolveMemberNames: true
+    udev:
+        rules:
+            - SUBSYSTEM=="drm", KERNEL=="renderD*", GROUP="44", MODE="0660"
+    nodeLabels:
+        factory.talos.dev/schematic-id.part-0: ${TALOS_SCHEMATIC_ID_PART_0}
+        factory.talos.dev/schematic-id.part-1: ${TALOS_SCHEMATIC_ID_PART_1}
+cluster:
+    # Globally unique identifier for this cluster (base64 encoded random 32 bytes).
+    id: _kErsOSqNOXx0rLLglBPpvvK8VmDkxCyocHVCo7JBWk=
+    # Shared secret of cluster (base64 encoded random 32 bytes).
+    secret: YOOdJZTod4rT5PaDtaSaVhEmLfIQhYwzNkkMoQ3H9Q8=
+    # Provides control plane specific configuration options.
+    controlPlane:
+        # Endpoint is the canonical controlplane endpoint, which can be an IP address or a DNS hostname.
+        endpoint: https://192.168.10.80:6443
+    # Configures the cluster's name.
+    clusterName: solen-cluster
+    # Provides cluster specific network configuration options.
+    network:
+        cni:
+            name: none
+        dnsDomain: cluster.local
+        podSubnets:
+            - 10.69.0.0/16
+        serviceSubnets:
+            - 10.96.0.0/16
+    # The [bootstrap token](https://kubernetes.io/docs/reference/access-authn-authz/bootstrap-tokens/) used to join the cluster.
+    token: liohbh.rjmpusn3g6oqju69
+    # A key used for the [encryption of secret data at rest](https://kubernetes.io/docs/tasks/administer-cluster/encrypt-data/).
+    secretboxEncryptionSecret: hjusw8KPiU1x0oS3NDzGyQ3VbiEOQgCsNly9jTYrcOY=
+    # The base64 encoded root certificate authority used by Kubernetes.
+    ca:
+        crt: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUJpRENDQVMrZ0F3SUJBZ0lRSGtBcm9ndzB6TTB2ZXpBdzd6N0phREFLQmdncWhrak9QUVFEQWpBVk1STXcKRVFZRFZRUUtFd3ByZFdKbGNtNWxkR1Z6TUI0WERUSTBNRGt4T0RFNE1qQTFOVm9YRFRNME1Ea3hOakU0TWpBMQpOVm93RlRFVE1CRUdBMVVFQ2hNS2EzVmlaWEp1WlhSbGN6QlpNQk1HQnlxR1NNNDlBZ0VHQ0NxR1NNNDlBd0VICkEwSUFCUGZnNjhyMVBsN08wR2dtZTZvUi9WSjFVR2o5dS8yS3Z6bFpGbXA1c0ZZNlVqbDhRandLTGRQZTJkUGcKdDhSMnpXdURZY3pZRlcxdkV2cnJmSlo1WUd5allUQmZNQTRHQTFVZER3RUIvd1FFQXdJQ2hEQWRCZ05WSFNVRQpGakFVQmdnckJnRUZCUWNEQVFZSUt3WUJCUVVIQXdJd0R3WURWUjBUQVFIL0JBVXdBd0VCL3pBZEJnTlZIUTRFCkZnUVU0TlYwR2s3YzRTQ01kdEtMUmY2RGpmMUdCT2d3Q2dZSUtvWkl6ajBFQXdJRFJ3QXdSQUlnUEJxclhKdTMKQ3Q3NlhxVUQvV3Y4TGJacCswTVhHRnVTc2lOYlg4bDBuandDSUZNb25MOXpvK01uV3NGUXBlTmZJOWZKZERPOApDYXFxaFkwLzRDeUk3My9lCi0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K
+        key: LS0tLS1CRUdJTiBFQyBQUklWQVRFIEtFWS0tLS0tCk1IY0NBUUVFSUxMZGM4NW5pRWdUamNSRjBSRWoxWGVBL0s2d2ZyWFB3clE3UXhkUDJDT0ZvQW9HQ0NxR1NNNDkKQXdFSG9VUURRZ0FFOStEcnl2VStYczdRYUNaN3FoSDlVblZRYVAyNy9ZcS9PVmtXYW5td1ZqcFNPWHhDUEFvdAowOTdaMCtDM3hIYk5hNE5oek5nVmJXOFMrdXQ4bG5sZ2JBPT0KLS0tLS1FTkQgRUMgUFJJVkFURSBLRVktLS0tLQo=
+    # The base64 encoded aggregator certificate authority used by Kubernetes for front-proxy certificate generation.
+    aggregatorCA:
+        crt: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUJYakNDQVFXZ0F3SUJBZ0lRRng4cjUxYlNadTFHMkIwQkRmcGcvekFLQmdncWhrak9QUVFEQWpBQU1CNFgKRFRJME1Ea3hPREU0TWpBMU5Wb1hEVE0wTURreE5qRTRNakExTlZvd0FEQlpNQk1HQnlxR1NNNDlBZ0VHQ0NxRwpTTTQ5QXdFSEEwSUFCUHpNY3ZibDNEUHpKditqQXFFVlZBV0Y5L0VCQnhBbW9peEVTeUQwWGhEWk9FNWI3ZGR5ClRjdzFPSnI3Yk5kYm80VEx4d0szb2t1S3N0QVh3ZWlPSGJTallUQmZNQTRHQTFVZER3RUIvd1FFQXdJQ2hEQWQKQmdOVkhTVUVGakFVQmdnckJnRUZCUWNEQVFZSUt3WUJCUVVIQXdJd0R3WURWUjBUQVFIL0JBVXdBd0VCL3pBZApCZ05WSFE0RUZnUVU1RVl0SWdUWVdocytZRUpYU3ZqaWtFNGpTNEV3Q2dZSUtvWkl6ajBFQXdJRFJ3QXdSQUlnCkc3WEdTMnZleW1xQjhucG1ZbFpROVJhTlJPcTdFZ0NzaVFvUkV1cmVLR1FDSUhyLzRnWG9pc0NQQnJuc3BvZE8KZ3R0U3FvUzhVOFdDNFRoR2tlano3MUxLCi0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K
+        key: LS0tLS1CRUdJTiBFQyBQUklWQVRFIEtFWS0tLS0tCk1IY0NBUUVFSUxQTXFVY0k2WStIaTNYUXpTN2xLblRabWF1eU9kMXVvUU1SbWZudTdZN3RvQW9HQ0NxR1NNNDkKQXdFSG9VUURRZ0FFL014eTl1WGNNL01tLzZNQ29SVlVCWVgzOFFFSEVDYWlMRVJMSVBSZUVOazRUbHZ0MTNKTgp6RFU0bXZ0czExdWpoTXZIQXJlaVM0cXkwQmZCNkk0ZHRBPT0KLS0tLS1FTkQgRUMgUFJJVkFURSBLRVktLS0tLQo=
+    # The base64 encoded private key for service account token generation.
+    serviceAccount:
+        key: LS0tLS1CRUdJTiBSU0EgUFJJVkFURSBLRVktLS0tLQpNSUlKSndJQkFBS0NBZ0VBc1IwSE1qVWNUNUFWR3dhSEcyYXZPamFtbzFnZHNJeWFRSVpVNXlwNnlWa1RYU1FQCkhtRi9BU0kxMDVwM2lGUnM0TFhBZWIzWHJ5eVhGUTFUQW1laVExTnJUTVo3azhSSXorbFV1VjFTMXFYSVBXT2YKdTFFZzVqbUQzV09zUFpLWUxjNEJFSVU0ampFekR6Zndndk5ySlBMQ1RrQi9UUGtldGM1MDQ3MGVKQVN4bjA2bwpCdVFERDNFQ09SR2prbXRSdUhvTHBkTkZkSHgvWHR1c2E0TGhoRHB1aUNLVWs5M3AzcngwS2VZZThUT24zdUN6CmxlT21YYVAxTVFoMmZUU2FCODRib3VyVVd0cHBqdUd1WUhrc2FGRVRlMFZnRFR3bURWcEJTWHlTNjI1bFY2eHUKSU1CWExMUVFJd21SYUFXY2syV3F3WStoK2pjWnFoekVGYmxtdEFocFRBcVhCWTk4Vnc2VnRTWERBNURQME41egpCTENTMm4zd2VzSkNVbFVOYW5lZXhjOGkrajN6QVJxVWh3eHcvMVVFaGh6OVF3WEJ6TkNUT0tvU1QwajI2aUlCCnFERG90N3NjbFdJRGxySjMrbm5QQ0poVzZoelhMNjVIK3hPcFZEWis1OE1QRUVSR05IcnVqZnZYVUhiU3hYTzUKUnBQU0xjMTlXODJ5UTJ5NFJaZ29ocTdaay9BTmF3RWl1c3p0WjJhNGdkV3Zpb0N2T25QOXoxc2d4QTVuL1ZUYgpNVTd0bEtZK25vMGN0USswdHEzLzZRcUVRK3QrOGpETCtmVHhHeWJnZlZZa3FvNlZKa0dOVGh4bDlOSnppOENjCkZ2cklMalpJZHlWdHNIaTEwRGk0N21YWWxrUzFWYUVLT1Evc0RoVm1SVzE1R0RWcTczeWlIK0RxL25NQ0F3RUEKQVFLQ0FnQkI0YVJkbnJmck9KTkJQRXBoZk83TlhxclpzOXRIWXVXMS9zSHlRekR0V0w4Rk5IYVRQSHo3dFBnRQp3RDZhYlowYWNVRXBoOTZGQUxjcVU0eC9Kb0dMUGFwNklwS3hRcUE3Qm5aSGhWbGRFc25MWEJWOG5nNzQxSWdpCmdBTC8zRm5USC8veFh6ek1WNnpBaW5SaW9aMUhYeTI3NGUzNGVlcGNnbkdralNKN0QydnE4RjA4UXZDSWUrYngKeDRmcTNSVEc1RThVM2VQR0V0Rm1QWnlEV1duOXY2YUI2U3NQWGNxeTJiTDBLdTl6bFYxcVlIY3MyRU40TFpiMQpLRXE3QkNnUG96RlFocjE3RmllUnlJME93Y1F0QVl1WG5SUy9sNUlvQVZ5cnN6VUxja01zTzYyemJSaUFQbktLCk5mTHFtTHZIY0ZmMkxERjZXNmltU0pELzY3a3h2QzBuZTFtUjNjc25GSC9TWHFnMVBjeXVNUENZQXhEUUFGYUwKUUtZL1NLWm1kMXJpWm5kVDFFYmpuajM4U05CWlc0SnZVdjk1UXVKL3RVQ2pIWERNOUxxcUdkejRWUFdqSDkzYwpCem10SjdOQ3hhdnlyVkFLd05FNHFEOTBub0hzYnppbDVzOU9TMHNidlFSL0hSVVhQazdvZFdmQUFCdk5mSmJHClJtRG9wTlZ2T0xpRys1RW0zY2w5cTI3Z2NpOTBYQmo4b0xWcnplOThnUTNxOTI1ZlM3b2JibHhtNk5KaHc3Q1MKVmQwcnNxcVFDRjhjL2MrbEQrVy83REczbTRwTjR2VFloTmEwRXR0clY5NUFCM0tycFlKaDc0YWQ1UXhhV3d0OQo0cll0VE0vZGRwV1hWb1FrOHRQTjYrWENlWFJyY1RnQlVxTkhRYWk4Tm1mby81emhBUUtDQVFFQTNaTVBUNDF3CnJyMVlDSlhQYWlUdTBwdmhnYUVSZ2I2MFZoa0p1cXVvZGNRaVEvL0N4RE10MURCL0tEMlZQQ2RUK3JVNStsVEUKR2x5SlluLzI3aW9Mc2FxYnVzb3B2dWdoMGU0UXFHZHpnZXdjQTMwQzRncUtVeXBXNVlLbEgxQU1qcDRZR3E0YwpVUldxajlWbFNDbGFNOE5qdEVEa2VOTUtmUUlHSjFMNEhtUnpDNndsSGhlRXI3dXg2ZDhJVTNnajJuWDhSb0F3ClpWV21tcVJBZUsyWUVtZWZVUW5tVGxzZGxKOUJET0JCdUdFNWNIeGRCaXU4T2dyQ0hQempWWUNZVmVlSXVUeGkKTXZBQmhHYnJGYTZ3eE9yZGdsdElLdkoybEltQ05IZW5uSkx4TmRPdWR2Y3pEWHZzb2tiUzZhTkQ5b2c1b05HMgpGLzI1cWJaRmc5WnNzd0tDQVFFQXpLR1JBaTdaS2ZOREtNcVZkTVVWZFAwanRIU2F5V3QyRHVma0RFeGcxa0lyCjVJMnFsanA2L1l3Ujh2NnZ0ZEZpejd5MlB3WTAxdnZOcTl4dnI4K0tOTnoyaTBSVERnZlBRTVhpaURHcjdEaUIKUTV6WnlGVDhDYVl4ekhIeVVaMkhQVXpHQUpPa044K3FCNmpGNDZzUGFJYnJsWmJIdDUxYXR3alIwMmtIVXN6VwpxZVJlS1h5MFltY1JPcFhCWUFab0hqYWdiTDJEUjFEUW1vdzhyL3piV3NWc0JNa1JVUCtSTWZ2aGxOTGxlSHlGClZtUE1PNmpyS29FRnNlQzdpdVppSDRPcGJWaENOWGZCUWQ2SngzTHBmTzVjR21yQmlyRWR1MFAvaGo4YU1wZHAKVHU5RXpmbVJMaG5yWWRDSzd1bUltTEFibTRzb0xocExKb2Y0bkwySFFRS0NBUUJzWjhiVjVSMThZS2J4akZvdQpWR09FSnovdGJDQmttaWtnOXA4TDlYQTJMZitWeFV4Rk1jVDZTNy9xc0RhVGQ2cGV2c3ZlN2hvRHk4SnJycS9oClZqRGllOVkxVFRPZmMzTVlncUVqdzNsLzEwVGRjQXc1QzI4aHdWVkNkT2pVcVJWN3NWMlpzQldxbGk4Y3NBc2QKZ3gzZXRYblNkdTFSTCsreHVZdkpNWTZ6VC9INWcvK2srVnl4bmVNdHlURUpwWDNsSkZTSkthNkQ1YVBkaFA4RwpDK2liR0plWnpuNGZWL1RoQWdtUmd5YWtUdTBMVzgwbmQ3NWZwMlBSU3VqdXJEdmJ5NnZZOVBJV2VkWkVNUlpUClJXUzI4ekhzMVR3NXh1YTlSWW11b2R3ZmZzVUUwTXhLNkNiU01nOVVWZEphL01ZRG1DS1p6QUNMUEZmWjhKT1MKTFJhQkFvSUJBSDRyUUJWd2ZVVjRUL2hlc0RnSExHdXRpTTVDOXcwcHpPano0WkFUcDhGem0weVliSTJrRVNFegpzLzEzT3krSG9yMGpSZHNtSUg1TlUwcWI1K0VtdmJoS1pWa0pENHlmRkJLRDhHQzQvNS91VndVeE9MWmtiK0lqCkxxRTN3SWpCOEJqRHRYRzFscE15MzB0SnJIbnJodHlVRTcxdjhrUXNLVHFoblg0VVRBZXBkTkhibEpOUDZJaWoKcytQRFlpK3F3NWVkWnR5bEhNUmo5N3JTckxoMTEybm9QK25UYjNIWm9kU0gwVmJKa2VMd0krWllNaHkyMGdpcQo5Sy93T0xJenlseFQrYXNKdUFqdmhhRHZiVlFrYmdJeGxXaFVXbkVCTTZ1N0NWbmtubXFESU5NaWcvSGI1ci9lCkMxdU1FWjJ0TUNPMHNkRDl4QkJvOWQwVUNSM2JYZ0VDZ2dFQVU3dmtwRlhhT3MydGJLOHdFaFk5OVJubE5GUUMKUlc5WnBNajRUNDQrRnhGQUczTjh0NnRVZkNEaHhNblZWUTdRdmh3bW9ocDlzMjhRbHNZSkp2Nmo0a3VSV3V0bwpFQUtjSGRuM0NmWWJFL0dPTEloYmkvZW1pNWU3bzFrZ2huVW16QkgzM3p3SStOU1VMOEs2by9HTE9xOUpxNE0xClBVR1MvSmhpS0ZCK3NicVUyOW8ySi9xODJXdllKM0IzOXBubVZwcVkxNGpIM2tzdnVxM3F4N1l6d3R4RmVoaTkKUDZzM2Z2S0FvbUxqN3owUlBJSXRPbjNtQWhZS0RFNVQ0aVlZbmM2LzB1Tys3eXg3NnFFa2FOUlJGcndsRUFubwpuRE5HUEdmWVdvdDBUTXlINWxLUVNPWUJxTVkybC9wTlYvNm1CempwYUpPOFU4SVJkRVZyNUkxeVZRPT0KLS0tLS1FTkQgUlNBIFBSSVZBVEUgS0VZLS0tLS0K
+    # API server specific configuration options.
+    apiServer:
+        image: registry.k8s.io/kube-apiserver:${KUBERNETES_VERSION}
+        certSANs:
+            - 192.168.10.80
+            - 127.0.0.1
+        disablePodSecurityPolicy: true
+        auditPolicy:
+            apiVersion: audit.k8s.io/v1
+            kind: Policy
+            rules:
+                - level: Metadata
+    controllerManager:
+        image: registry.k8s.io/kube-controller-manager:${KUBERNETES_VERSION}
+        extraArgs:
+            bind-address: 0.0.0.0
+    proxy:
+        disabled: true
+    scheduler:
+        image: registry.k8s.io/kube-scheduler:${KUBERNETES_VERSION}
+        extraArgs:
+            bind-address: 0.0.0.0
+    discovery:
+        enabled: true
+        registries:
+            kubernetes:
+                disabled: false
+            service:
+                disabled: false
+    etcd:
+        # The `ca` is the root certificate authority of the PKI.
+        ca:
+            crt: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUJmakNDQVNTZ0F3SUJBZ0lSQUxKbUExQmdzRFQzcHg0dlltMnh3eGN3Q2dZSUtvWkl6ajBFQXdJd0R6RU4KTUFzR0ExVUVDaE1FWlhSalpEQWVGdzB5TkRBNU1UZ3hPREl3TlRWYUZ3MHpOREE1TVRZeE9ESXdOVFZhTUE4eApEVEFMQmdOVkJBb1RCR1YwWTJRd1dUQVRCZ2NxaGtqT1BRSUJCZ2dxaGtqT1BRTUJCd05DQUFULzdQSHJFZlRmCmg2UGFTamdQcGZrQVQ3d0o4dEp5TmFEQ3ZJVnIrbDdYYXVhQ2hnaFRSRVE3MzIrVVc4UUdPK0p4Ykh4bGdRbjMKZ1BYMno0TUErYzJ2bzJFd1h6QU9CZ05WSFE4QkFmOEVCQU1DQW9Rd0hRWURWUjBsQkJZd0ZBWUlLd1lCQlFVSApBd0VHQ0NzR0FRVUZCd01DTUE4R0ExVWRFd0VCL3dRRk1BTUJBZjh3SFFZRFZSME9CQllFRk1oNnFramhqMzNuCjdMQjhNcVp0VnRDbTJFZG9NQW9HQ0NxR1NNNDlCQU1DQTBnQU1FVUNJSGJRdm5ZSVo2U1FhbGl0cFRQS2d0QUkKbDN2dGZjRUZjZHpzeUVqbGRaZkRBaUVBcHpua1BVNThZSkZmK0o2YldVMXVRYWw3R0d0ZVlxVjBrRldrTUlWZApBeXc9Ci0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K
+            key: LS0tLS1CRUdJTiBFQyBQUklWQVRFIEtFWS0tLS0tCk1IY0NBUUVFSUl5eUR4SCtzK0paMnVpd1ZDY0JEYnNOMFVTN3RWMnBiWFNuSXJwVmFxUmlvQW9HQ0NxR1NNNDkKQXdFSG9VUURRZ0FFLyt6eDZ4SDAzNGVqMmtvNEQ2WDVBRSs4Q2ZMU2NqV2d3cnlGYS9wZTEycm1nb1lJVTBSRQpPOTl2bEZ2RUJqdmljV3g4WllFSjk0RDE5cytEQVBuTnJ3PT0KLS0tLS1FTkQgRUMgUFJJVkFURSBLRVktLS0tLQo=
+        extraArgs:
+            listen-metrics-urls: http://0.0.0.0:2381
+        advertisedSubnets:
+            - 192.168.10.0/24
+    coreDNS:
+        disabled: true
+    allowSchedulingOnControlPlanes: true
