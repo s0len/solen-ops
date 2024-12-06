@@ -95,29 +95,29 @@ spec:
       #         - |
       #           python3 kometa.py --run --read-only-config --overlays-only --run-libraries "Barnfilmer|Barnserier"
 
-      # standard-series:
-      #   type: *type
-      #   cronjob:
-      #     <<: *cronjob
-      #     schedule: "10 13 * * *"
-      #   containers:
-      #     app:
-      #       <<: *container_app
-      #       args:
-      #         - |
-      #           python3 kometa.py --run --read-only-config --overlays-only --run-libraries "Serier"
-
-      standard-movies:
+      standard-series:
         type: *type
         cronjob:
           <<: *cronjob
-          schedule: "25 11,16 * * *"
+          schedule: "35 11 * * *"
         containers:
           app:
             <<: *container_app
             args:
               - |
-                python3 kometa.py --run --read-only-config --collections-only --run-libraries "Filmer"
+                python3 kometa.py --run --read-only-config --collections-only --run-libraries "Serier"
+
+      standard-movies:
+        type: *type
+        cronjob:
+          <<: *cronjob
+          schedule: "30 9,16 * * *"
+        containers:
+          app:
+            <<: *container_app
+            args:
+              - |
+                python3 kometa.py --run --read-only-config --overlays-only --run-libraries "Filmer"
 
       sport:
         type: *type
