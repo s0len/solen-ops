@@ -14,7 +14,7 @@ collections:
     collection_mode: hide
 
   Popular Movies:
-    trakt_list: https://trakt.tv/users/solentankar/lists/movies-recommendations-couchmoney-tv?sort=rank,asc
+    trakt_list: https://trakt.tv/users/solentankar/lists/movies-recommendations-couchmoney-tv
     sync_mode: sync
     summary:
       This collection of movies is maintained by an awesome AI which looks at the whole wide worlds most
