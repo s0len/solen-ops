@@ -47,7 +47,7 @@ spec:
           reloader.stakater.com/auto: "true"
         cronjob:
           timeZone: &timeZone ${TIMEZONE}
-          schedule: "0 15 * * *"
+          schedule: "4 15 * * *"
           successfulJobsHistory: 1
           failedJobsHistory: 1
         containers:
@@ -61,7 +61,7 @@ spec:
             envFrom:
               - secretRef:
                   name: recyclarr-secret
-            args: ["sync radarr"]
+            args: ["sync"]
             securityContext:
               allowPrivilegeEscalation: false
               readOnlyRootFilesystem: true
