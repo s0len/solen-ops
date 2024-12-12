@@ -432,12 +432,12 @@ radarr:
       - template: radarr-custom-formats-sqp-4
 
     quality_profiles:
-      - name: SQP-2
+      - name: Normal
         reset_unmatched_scores:
           enabled: true
           except:
             - "!Personal LQ list"
-      - name: SQP-3  # custom as we moved remux-1080p into the `WEB|Remux|2160p` TRaSH calls it `SQP-3 (audio)`
+      - name: Remux  # custom as we moved remux-1080p into the `WEB|Remux|2160p` TRaSH calls it `SQP-3 (audio)`
         reset_unmatched_scores:
           enabled: true
           except:
@@ -452,7 +452,7 @@ radarr:
               - WEBDL-1080p
               - WEBRip-1080p
               - Remux-1080p
-      - name: SQP-4
+      - name: Documentary or Animation
         reset_unmatched_scores:
           enabled: true
           except:
@@ -529,7 +529,7 @@ radarr:
     quality_profiles:
       - name: SQP-1 (1080p)
         # Uncomment the below line if you don't have access to top-tier indexers
-        min_format_score: 10
+        min_format_score: 0
         reset_unmatched_scores:
           enabled: true
           except:
