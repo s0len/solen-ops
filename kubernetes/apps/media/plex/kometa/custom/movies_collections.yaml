@@ -120,9 +120,15 @@ collections:
     sort_title: "!025_Dreadful_Duds"
 
   True Crime Documentaries:
-    trakt_list: https://trakt.tv/users/hdlists/lists/true-crime-documentaries?sort=rank,asc
+    trakt_list: https://trakt.tv/users/hdlists/lists/true-crime-documentaries?sort=percentage,asc
     sync_mode: sync
     collection_order: custom
-    summary: Here you will find a collection of true crime documentaries.
+    summary: A chilling collection of documentaries that delve into real criminal cases, investigating notorious murders, heists, and mysteries. These films examine the psychology of criminals, the work of investigators, and the impact on victims and society.
     sort_title: "!026_True_Crime_Documentaries"
 
+  History Documentaries:
+    trakt_list: https://trakt.tv/users/hammers-lists/lists/history-documentaries?sort=percentage,asc
+    sync_mode: sync
+    collection_order: custom
+    summary: A curated collection of documentaries exploring historical events, figures, and civilizations. Journey through time with these informative films that bring the past to life.
+    sort_title: "!026_History_Documentaries"
