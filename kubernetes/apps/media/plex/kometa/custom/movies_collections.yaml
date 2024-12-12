@@ -118,3 +118,11 @@ collections:
     visible_home: true
     visible_shared: true
     sort_title: "!025_Dreadful_Duds"
+
+  True Crime Documentaries:
+    trakt_list: https://trakt.tv/users/hdlists/lists/true-crime-documentaries?sort=rank,asc
+    sync_mode: sync
+    collection_order: custom
+    summary: Here you will find a collection of true crime documentaries.
+    sort_title: "!026_True_Crime_Documentaries"
+
