@@ -126,7 +126,12 @@ spec:
         medium: Memory
 
       transcode:
-        type: emptyDir
+        type: persistentVolumeClaim
+        accessMode: ReadWrite
+        size: 100Gi
+        storageClass: openebs-zfs-256k
+        globalMounts:
+          - path: /transcode
 
       media:
         type: nfs
