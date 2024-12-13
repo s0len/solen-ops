@@ -423,13 +423,13 @@ radarr:
     include:
       - template: radarr-quality-definition-sqp-uhd
 
-      - template: radarr-quality-profile-Normal
-      - template: radarr-quality-profile-Remux
-      - template: radarr-quality-profile-Documentary or Animation
+      - template: radarr-quality-profile-sqp-2
+      - template: radarr-quality-profile-sqp-3
+      - template: radarr-quality-profile-sqp-4
 
-      - template: radarr-custom-formats-Normal
-      - template: radarr-custom-formats-Remux
-      - template: radarr-custom-formats-Documentary or Animation
+      - template: radarr-custom-formats-sqp-2
+      - template: radarr-custom-formats-sqp-3
+      - template: radarr-custom-formats-sqp-4
 
     quality_profiles:
       - name: Normal
@@ -437,7 +437,7 @@ radarr:
           enabled: true
           # except:
           #   - "!Personal LQ list"
-      - name: Remux  # custom as we moved remux-1080p into the `WEB|Remux|2160p` TRaSH calls it `Remux (audio)`
+      - name: Remux  # custom as we moved remux-1080p into the `WEB|Remux|2160p` TRaSH calls it `SQP-3 (audio)`
         reset_unmatched_scores:
           enabled: true
           # except:
