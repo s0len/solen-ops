@@ -139,6 +139,10 @@ sync_gdrive:
       location: /posters/solens-collection
     - id: 1YEuS1pulJAfhKm4L8U9z5-EMtGl-d2s7 # solens own work
       location: /posters/solen
+    - id: 1cqDinU27cnHf5sL5rSlfO7o_T6LSxG77 # Reitenth own work
+      location: /posters/Reitenth
+    - id: 1TYVIGKpSwhipLyVQQn_OJHTobM6KaokB # TheOtherGuy own work
+      location: /posters/TheOtherGuy
     - id: 1Xg9Huh7THDbmjeanW0KyRbEm6mGn_jm8 # BZ
       location: /posters/bz
     - id: 1oBzEOXXrTHGq6sUY_4RMtzMTt4VHyeJp # chrisdc
@@ -201,6 +205,8 @@ poster_renamerr:
   source_dirs:
     - /posters/solens-collection
     - /posters/jpalenz77
+    - /posters/Reitenth
+    - /posters/TheOtherGuy
     - /posters/miniMyself
     - /posters/kalyanrajnish
     - /posters/tokenminal
