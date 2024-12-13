@@ -435,13 +435,13 @@ radarr:
       - name: Normal
         reset_unmatched_scores:
           enabled: true
-          except:
-            - "!Personal LQ list"
+          # except:
+          #   - "!Personal LQ list"
       - name: Remux  # custom as we moved remux-1080p into the `WEB|Remux|2160p` TRaSH calls it `SQP-3 (audio)`
         reset_unmatched_scores:
           enabled: true
-          except:
-            - "!Personal LQ list"
+          # except:
+          #   - "!Personal LQ list"
         min_format_score: 3350
         qualities:
           - name: WEB|Remux|2160p
@@ -455,8 +455,8 @@ radarr:
       - name: Documentary or Animation
         reset_unmatched_scores:
           enabled: true
-          except:
-            - "!Personal LQ list"
+          # except:
+          #   - "!Personal LQ list"
 
     # Custom scoring on top of templates above
     custom_formats:
