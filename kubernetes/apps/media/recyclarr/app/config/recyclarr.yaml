@@ -423,13 +423,13 @@ radarr:
     include:
       - template: radarr-quality-definition-sqp-uhd
 
-      - template: radarr-quality-profile-sqp-2
-      - template: radarr-quality-profile-sqp-3
-      - template: radarr-quality-profile-sqp-4
+      - template: radarr-quality-profile-Normal
+      - template: radarr-quality-profile-Remux
+      - template: radarr-quality-profile-Documentary or Animation
 
-      - template: radarr-custom-formats-sqp-2
-      - template: radarr-custom-formats-sqp-3
-      - template: radarr-custom-formats-sqp-4
+      - template: radarr-custom-formats-Normal
+      - template: radarr-custom-formats-Remux
+      - template: radarr-custom-formats-Documentary or Animation
 
     quality_profiles:
       - name: Normal
@@ -437,7 +437,7 @@ radarr:
           enabled: true
           # except:
           #   - "!Personal LQ list"
-      - name: Remux  # custom as we moved remux-1080p into the `WEB|Remux|2160p` TRaSH calls it `SQP-3 (audio)`
+      - name: Remux  # custom as we moved remux-1080p into the `WEB|Remux|2160p` TRaSH calls it `Remux (audio)`
         reset_unmatched_scores:
           enabled: true
           # except:
@@ -467,9 +467,9 @@ radarr:
           - e098247bc6652dd88c76644b275260ed # FLUX
           - ff5bc9e8ce91d46c997ca3ac6994d6f8 # FRAMESTOR
         assign_scores_to:
-          - name: SQP-2
-          - name: SQP-3
-          - name: SQP-4
+          - name: Normal
+          - name: Remux
+          - name: Documentary or Animation
 
       # Uncomment any of the following if you want them to be added to the quality profile
       - trash_ids:
@@ -493,19 +493,19 @@ radarr:
           - cae4ca30163749b891686f95532519bd # AV1
           - 25c12f78430a3a23413652cbd1d48d77 # SDR (no WEBDL)
         assign_scores_to:
-          - name: SQP-2
-          - name: SQP-3
-          - name: SQP-4
+          - name: Normal
+          - name: Remux
+          - name: Documentary or Animation
 
 
       - trash_ids:
           - 839bea857ed2c0a8e084f3cbdbd65ecb # x265 (no HDR/DV)
         assign_scores_to:
-          - name: SQP-2
+          - name: Normal
             score: 0
-          - name: SQP-3
+          - name: Remux
             score: 0
-          - name: SQP-4
+          - name: Documentary or Animation
             score: 0
 
 
