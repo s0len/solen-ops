@@ -442,7 +442,7 @@ radarr:
           enabled: true
           # except:
           #   - "!Personal LQ list"
-        min_format_score: 3350
+        # min_format_score: 3350
         qualities:
           - name: WEB|Remux|2160p
             qualities:
