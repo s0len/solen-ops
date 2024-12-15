@@ -14,17 +14,14 @@ spec:
         kind: HelmRepository
         name: bjw-s
         namespace: flux-system
-
   install:
     remediation:
       retries: 3
-
   upgrade:
     cleanupOnFail: true
     remediation:
       strategy: rollback
       retries: 3
-
   dependsOn:
     - name: qbittorrent
       namespace: media
@@ -87,8 +84,12 @@ spec:
         fsGroupChangePolicy: OnRootMismatch
 
     persistence:
-      config:
+      app:
         type: emptyDir
+        medium: Memory
+        globalMounts:
+          - path: /app/config
+          - path: /config
 
       config-file:
         type: secret
@@ -109,3 +110,4 @@ spec:
         existingClaim: qbittorrent
         globalMounts:
           - path: /qbittorrent
+            readOnly: true
