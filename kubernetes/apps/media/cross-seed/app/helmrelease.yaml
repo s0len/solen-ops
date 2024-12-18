@@ -14,53 +14,54 @@ spec:
         kind: HelmRepository
         name: bjw-s
         namespace: flux-system
-  maxHistory: 2
   install:
     remediation:
       retries: 3
   upgrade:
     cleanupOnFail: true
     remediation:
-      strategy: uninstall
+      strategy: rollback
       retries: 3
-  uninstall:
-    keepHistory: false
   dependsOn:
     - name: qbittorrent
       namespace: media
+
   values:
     controllers:
       cross-seed:
         annotations:
           reloader.stakater.com/auto: "true"
-
-        pod:
-          securityContext:
-            runAsUser: 568
-            runAsGroup: 568
-            fsGroup: 568
-            fsGroupChangePolicy: "OnRootMismatch"
-            supplementalGroups:
-              - 100
-
         containers:
-          main:
+          app:
             image:
               repository: ghcr.io/cross-seed/cross-seed
-              tag: 6.0.0-43
-            args:
-              - daemon
-
-            envFrom:
-              - secretRef:
-                  name: cross-seed-secret
-
+              tag: 6.2.1@sha256:f20dbee55ceafbe398679181331fd8a110f7da0fbcd77cfdbc02e1b438a5e1fa
+            env:
+              TZ: ${TIMEZONE}
+            args: ["daemon"]
+            probes:
+              liveness:
+                enabled: true
+              readiness:
+                enabled: true
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities: { drop: ["ALL"] }
             resources:
               requests:
                 cpu: 10m
-                memory: 128Mi
               limits:
-                memory: 256Mi
+                memory: 1Gi
+
+    defaultPodOptions:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 568
+        runAsGroup: 568
+        fsGroup: 568
+        fsGroupChangePolicy: OnRootMismatch
+        seccompProfile: { type: RuntimeDefault }
 
     service:
       cross-seed:
@@ -71,12 +72,11 @@ spec:
 
     persistence:
       config:
-        enabled: true
-        type: emptyDir
+        existingClaim: *app
 
-      config-file:
-        type: configMap
-        name: cross-seed-configmap
+      secret-file:
+        type: secret
+        name: cross-seed-secret
         globalMounts:
           - path: /config/config.js
             subPath: config.js
@@ -85,8 +85,9 @@ spec:
       qbittorrent:
         existingClaim: qbittorrent
         globalMounts:
-          - path: /qbittorrent
-
+          - path: /qbittorrent/qBittorrent/BT_backup
+            subPath: qBittorrent/BT_backup
+            readOnly: true
       data:
         type: nfs
         server: ${TRUENAS_IP}
@@ -94,11 +95,3 @@ spec:
         globalMounts:
           - path: /data
             readOnly: false
-
-    podSecurityContext:
-      runAsUser: 568
-      runAsGroup: 568
-      fsGroup: 568
-      fsGroupChangePolicy: "OnRootMismatch"
-      supplementalGroups:
-        - 100

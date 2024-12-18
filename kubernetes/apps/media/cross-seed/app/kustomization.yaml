@@ -4,12 +4,13 @@ kind: Kustomization
 resources:
   - ./helmrelease.yaml
   - ./externalsecret.yaml
-  - ../../../../templates/gatus/guarded
   - ../../../../templates/volsync
-
 configMapGenerator:
-  - name: cross-seed-configmap
+  - name: cross-seed-loki-rules
     files:
-      - ./config/config.js
+      - cross-seed.yaml=./resources/lokirule.yaml
+    options:
+      labels:
+        loki_rule: "true"
 generatorOptions:
   disableNameSuffixHash: true
