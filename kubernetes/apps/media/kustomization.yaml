@@ -6,10 +6,10 @@ resources:
   - ./audiobookshelf/ks.yaml
   - ./autobrr/ks.yaml
   - ./bazarr/ks.yaml
-  - ./cross-seed/ks.yaml
+  # - ./cross-seed/ks.yaml
   - ./flaresolverr/ks.yaml
   # - ./komga/ks.yaml
-  - ./maintainerr/ks.yaml
+  # - ./maintainerr/ks.yaml
   - ./notifiarr/ks.yaml
   - ./plex/ks.yaml
   # - ./podgrab/ks.yaml
