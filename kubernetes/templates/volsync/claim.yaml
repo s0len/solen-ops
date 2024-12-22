@@ -12,4 +12,4 @@ spec:
   resources:
     requests:
       storage: "${VOLSYNC_CAPACITY}"
-  storageClassName: "${VOLSYNC_STORAGECLASS:-openebs-zfs}"
+  storageClassName: "openebs-zfs-${VOLSYNC_RECORD_SIZE:-128k}"
