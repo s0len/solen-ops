@@ -4,6 +4,9 @@
 
 ```sh
 kubectl get deployments --all-namespaces -o jsonpath='{range .items[*]}{.metadata.namespace}{" "}{.metadata.name}{"\n"}{end}' | xargs -n2 bash -c 'kubectl rollout restart deployment -n $0 $1'
+````
+
+```sh
 kubectl get daemonsets --all-namespaces -o jsonpath='{range .items[*]}{.metadata.namespace}{" "}{.metadata.name}{"\n"}{end}' | xargs -n2 bash -c 'kubectl rollout restart daemonset -n $0 $1'
 ```
 
