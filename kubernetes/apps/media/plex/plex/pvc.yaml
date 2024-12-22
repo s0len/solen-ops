@@ -15,7 +15,7 @@ kind: PersistentVolumeClaim
 metadata:
   name: plex-transcode
 spec:
-  accessModes: ["ReadWrite"]
+  accessModes: ["ReadWriteMany"]
   resources:
     requests:
       storage: 100Gi
