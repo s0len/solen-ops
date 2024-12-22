@@ -129,7 +129,7 @@ spec:
         type: persistentVolumeClaim
         accessMode: ReadWrite
         size: 100Gi
-        storageClass: openebs-zfs
+        storageClass: openebs-zfs-1m
         globalMounts:
           - path: /transcode
 
