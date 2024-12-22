@@ -5,6 +5,7 @@ resources:
   - ./helmrelease.yaml
   - ./externalsecret.yaml
   - ../../../../templates/volsync
+  - ../../../../templates/gatus/guarded
 configMapGenerator:
   - name: cross-seed-loki-rules
     files:
