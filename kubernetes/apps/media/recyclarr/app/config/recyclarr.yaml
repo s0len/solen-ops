@@ -494,7 +494,7 @@ radarr:
           - 25c12f78430a3a23413652cbd1d48d77 # SDR (no WEBDL)
         assign_scores_to:
           - name: SQP-2
-          - name: Remux
+          - name: SQP-3
           - name: SQP-4
 
 
