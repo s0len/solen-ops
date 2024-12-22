@@ -11,10 +11,10 @@ resources:
   # - ./komga/ks.yaml
   # - ./maintainerr/ks.yaml
   - ./notifiarr/ks.yaml
-  - ./plex/ks.yaml
+  # - ./plex/ks.yaml
   # - ./podgrab/ks.yaml
   - ./sonarr/ks.yaml
-  - ./qbittorrent/ks.yaml
+  # - ./qbittorrent/ks.yaml
   - ./radarr/ks.yaml
   # - ./readarr/ks.yaml
   # - ./recyclarr/ks.yaml
