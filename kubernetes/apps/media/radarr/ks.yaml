@@ -26,7 +26,7 @@ spec:
       APP: *app
       GATUS_SUBDOMAIN: radarr-standard
       VOLSYNC_CAPACITY: 6Gi
-      VOLSYNC_RECORD_SIZE: 1m
+      VOLSYNC_RECORD_SIZE: 256k
 
 ---
 # yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/kustomize.toolkit.fluxcd.io/kustomization_v1.json
@@ -56,7 +56,7 @@ spec:
       APP: *app
       GATUS_SUBDOMAIN: radarr-kids
       VOLSYNC_CAPACITY: 6Gi
-      VOLSYNC_RECORD_SIZE: 1m
+      VOLSYNC_RECORD_SIZE: 256k
 
 ---
 # yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/kustomize.toolkit.fluxcd.io/kustomization_v1.json
@@ -86,4 +86,4 @@ spec:
       APP: *app
       GATUS_SUBDOMAIN: radarr-anime
       VOLSYNC_CAPACITY: 6Gi
-      VOLSYNC_RECORD_SIZE: 1m
+      VOLSYNC_RECORD_SIZE: 256k
