@@ -126,8 +126,9 @@ spec:
         medium: Memory
 
       transcode:
-        type: emptyDir
-        medium: Memory
+        existingClaim: plex-transcode
+        globalMounts:
+          - path: /transcode
 
       media:
         type: nfs
