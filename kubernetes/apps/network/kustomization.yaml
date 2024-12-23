@@ -8,6 +8,7 @@ resources:
   - ./cloudflare-ddns/ks.yaml
   - ./echo-server/ks.yaml
   - ./external-dns/ks.yaml
+  - ./external-service/ks.yaml
   - ./k8s-gateway/ks.yaml
   - ./nginx/ks.yaml
   - ./unifi-controller/ks.yaml
