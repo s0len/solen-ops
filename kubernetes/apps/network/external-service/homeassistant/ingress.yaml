@@ -7,7 +7,7 @@ subsets:
       - ip: 192.168.10.98
     ports:
       - port: 8123
-        name: https
+        name: http
 ---
 apiVersion: v1
 kind: Service
@@ -17,7 +17,7 @@ spec:
   ports:
     - port: 80
       targetPort: 8123
-      name: https
+      name: http
   clusterIP: None
   type: ClusterIP
 ---
