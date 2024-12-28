@@ -87,7 +87,7 @@ orphaned:
   - /data/torrents/cross-seed/**
   - /data/torrents/usedforseeding/**
   - /data/torrents/links/**
-  max_orphaned_files_to_delete: -1
+  max_orphaned_files_to_delete: 50
 
 notifiarr:
   apikey: "{{ .NOTIFIARR_QBITMANAGE_API_KEY }}"
