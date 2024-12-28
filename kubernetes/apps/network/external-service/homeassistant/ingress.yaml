@@ -4,7 +4,7 @@ metadata:
   name: external-homeassistant
 subsets:
   - addresses:
-      - ip: 192.168.10.98
+      - ip: 192.168.20.42
     ports:
       - port: 8123
         name: http
@@ -27,7 +27,6 @@ metadata:
   name: external-service-ingress
   annotations:
     external-dns.alpha.kubernetes.io/target: "external.${SECRET_DOMAIN}"
-    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
 spec:
   ingressClassName: external
   rules:
