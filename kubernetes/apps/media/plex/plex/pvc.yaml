@@ -18,5 +18,5 @@ spec:
   accessModes: ["ReadWriteMany"]
   resources:
     requests:
-      storage: 100Gi
+      storage: 200Gi
   storageClassName: openebs-zfs-1m
