@@ -93,6 +93,23 @@ spec:
           $CONFIG = array (
             'default_phone_region' => 'US',
           );
+        preview.config.php: |-
+          <?php
+          $CONFIG = array (
+            'enabledPreviewProviders' => array(
+              'OC\Preview\PNG',
+              'OC\Preview\JPEG',
+              'OC\Preview\GIF',
+              'OC\Preview\BMP',
+              'OC\Preview\XBitmap',
+              'OC\Preview\MP3',
+              'OC\Preview\TXT',
+              'OC\Preview\MarkDown',
+              'OC\Preview\OpenDocument',
+              'OC\Preview\Krita',
+              'OC\Preview\HEIC',
+            ),
+          );
 
     deploymentAnnotations:
       reloader.stakater.com/auto: "true"
