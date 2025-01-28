@@ -9,14 +9,3 @@ spec:
     requests:
       storage: 200Gi
   storageClassName: openebs-zfs-1m
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: plex-transcode
-spec:
-  accessModes: ["ReadWriteMany"]
-  resources:
-    requests:
-      storage: 200Gi
-  storageClassName: openebs-zfs-1m
