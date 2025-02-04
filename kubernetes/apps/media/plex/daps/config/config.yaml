@@ -363,11 +363,11 @@ upgradinatorr:
   dry_run: true
   instances:
     radarr_standard:
-      count: 5
+      count: 4
       tag_name: checked
       unattended: true
     radarr_kids:
-      count: 1
+      count: 2
       tag_name: checked
       unattended: true
     radarr_anime:
