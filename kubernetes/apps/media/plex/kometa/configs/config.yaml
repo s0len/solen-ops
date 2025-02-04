@@ -557,6 +557,7 @@ libraries:
     #reset_overlays: false
     schedule_overlays: daily
     collection_files:
+    - default: franchise
     - url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/collection_files/better_new_and_old_movie_releases.yml
     - default: streaming
       template_variables:
