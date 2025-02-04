@@ -294,6 +294,7 @@ libraries:
     collection_files:
     - file: config/movies_collections.yaml
     - url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/collection_files/better_new_and_old_movie_releases.yml
+    - default: franchise
     - default: universe
       template_variables:
         sort_title: <<order_<<key>>>><<title>>
