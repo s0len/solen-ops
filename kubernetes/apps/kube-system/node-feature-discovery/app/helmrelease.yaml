@@ -25,6 +25,8 @@ spec:
       strategy: rollback
       retries: 3
   values:
+    master:
+      replicaCount: 1
     worker:
       config:
         core:
