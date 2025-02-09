@@ -64,7 +64,9 @@ spec:
             securityContext:
               allowPrivilegeEscalation: false
               readOnlyRootFilesystem: true
-              capabilities: { drop: ["ALL"] }
+              capabilities:
+                drop: ["ALL"]
+                add: ["SYS_ADMIN"]  # Added for GPU access
             resources:
               requests:
                 cpu: 1000m
@@ -79,7 +81,7 @@ spec:
         runAsGroup: 568
         fsGroup: 568
         fsGroupChangePolicy: OnRootMismatch
-        supplementalGroups: [44, 10000]
+        supplementalGroups: [44, 10000, 109]
         seccompProfile: { type: RuntimeDefault }
       nodeSelector:
         intel.feature.node.kubernetes.io/gpu: "true"
@@ -106,6 +108,10 @@ spec:
                   identifier: app
                   port: http
     persistence:
+      dev-dri:  # Add this new persistence section
+        type: hostPath
+        hostPath: /dev/dri
+
       config:
         existingClaim: *app
         globalMounts:
