@@ -1,112 +1,99 @@
 ---
-# yaml-language-server: $schema=https://github.com/fluxcd-community/flux2-schemas/raw/main/helmrelease-helm-v2.json
+# yaml-language-server: $schema=https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/helmrelease-helm-v2.json
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: &app hortusfox
+  name: &app hortusfox-web
+  namespace: default
 spec:
-  timeout: 15m
   interval: 30m
   chart:
     spec:
-      chart: hortusfox
-      version: 6.6.3
+      chart: app-template
+      version: 3.7.1
       sourceRef:
         kind: HelmRepository
-        name: hortusfox
+        name: bjw-s
         namespace: flux-system
+
+  maxHistory: 3
+
   install:
     remediation:
       retries: 3
+
   upgrade:
     cleanupOnFail: true
     remediation:
       strategy: rollback
       retries: 3
+
+  uninstall:
+    keepHistory: false
+
   values:
-    image:
+    controllers:
+      hortusfox-web:
+        type: statefulset
+        annotations:
+          reloader.stakater.com/auto: "true"
+
+        containers:
+          app:
+            image:
               repository: ghcr.io/danielbrendel/hortusfox-web
               tag: v4.0
 
-    hortusfox:
-      extraInitContainers:
-        - name: init-db
-          image: ghcr.io/onedr0p/postgres-init:16
-          envFrom:
-            - secretRef:
-                name: hortusfox-secret
+            env:
+              APP_ADMIN_EMAIL: HORTUSFOX_USERNAME
+              APP_ADMIN_PASSWORD: HORTUSFOX_PASSWORD
+              DB_HOST: postgres16-rw.database.svc.cluster.local
+              DB_PORT: 5432
+              DB_DATABASE: hortusfox
+              DB_USERNAME: hortusfox
+              DB_PASSWORD: hortusfox
+              DB_CHARSET: "utf8mb4"
 
-      extraEnv:
-        - name: REDIS_HOST
-          value: dragonfly.database.svc.cluster.local.
-        - name: REDIS_HOST_PORT
-          value: "6379"
+            probes:
+              liveness: &probes
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /ping
+                    port: &port 80
+                  initialDelaySeconds: 0
+                  periodSeconds: 10
+                  timeoutSeconds: 1
+                  failureThreshold: 3
+              readiness: *probes
 
-      existingSecret:
-        enabled: true
-        secretName: hortusfox-secret
-        usernameKey: hortusfox_USERNAME
-        passwordKey: hortusfox_PASSWORD
-        smtpUsernameKey: SMTP_USER
-        smtpPasswordKey: SMTP_PASS
-        smtpHostKey: SMTP_HOST
+            resources:
+              requests:
+                cpu: 100m
+              limits:
+                memory: 5Gi
 
-      host: cloud.${SECRET_DOMAIN}
-
-      mail:
-        enabled: true
-        fromAddress: ${SECRET_USERNAME}
-        domain: gmail.com
-        smtp:
-          host: smtp.gmail.com
-          port: 465
-          authtype: LOGIN
-          secure: ssl
-
-      configs:
-
-    deploymentAnnotations:
-      reloader.stakater.com/auto: "true"
-
-    internalDatabase:
-      enabled: false
-
-    externalDatabase:
-      enabled: true
-      type: postgresql
-      host: postgres16-rw.database.svc.cluster.local:5432
-      database: *app
-      existingSecret:
-        enabled: true
-        secretName: hortusfox-secret
-        usernameKey: INIT_POSTGRES_USER
-        passwordKey: INIT_POSTGRES_PASS
+    service:
+      app:
+        controller: *app
+        ports:
+          http:
+            port: *port
 
     ingress:
-      enabled: true
-      className: external
-      annotations:
-        external-dns.alpha.kubernetes.io/target: "external.${SECRET_DOMAIN}"
-      path: /
-      pathType: Prefix
+      app:
+        className: external
+        annotations:
+          external-dns.alpha.kubernetes.io/target: "external.${SECRET_DOMAIN}"
+        hosts:
+          - host: &host "plants.${SECRET_DOMAIN}"
+            paths:
+              - path: /
+                service:
+                  identifier: main
+                  port: http
 
     persistence:
-      enabled: true
-      existingClaim: *app
-
-    cronjob:
-      enabled: true
-
-    startupProbe:
-      enabled: true
-      initialDelaySeconds: 60
-      periodSeconds: 30
-      timeoutSeconds: 10
-      failureThreshold: 10
-      successThreshold: 1
-
-    resources:
-      requests:
-        cpu: 50m
-      limits:
-        memory: 2Gi
+      config:
+        existingClaim: *app

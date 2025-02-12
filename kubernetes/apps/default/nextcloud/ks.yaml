@@ -27,4 +27,3 @@ spec:
       VOLSYNC_CAPACITY: 300Gi
       GATUS_SUBDOMAIN: cloud
       VOLSYNC_RECORD_SIZE: 1m
-
