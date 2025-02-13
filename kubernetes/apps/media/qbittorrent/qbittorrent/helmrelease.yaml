@@ -94,13 +94,15 @@ spec:
               HTTPPROXY: "on"
               HTTPPROXY_LISTENING_ADDRESS: :8888
               HEALTH_SERVER_ADDRESS: :9999
+              HEALTH_SUCCESS_WAIT_DURATION: 10s
+              HEALTH_TARGET_ADDRESS: airvpn.org
+              PUBLICIP_ENABLED: "true"
               HTTPPROXY_LOG: "on"
               VPN_TYPE: wireguard
               VPN_INTERFACE: tun0
               VPN_SERVICE_PROVIDER: airvpn
               WIREGUARD_MTU: 1320
               SERVER_COUNTRIES: Sweden
-              SERVER_NAMES: Ain
             envFrom:
               - secretRef:
                   name: airvpn-secret
