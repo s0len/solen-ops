@@ -42,7 +42,7 @@ spec:
           app:
             image:
               repository: ghcr.io/danielbrendel/hortusfox-web
-              tag: v4.0
+              tag: v4.1
 
             env:
               APP_ADMIN_EMAIL: HORTUSFOX_USERNAME
