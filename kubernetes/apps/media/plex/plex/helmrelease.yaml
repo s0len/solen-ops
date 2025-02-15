@@ -39,7 +39,7 @@ spec:
               tag: 1.41.4.9463-630c9f557@sha256:1f66577fe4fa60dc0984d568ca55fb5c2b3fae8498ef96ac1ed57710517552be
             env:
               TZ: ${TIMEZONE}
-              PLEX_ADVERTISE_URL: http://static.${SECRET_DOMAIN}:32400,https://static.${SECRET_DOMAIN}:32400,http://${PLEX_IP}:32400
+              PLEX_ADVERTISE_URL: https://static.${SECRET_DOMAIN}:443,http://${PLEX_IP}:32400
               PLEX_NO_AUTH_NETWORKS: 192.168.1.0/24,192.168.10.0/24,192.168.20.0/24
               PLEX_UID: 568
               PLEX_GID: 568
