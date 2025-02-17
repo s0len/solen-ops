@@ -36,12 +36,12 @@ spec:
             args:
               - watch
             # Below commands are only used for first time setup
-            # command:
-            # - sleep
-            # - infinity
+            command:
+            - sleep
+            - infinity
             env:
-              PLEX_BASEURL: http://${PLEX_IP}:32400
-              PLEX_LOCALURL: http://${PLEX_IP}:32400
+              PLEX_BASEURL: http://192.168.10.145:32400
+              PLEX_LOCALURL: http://192.168.10.145:32400
               PLEX_USERNAME: zooLen
               TRAKT_USERNAME: Solentankar
             probes:
