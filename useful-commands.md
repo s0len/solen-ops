@@ -1,5 +1,11 @@
 # This file contains useful commands to run when shit has hit the fan
 
+## When vip-tls is bonkers and needs a delete
+
+```sh
+kubectl delete externalsecret -n cert-manager domain-com-tls
+```
+
 ## Run after updating coreDNS to redeploy all pods
 
 ```sh
