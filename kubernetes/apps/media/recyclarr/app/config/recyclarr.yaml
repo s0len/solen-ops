@@ -535,11 +535,20 @@ radarr:
           except:
             - Not Swedish
 
+      - name: SQP-4
+        min_format_score: 0
+        reset_unmatched_scores:
+          enabled: true
+          except:
+            - Not Swedish
+
     include:
       # Comment out any of the following includes to disable them
       - template: radarr-quality-definition-sqp-streaming
       - template: radarr-quality-profile-sqp-1-1080p
       - template: radarr-custom-formats-sqp-1-1080p
+      - template: radarr-quality-profile-sqp-4
+      - template: radarr-custom-formats-sqp-4
 
     # Custom Formats: https://recyclarr.dev/wiki/yaml/config-reference/custom-formats/
     custom_formats:
@@ -557,3 +566,26 @@ radarr:
           # - f537cf427b64c38c8e36298f657e4828 # Scene
         assign_scores_to:
           - name: SQP-1 (1080p)
+
+      - trash_ids:
+          # Movie Versions
+          - 9f6cbff8cfe4ebbc1bde14c7b7bec0de # IMAX Enhanced
+          # Misc
+          - 2899d84dc9372de3408e6d8cc18e9666 # x264
+          # Unwanted
+          - dc98083864ea246d05a42df0d05f81cc # x265 (HD)
+          # Optional
+          - b17886cb4158d9fea189859409975758 # HDR10+ Boost
+          - 55a5b50cb416dea5a50c4955896217ab # DV HDR10+ Boost
+          - 923b6abef9b17f937fab56cfcf89e1f1 # DV (WEBDL)
+          - b6832f586342ef70d9c128d40c07b872 # Bad Dual Groups
+          - 90cedc1fea7ea5d11298bebd3d1d3223 # EVO (no WEBDL)
+          # - ae9b7c9ebde1f3bd336a8cbd1ec4c5e5 # No-RlsGroup
+          - 7357cf5161efbf8c4d5d0c30b4815ee2 # Obfuscated
+          - 5c44f52a8714fdd79bb4d98e2673be1f # Retags
+          - f537cf427b64c38c8e36298f657e4828 # Scene
+          - f700d29429c023a5734505e77daeaea7 # DV (Disk)
+          - cae4ca30163749b891686f95532519bd # AV1
+          - 25c12f78430a3a23413652cbd1d48d77 # SDR (no WEBDL)
+        assign_scores_to:
+          - name: SQP-4
