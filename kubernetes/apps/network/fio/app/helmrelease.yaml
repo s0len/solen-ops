@@ -38,18 +38,18 @@ spec:
               tag: latest
             command: ["fio"]
             args:
-              - "--name=nfs-test"
+              - "--name=nfs-video-playback"
               - "--filename=/data/test.fio"
               - "--direct=1"
-              - "--rw=randrw"
-              - "--bs=4k"
+              - "--rw=read"
+              - "--bs=1M"
               - "--ioengine=libaio"
-              - "--iodepth=256"
-              - "--runtime=120"
+              - "--iodepth=8"
+              - "--runtime=300"
               - "--time_based"
               - "--group_reporting"
-              - "--numjobs=4"
-              - "--size=1G"
+              - "--numjobs=1"
+              - "--size=10G"
             securityContext:
               runAsUser: 568
               runAsGroup: 568
