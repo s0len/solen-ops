@@ -2,7 +2,8 @@
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: fio-nfs-test
+  name: &app fio
+  namespace: network
 spec:
   interval: 30m
   chart:
