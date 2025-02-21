@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: fio-nfs-test
+spec:
+  containers:
+    - name: fio
+      image: xridge/fio:latest
+      command: ["fio"]
+      args:
+        - "--name=nfs-test"
+        - "--filename=/mnt/nfs/test.fio"
+        - "--direct=1"
+        - "--rw=randrw"
+        - "--bs=4k"
+        - "--ioengine=libaio"
+        - "--iodepth=256"
+        - "--runtime=120"
+        - "--time_based"
+        - "--group_reporting"
+        - "--numjobs=4"
+        - "--size=1G"
+      volumeMounts:
+        - name: nfs
+          mountPath: /mnt/nfs
+  volumes:
+    - name: nfs
+      nfs:
+        server: 192.168.10.98
+        path: /mnt/rust/media
+        readOnly: false
+  restartPolicy: Never
