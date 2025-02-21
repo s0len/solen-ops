@@ -33,7 +33,7 @@ spec:
             command: ["fio"]
             args:
               - "--name=nfs-test"
-              - "--filename=/mnt/nfs/test.fio"
+              - "--filename=/data/test.fio"
               - "--direct=1"
               - "--rw=randrw"
               - "--bs=4k"
@@ -48,7 +48,7 @@ spec:
       data:
         type: nfs
         server: ${TRUENAS_IP}
-        path: /mnt/rust/data
+        path: /mnt/rust/data/media
         globalMounts:
           - path: /data
             readOnly: false
