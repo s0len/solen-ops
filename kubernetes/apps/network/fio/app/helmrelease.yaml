@@ -44,12 +44,11 @@ spec:
               - "--group_reporting"
               - "--numjobs=4"
               - "--size=1G"
-            volumeMounts:
-              - name: nfs
-                mountPath: /mnt/nfs
-    volumes:
-      - name: nfs
-        nfs:
-          server: 192.168.10.98
-          path: /mnt/rust/media
-          readOnly: false
+    persistence:
+      data:
+        type: nfs
+        server: ${TRUENAS_IP}
+        path: /mnt/rust/data
+        globalMounts:
+          - path: /data
+            readOnly: false
