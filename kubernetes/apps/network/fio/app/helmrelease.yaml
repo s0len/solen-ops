@@ -23,7 +23,7 @@ spec:
       retries: 3
   values:
     controllers:
-      fio-nfs-test:
+      fio:
         strategy: RollingUpdate
         containers:
           app:
