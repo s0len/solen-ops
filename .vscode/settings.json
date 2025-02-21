@@ -61,6 +61,6 @@
     "yaml.customTags": [
       "!secret scalar",
       "!env_var scalar"
-    ]
+    ],
+    "editor.formatOnSave": true
   }
-  
