@@ -22,6 +22,12 @@ spec:
     remediation:
       retries: 3
   values:
+    defaultPodOptions:
+      securityContext:
+        runAsUser: 568
+        runAsGroup: 568
+        fsGroup: 568
+        fsGroupChangePolicy: OnRootMismatch
     controllers:
       fio:
         strategy: RollingUpdate
@@ -44,6 +50,10 @@ spec:
               - "--group_reporting"
               - "--numjobs=4"
               - "--size=1G"
+            securityContext:
+              runAsUser: 568
+              runAsGroup: 568
+              fsGroup: 568
     persistence:
       data:
         type: nfs
