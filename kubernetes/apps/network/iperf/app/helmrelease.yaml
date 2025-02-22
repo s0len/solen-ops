@@ -40,15 +40,16 @@ spec:
             args:
               - "-c"
               - "${TRUENAS_IP}"
+              - "-P"
+              - "4" # Simulate 4 concurrent streams
+              - "-b"
+              - "50M" # ~50Mbps each (1080p streams)
               - "-t"
-              - "100" # 5 minutes test
+              - "300"
               - "-i"
-              - "1" # Report every second
-              # Buffer tuning for streaming
+              - "1"
               - "-w"
-              - "256K" # TCP window size
-              - "-l"
-              - "64K" # Buffer length
+              - "256K"
             securityContext:
               runAsUser: 568
               runAsGroup: 568
