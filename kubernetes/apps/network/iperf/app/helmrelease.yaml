@@ -40,19 +40,15 @@ spec:
             args:
               - "-c"
               - "${TRUENAS_IP}"
-              # For UDP testing
-              - "-u"
-              - "-b"
-              - "10G" # Set UDP bandwidth to 10Gbps
-              - "-l"
-              - "8972" # UDP buffer size (slightly below MTU)
               - "-t"
-              - "300" # Test duration
+              - "100" # 5 minutes test
               - "-i"
-              - "60" # Report interval
-              # Optional: add parallel streams for UDP
-              - "-P"
-              - "4"
+              - "1" # Report every second
+              # Buffer tuning for streaming
+              - "-w"
+              - "256K" # TCP window size
+              - "-l"
+              - "64K" # Buffer length
             securityContext:
               runAsUser: 568
               runAsGroup: 568
