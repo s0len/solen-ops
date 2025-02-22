@@ -64,12 +64,10 @@ spec:
             securityContext:
               allowPrivilegeEscalation: false
               readOnlyRootFilesystem: true
-              capabilities:
-                drop: ["ALL"]
-                add: ["SYS_ADMIN"] # Added for GPU access
+              capabilities: { drop: ["ALL"] }
             resources:
               requests:
-                cpu: 1000m
+                cpu: 200m
                 memory: 2Gi
               limits:
                 memory: 30Gi
@@ -81,8 +79,7 @@ spec:
         runAsGroup: 568
         fsGroup: 568
         fsGroupChangePolicy: OnRootMismatch
-        supplementalGroups: [44, 10000, 109]
-        seccompProfile: { type: RuntimeDefault }
+        supplementalGroups: [44]
       nodeSelector:
         intel.feature.node.kubernetes.io/gpu: "true"
     service:
