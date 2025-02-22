@@ -42,8 +42,6 @@ spec:
               - "${TRUENAS_IP}"
               - "-P"
               - "4" # Simulate 4 concurrent streams
-              - "-b"
-              - "150M"
               - "-t"
               - "300"
               - "-i"
