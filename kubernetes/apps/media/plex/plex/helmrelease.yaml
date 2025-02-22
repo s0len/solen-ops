@@ -66,13 +66,13 @@ spec:
               readOnlyRootFilesystem: true
               capabilities:
                 drop: ["ALL"]
-                add: ["SYS_ADMIN"]  # Added for GPU access
+                add: ["SYS_ADMIN"] # Added for GPU access
             resources:
               requests:
                 cpu: 1000m
                 memory: 2Gi
               limits:
-                memory: 20Gi
+                memory: 30Gi
                 gpu.intel.com/i915: 1
     defaultPodOptions:
       securityContext:
