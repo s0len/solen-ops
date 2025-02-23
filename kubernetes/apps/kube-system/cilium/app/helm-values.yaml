@@ -6,9 +6,8 @@ bandwidthManager:
 bpf:
   masquerade: true
   tproxy: true
-  # TODO: uncomment once on kernel 6.8 or greater
-  # https://docs.cilium.io/en/stable/operations/performance/tuning/#netkit-device-mode
-  # datapathMode: netkit
+  preallocateMaps: true
+  datapathMode: netkit
 cgroup:
   automount:
     enabled: false
@@ -18,6 +17,8 @@ cluster:
   name: solen-cluster
 endpointRoutes:
   enabled: true
+envoy:
+  enabled: false
 hubble:
   enabled: false
 ipam:
@@ -52,6 +53,8 @@ securityContext:
       - IPC_LOCK
       - SYS_ADMIN
       - SYS_RESOURCE
+      - PERFMON
+      - BPF
       - DAC_OVERRIDE
       - FOWNER
       - SETGID
