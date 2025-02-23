@@ -27,6 +27,7 @@ spec:
       namespace: volsync-system
     - name: intel-device-plugin-gpu
       namespace: kube-system
+
   values:
     controllers:
       plex:
@@ -72,6 +73,7 @@ spec:
               limits:
                 memory: 30Gi
                 gpu.intel.com/i915: 1
+
     defaultPodOptions:
       securityContext:
         runAsNonRoot: true
@@ -82,6 +84,7 @@ spec:
         supplementalGroups: [44]
       nodeSelector:
         intel.feature.node.kubernetes.io/gpu: "true"
+
     service:
       app:
         controller: *app
@@ -91,12 +94,12 @@ spec:
         ports:
           http:
             port: 32400
+
     ingress:
       app:
         className: external
         annotations:
           external-dns.alpha.kubernetes.io/target: "external.${SECRET_DOMAIN}"
-          nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
         hosts:
           - host: "{{ .Release.Name }}.${SECRET_DOMAIN}"
             paths:
@@ -104,6 +107,7 @@ spec:
                 service:
                   identifier: app
                   port: http
+
     persistence:
       config:
         existingClaim: *app
