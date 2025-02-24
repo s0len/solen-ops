@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: intel-gpu-top
+spec:
+  containers:
+    - name: intel-gpu-top
+      image: intel/intel-gpu-tools
+      command: ["intel_gpu_top"]
+      volumeMounts:
+        - mountPath: /dev/dri
+          name: dri
+  volumes:
+    - name: dri
+      hostPath:
+        path: /dev/dri
+        type: Directory
