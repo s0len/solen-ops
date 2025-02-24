@@ -5,7 +5,7 @@ metadata:
 spec:
   containers:
     - name: intel-gpu-top
-      image: intel/intel-gpu-tools
+      image: xpenology-community/docker-intel-gpu-tools
       command: ["intel_gpu_top"]
       volumeMounts:
         - mountPath: /dev/dri
