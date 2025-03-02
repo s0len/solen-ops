@@ -41,7 +41,7 @@ spec:
           reloader.stakater.com/auto: "true"
         cronjob:
           timeZone: &timeZone ${TIMEZONE}
-          schedule: "35 0 * * *"
+          schedule: "15 21 * * *"
           successfulJobsHistory: 1
           failedJobsHistory: 1
         containers:
