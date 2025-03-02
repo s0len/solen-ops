@@ -114,8 +114,8 @@ spec:
             subPath: Sonarr_Standard_Custom_Formats.yaml
             readOnly: true
           - path: /config/includes/Sonarr_Kids_Quality_Profiles.yaml
-            subPath: Sonarr_Standard_Quality_Profiles.yaml
+            subPath: Sonarr_Kids_Quality_Profiles.yaml
             readOnly: true
           - path: /config/includes/Sonarr_Kids_Custom_Formats.yaml
-            subPath: Sonarr_Standard_Custom_Formats.yaml
+            subPath: Sonarr_Kids_Custom_Formats.yaml
             readOnly: true
