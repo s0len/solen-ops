@@ -1,0 +1,27 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: sqlite-modifier
+  namespace: media # Replace with your actual target namespace
+spec:
+  restartPolicy: Never
+  containers:
+    - name: sqlite-tools
+      image: nouchka/sqlite3:latest
+      command: ["/bin/bash", "-c", "sleep infinity"]
+      volumeMounts:
+        - name: target-pvc
+          mountPath: /mnt
+        - name: script-volume
+          mountPath: /scripts
+      env:
+        - name: PATH
+          value: "/scripts:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+  volumes:
+    - name: target-pvc
+      persistentVolumeClaim:
+        claimName: sonarr-anime # Replace with your actual PVC name
+    - name: script-volume
+      configMap:
+        name: sqlite-modifier-script
+        defaultMode: 0755
