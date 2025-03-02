@@ -1,5 +1,5 @@
 quality_profiles:
-  - name: WEB-1080p
+  - name: Swedish
     reset_unmatched_scores:
       enabled: true
       except:
