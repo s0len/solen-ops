@@ -143,10 +143,10 @@ spec:
         type: emptyDir
         medium: Memory
 
-      media:
+      data:
         type: nfs
         server: ${TRUENAS_IP}
-        path: /mnt/tank/media
+        path: /mnt/rust/data
         globalMounts:
-          - path: /media
+          - path: /data
             readOnly: false
