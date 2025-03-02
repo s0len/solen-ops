@@ -39,12 +39,12 @@ sonarr:
       - template: sonarr-v4-quality-profile-web-2160p
       - template: sonarr-v4-custom-formats-web-2160p
       - template: sonarr-quality-definition-series
-      - config: includes/Sonarr_Anime_Quality_Profiles.yaml
-      - config: includes/Sonarr_Anime_Custom_Formats.yaml
-      - config: includes/Sonarr_Standard_Quality_Profiles.yaml
-      - config: includes/Sonarr_Standard_Custom_Formats.yaml
-      - config: includes/Sonarr_Kids_Quality_Profiles.yaml
-      - config: includes/Sonarr_Kids_Custom_Formats.yaml
+      - config: Sonarr_Anime_Quality_Profiles.yaml
+      - config: Sonarr_Anime_Custom_Formats.yaml
+      - config: Sonarr_Standard_Quality_Profiles.yaml
+      - config: Sonarr_Standard_Custom_Formats.yaml
+      - config: Sonarr_Kids_Quality_Profiles.yaml
+      - config: Sonarr_Kids_Custom_Formats.yaml
 
     quality_definition:
       type: series
