@@ -50,14 +50,14 @@ sonarr:
         qualities:
           - name: WEB 1080p
             qualities:
-            - WEBDL-1080p
-            - WEBRip-1080p
+              - WEBDL-1080p
+              - WEBRip-1080p
           - name: Bluray-1080p
           - name: HDTV-1080p
           - name: WEB 720p
             qualities:
-            - WEBRip-720p
-            - WEBDL-720p
+              - WEBRip-720p
+              - WEBDL-720p
           - name: HDTV-720p
 
       - name: WEB-2160p
@@ -66,19 +66,19 @@ sonarr:
         qualities:
           - name: WEB 2160p
             qualities:
-            - WEBDL-2160p
-            - WEBRip-2160p
+              - WEBDL-2160p
+              - WEBRip-2160p
           - name: Bluray-1080p Remux
           - name: Bluray-1080p
           - name: WEB 1080p
             qualities:
-            - WEBDL-1080p
-            - WEBRip-1080p
+              - WEBDL-1080p
+              - WEBRip-1080p
           - name: HDTV-1080p
           - name: WEB 720p
             qualities:
-            - WEBRip-720p
-            - WEBDL-720p
+              - WEBRip-720p
+              - WEBDL-720p
           - name: HDTV-720p
 
     custom_formats:
@@ -139,76 +139,6 @@ sonarr:
           - name: WEB-2160p
             # score: 0 # Uncomment this line to enable SDR releases
 
-  sonarr-sport:
-    # Set the URL/API Key to your actual instance
-    base_url: http://sonarr-sport.media.svc.cluster.local
-    api_key: !env_var SONARR_API_KEY
-
-    delete_old_custom_formats: false
-    replace_existing_custom_formats: false
-
-    media_naming:
-      series: plex
-      season: default
-      episodes:
-        rename: true
-        standard: default
-        daily: default
-        anime: default
-
-    include:
-      - template: sonarr-v4-quality-profile-web-2160p
-      - template: sonarr-v4-custom-formats-web-2160p
-
-    # Quality definitions from the guide to sync to Sonarr. Choices: series, anime
-    quality_definition:
-      type: series
-
-    custom_formats:
-      # Optional
-      - trash_ids:
-          - 32b367365729d530ca1c124a0b180c64 # Bad Dual Groups
-          - 82d40da2bc6923f41e14394075dd4b03 # No-RlsGroup
-          - e1a997ddb54e3ecbfe06341ad323c458 # Obfuscated
-          - 06d66ab109d4d2eddb2794d21526d140 # Retags
-          # - 1b3994c551cbb92a2c781af061f4ab44 # Scene
-        assign_scores_to:
-          - name: WEB-2160p
-
-      - trash_ids:
-          # Uncomment the next six lines to allow x265 HD releases with HDR/DV
-          - 47435ece6b99a0b477caf360e79ba0bb # x265 (HD)
-          - 9b64dff695c2115facf1b6ea59c9bd07 # x265 (no HDR/DV)
-        assign_scores_to:
-          - name: WEB-2160p
-    quality_profiles:
-      - name: WEB-2160p
-        reset_unmatched_scores:
-          enabled: true
-          except:
-            - Good Release Groups
-            - Good Commentators
-            - Not English
-        qualities:
-          - name: WEB 2160p
-            qualities:
-            - WEBDL-2160p
-            - WEBRip-2160p
-          - name: HDTV-2160p
-          - name: Bluray-1080p Remux
-          - name: Bluray-1080p
-          - name: WEB 1080p
-            qualities:
-            - WEBDL-1080p
-            - WEBRip-1080p
-          - name: HDTV-1080p
-          - name: WEB 720p
-            qualities:
-            - WEBRip-720p
-            - WEBDL-720p
-          - name: HDTV-720p
-
-
   sonarr-kids:
     # Set the URL/API Key to your actual instance
     base_url: http://sonarr-kids.media.svc.cluster.local
@@ -262,14 +192,14 @@ sonarr:
         qualities:
           - name: WEB 1080p
             qualities:
-            - WEBDL-1080p
-            - WEBRip-1080p
+              - WEBDL-1080p
+              - WEBRip-1080p
           - name: Bluray-1080p
           - name: HDTV-1080p
           - name: WEB 720p
             qualities:
-            - WEBRip-720p
-            - WEBDL-720p
+              - WEBRip-720p
+              - WEBDL-720p
           - name: HDTV-720p
 
   sonarr-anime:
@@ -295,7 +225,7 @@ sonarr:
       - template: sonarr-v4-quality-profile-anime
       - template: sonarr-v4-custom-formats-anime
 
-# Custom Formats: https://recyclarr.dev/wiki/yaml/config-reference/custom-formats/
+    # Custom Formats: https://recyclarr.dev/wiki/yaml/config-reference/custom-formats/
     custom_formats:
       - trash_ids:
           - 026d5aadd1a6b4e550b134cb6c72b3ca # Uncensored
@@ -345,25 +275,25 @@ radarr:
         qualities:
           - name: Remux-1080p
             qualities:
-            - Bluray-1080p
-            - Remux-1080p
+              - Bluray-1080p
+              - Remux-1080p
           - name: WEB 1080p
             qualities:
-            - WEBDL-1080p
-            - WEBRip-1080p
-            - HDTV-1080p
+              - WEBDL-1080p
+              - WEBRip-1080p
+              - HDTV-1080p
           - name: Bluray-720p
           - name: WEB 720p
             qualities:
-            - WEBRip-720p
-            - WEBDL-720p
-            - HDTV-720p
+              - WEBRip-720p
+              - WEBDL-720p
+              - HDTV-720p
           - name: Bluray-576p
           - name: Bluray-480p
           - name: WEB 480p
             qualities:
-            - WEBRip-480p
-            - WEBDL-480p
+              - WEBRip-480p
+              - WEBDL-480p
 
     custom_formats:
       - trash_ids:
@@ -437,7 +367,7 @@ radarr:
           enabled: true
           # except:
           #   - "!Personal LQ list"
-      - name: SQP-3  # custom as we moved remux-1080p into the `WEB|Remux|2160p` TRaSH calls it `SQP-3 (audio)`
+      - name: SQP-3 # custom as we moved remux-1080p into the `WEB|Remux|2160p` TRaSH calls it `SQP-3 (audio)`
         reset_unmatched_scores:
           enabled: true
           # except:
@@ -497,7 +427,6 @@ radarr:
           - name: SQP-3
           - name: SQP-4
 
-
       - trash_ids:
           - 839bea857ed2c0a8e084f3cbdbd65ecb # x265 (no HDR/DV)
         assign_scores_to:
@@ -507,7 +436,6 @@ radarr:
             score: 0
           - name: SQP-4
             score: 0
-
 
   radarr-kids:
     base_url: http://radarr-kids.media.svc.cluster.local
@@ -554,10 +482,10 @@ radarr:
     custom_formats:
       # Movie Versions
       - trash_ids:
-      # Uncomment the next line if you prefer WEBDL with IMAX Enhanced to BHDStudio
+          # Uncomment the next line if you prefer WEBDL with IMAX Enhanced to BHDStudio
           - 9f6cbff8cfe4ebbc1bde14c7b7bec0de # IMAX Enhanced
 
-      # Optional - uncomment any of the following if you want them added to your profile
+          # Optional - uncomment any of the following if you want them added to your profile
           - b6832f586342ef70d9c128d40c07b872 # Bad Dual Groups
           - 90cedc1fea7ea5d11298bebd3d1d3223 # EVO (no WEBDL)
           # - ae9b7c9ebde1f3bd336a8cbd1ec4c5e5 # No-RlsGroup
@@ -568,14 +496,14 @@ radarr:
           - name: SQP-1 (1080p)
 
       - trash_ids:
-      # Uncomment any of the next six lines to prefer these movie versions
+          # Uncomment any of the next six lines to prefer these movie versions
           # - 570bc9ebecd92723d2d21500f4be314c # Remaster
           # - eca37840c13c6ef2dd0262b141a5482f # 4K Remaster
           # - e0c07d59beb37348e975a930d5e50319 # Criterion Collection
           # - 9d27d9d2181838f76dee150882bdc58c # Masters of Cinema
           # - db9b4c4b53d312a3ca5f1378f6440fc9 # Vinegar Syndrome
           # - 957d0f44b592285f26449575e8b1167e # Special Edition
-      # Uncomment the next line if you prefer 1080p/2160p WEBDL with IMAX Enhanced
+          # Uncomment the next line if you prefer 1080p/2160p WEBDL with IMAX Enhanced
           - 9f6cbff8cfe4ebbc1bde14c7b7bec0de # IMAX Enhanced
         assign_scores_to:
           - name: SQP-1 (2160p)

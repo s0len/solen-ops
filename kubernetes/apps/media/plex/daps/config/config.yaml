@@ -37,9 +37,9 @@ instances:
     sonarr_anime:
       url: http://sonarr-anime.media.svc.cluster.local
       api: "{{ .SONARR_API_KEY }}"
-    sonarr_sport:
-      url: http://sonarr-sport.media.svc.cluster.local
-      api: "{{ .SONARR_API_KEY }}"
+    # sonarr_sport:
+    #   url: http://sonarr-sport.media.svc.cluster.local
+    #   api: "{{ .SONARR_API_KEY }}"
   plex:
     plex_standard:
       # API key can be found here: https://support.plex.tv/articles/204059436-finding-an-authentication-token-x-plex-token/
@@ -125,12 +125,18 @@ sync_gdrive:
   # The token for rclone, this is the output of rclone config dump that needs to run manually
   # Token looks like this: { "access_token": "value", "token_type": "Bearer", "refresh_token": "value", "expiry": "value" }
   # NOTE: Include the curly braces
-  token: {"access_token": "{{ .GDRIVE_ACCESS_TOKEN }}","token_type":"Bearer","refresh_token": "{{ .GDRIVE_REFRESH_TOKEN }}","expiry": "{{ .GDRIVE_EXPIRY }}"}
+  token:
+    {
+      "access_token": "{{ .GDRIVE_ACCESS_TOKEN }}",
+      "token_type": "Bearer",
+      "refresh_token": "{{ .GDRIVE_REFRESH_TOKEN }}",
+      "expiry": "{{ .GDRIVE_EXPIRY }}",
+    }
   # The location of your rclone service account file (JSON)
   # gdrive_sa_location: /config/rclone_sa.json
   gdrive_sync: # example of multiple gdrive_id's with multiple sync_locations as objects, we have deprecated gdrive_id and sync_location so please use this instead
-      # id: The ID of the folder you want to sync from
-      # location: Where you want to sync the posters to
+    # id: The ID of the folder you want to sync from
+    # location: Where you want to sync the posters to
     - id: 1VeeQ_frBFpp6AZLimaJSSr0Qsrl6Tb7z # Drazzib
       location: /posters/drazz
     - id: 1wrSru-46iIN1iqCl2Cjhj5ofdazPgbsz # dsaq
@@ -149,11 +155,11 @@ sync_gdrive:
       location: /posters/chrisdc
     - id: 1G77TLQvgs_R7HdMWkMcwHL6vd_96cMp7 # Quafley
       location: /posters/quafley
-    - id: 1bBbK_3JeXCy3ElqTwkFHaNoNxYgqtLug  # Stupifier
+    - id: 1bBbK_3JeXCy3ElqTwkFHaNoNxYgqtLug # Stupifier
       location: /posters/stupifier
-    - id: 1KnwxzwBUQzQyKF1e24q_wlFqcER9xYHM  # Sahara
+    - id: 1KnwxzwBUQzQyKF1e24q_wlFqcER9xYHM # Sahara
       location: /posters/sahara
-    - id: 1alseEnUBjH6CjXh77b5L4R-ZDGdtOMFr  # Lion City Gaming
+    - id: 1alseEnUBjH6CjXh77b5L4R-ZDGdtOMFr # Lion City Gaming
       location: /posters/lioncitygaming
     - id: 1ZfvUgN0qz4lJYkC_iMRjhH-fZ0rDN_Yu # MajorGiant - Contains homemade
       location: /posters/majorgiant

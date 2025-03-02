@@ -29,10 +29,6 @@ spec:
       namespace: media
     - name: sonarr-kids
       namespace: media
-    - name: sonarr-anime
-      namespace: media
-    - name: sonarr-sport
-      namespace: media
     - name: radarr-standard
       namespace: media
     - name: radarr-kids

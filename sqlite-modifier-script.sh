@@ -14,7 +14,7 @@ fi
 
 DB_PATH="$1"
 NEW_PAGE_SIZE=262144   # 256KB
-NEW_CACHE_SIZE=-524288 # 512MB (increased proportionally with page size)
+NEW_CACHE_SIZE=-131072 # 128MB (adjust as needed)
 
 log "Starting SQLite page size modification for: $DB_PATH"
 

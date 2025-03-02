@@ -20,7 +20,7 @@ spec:
   volumes:
     - name: target-pvc
       persistentVolumeClaim:
-        claimName: sonarr-anime # Replace with your actual PVC name
+        claimName: sonarr-standard # Replace with your actual PVC name
     - name: script-volume
       configMap:
         name: sqlite-modifier-script
