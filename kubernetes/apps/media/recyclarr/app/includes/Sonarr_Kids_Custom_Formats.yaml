@@ -25,7 +25,6 @@ custom_formats:
       - 9c11cd3f07101cdba90a2d81cf0e56b4
       - e2315f990da2e2cbfc9fa5b7a6fcfe48
       - fbcb31d8dabd2a319072b84fc0b7249c
-      - 15a05bc7c1a36e2b57fd628f8977e2fc
       - 32b367365729d530ca1c124a0b180c64
     assign_scores_to:
       - name: Swedish
