@@ -28,18 +28,9 @@ instances:
       api: "{{ .RADARR_API_KEY }}"
   sonarr:
     # Instance name can be whatever you want, it just needs to match the name used in other sections
-    sonarr_standard:
+    sonarr:
       url: http://sonarr-standard.media.svc.cluster.local
       api: "{{ .SONARR_API_KEY }}"
-    sonarr_kids:
-      url: http://sonarr-kids.media.svc.cluster.local
-      api: "{{ .SONARR_API_KEY }}"
-    sonarr_anime:
-      url: http://sonarr-anime.media.svc.cluster.local
-      api: "{{ .SONARR_API_KEY }}"
-    # sonarr_sport:
-    #   url: http://sonarr-sport.media.svc.cluster.local
-    #   api: "{{ .SONARR_API_KEY }}"
   plex:
     plex_standard:
       # API key can be found here: https://support.plex.tv/articles/204059436-finding-an-authentication-token-x-plex-token/
@@ -236,10 +227,7 @@ poster_renamerr:
     - radarr_standard
     - radarr_kids
     - radarr_anime
-    - sonarr_standard
-    - sonarr_kids
-    - sonarr_anime
-    - sonarr_sport
+    - sonarr
 
 border_replacerr:
   # This script replaces the border on the posters or removes the border
@@ -303,9 +291,7 @@ unmatched_assets:
     - radarr_standard
     - radarr_kids
     - radarr_anime
-    - sonarr_standard
-    - sonarr_kids
-    - sonarr_anime
+    - sonarr
   # Supports both data path as well as base_name of folder path
   # Note: If you use base_name, the name must match exactly just without the "/"
   ignore_root_folders:
@@ -351,8 +337,7 @@ poster_cleanarr:
   instances:
     - plex_1
     - radarr_1
-    - sonarr_1
-    - sonarr_anime
+    - sonarr
   # Libraries are ONLY used for collections
   library_names:
     - Movies
@@ -380,18 +365,10 @@ upgradinatorr:
       count: 1
       tag_name: checked
       unattended: false
-    sonarr_standard:
+    sonarr:
       count: 1
       tag_name: checked
-      unattended: false
-    sonarr_kids:
-      count: 1
-      tag_name: checked
-      unattended: false
-    sonarr_anime:
-      count: 1
-      tag_name: checked
-      unattended: false
+      unattended: true
 
 renameinatorr:
   # This script will rename all series in Sonarr/Radarr to match the naming scheme of the
@@ -411,10 +388,7 @@ renameinatorr:
     - radarr_standard
     - radarr_kids
     - radarr_anime
-    - sonarr_standard
-    - sonarr_kids
-    - sonarr_anime
-    - sonarr_sport
+    - sonarr
 
 nohl:
   # This script will find all files that are not hardlinked and will process them in radarr
@@ -426,10 +400,14 @@ nohl:
   print_files: false # Will not respect excludes for simply printing the files
   instances:
     - radarr_1
-    - sonarr_1
+    - sonarr
   paths:
-    - /path/to/media/movies
-    - /path/to/media/series
+    - /data/media/filmer
+    - /data/media/serier
+    - /data/media/barnfilmer
+    - /data/media/barnserier
+    - /data/media/anime-filmer
+    - /data/media/anime-serier
   filters:
     exclude_profiles: test3, test4
     # Do not include year in the exclude list
