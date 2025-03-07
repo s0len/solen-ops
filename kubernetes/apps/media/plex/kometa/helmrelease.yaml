@@ -185,6 +185,3 @@ spec:
           - path: /config/series_collections.yaml
             subPath: series_collections.yaml
             readOnly: true
-          - path: /config/title_cards.yaml
-            subPath: title_cards.yaml
-            readOnly: true
