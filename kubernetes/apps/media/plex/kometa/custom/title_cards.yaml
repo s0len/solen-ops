@@ -548,6 +548,7 @@ metadata:
 
   420279: # TVDB id for Rick and Morty: The Anime. Set by AlanShore60607 on MediUX. https://mediux.pro/sets/25609
     seasons:
+      1:
         episodes:
           1:
             url_poster: https://api.mediux.pro/assets/bbc862e9-7c5d-4b46-a521-14e24aaa81e5
@@ -926,6 +927,7 @@ metadata:
   423075: # TVDB id for Kaiju No. 8. Set by creshaytions on MediUX. https://mediux.pro/sets/21299
     url_poster: https://api.mediux.pro/assets/ba3d0552-c916-4a06-a5dc-8b638fd7354a
     seasons:
+      1:
         episodes:
           1:
             url_poster: https://api.mediux.pro/assets/9bb6820b-225d-48df-b8e2-235fcd1ca534
@@ -3430,6 +3432,7 @@ metadata:
 
   346798: # TVDB id for Asobi Asobase - workshop of fun -. Set by alexpips on MediUX. https://mediux.pro/sets/12309
     seasons:
+      1:
         episodes:
           1:
             url_poster: https://api.mediux.pro/assets/0eef779e-d624-4ea2-9d64-43f20450e7a9
@@ -3458,6 +3461,7 @@ metadata:
 
   81062: # TVDB id for Angel Cop. Set by Kwickflix on MediUX. https://mediux.pro/sets/18006
     seasons:
+      1:
         episodes:
           1:
             url_poster: https://api.mediux.pro/assets/f27b29e4-ede1-469c-9fd0-a5a29d4c14b9
@@ -3474,6 +3478,7 @@ metadata:
 
   378609: # TVDB id for 86 EIGHTY-SIX. Set by creshaytions on MediUX. https://mediux.pro/sets/21471
     seasons:
+      1:
         episodes:
           1:
             url_poster: https://api.mediux.pro/assets/54dea305-3e67-4a18-85f0-f8c3caa0266b
@@ -3524,6 +3529,7 @@ metadata:
 
   280329: # TVDB id for Akame ga Kill!. Set by Vryolaka on MediUX. https://mediux.pro/sets/21052
     seasons:
+      1:
         episodes:
           1:
             url_poster: https://api.mediux.pro/assets/a8663a0c-5763-42d1-b5ad-2d7baff015ac
@@ -8138,6 +8144,7 @@ metadata:
     url_poster: https://api.mediux.pro/assets/5a3d8573-1fb1-43a0-b7c3-26368c4309c6
     url_background: https://api.mediux.pro/assets/6d500b88-f00b-415a-b572-26fd3850c880
     seasons:
+      1:
         episodes:
           1:
             url_poster: https://api.mediux.pro/assets/a01abb4c-dcc7-4aa3-9f89-288c290677df
@@ -11734,6 +11741,7 @@ metadata:
 
   432093: # TVDB id for Jury Duty. Set by bornreddit on MediUX. https://mediux.pro/sets/21684
     seasons:
+      1:
         episodes:
           1:
             url_poster: https://api.mediux.pro/assets/5f25e44d-5d65-4f0b-bbe9-c04ef0572ca2
@@ -21189,7 +21197,7 @@ metadata:
           7:
             url_poster: https://api.mediux.pro/assets/dff3a4b2-0b97-4922-b328-489107fae5e4
           8:
-            url_poster: https://api.mediux.pro/assets/08f3141f-2629-421d-9c1a-2cccc68e842
+            url_poster: https://api.mediux.pro/assets/08f3141f-2629-421d-9c1a-2cccc68e842a
 
   385925: # TVDB id for Avatar the Last Airbender. Set by willtong93 on MediUX. https://mediux.pro/sets/13809
     url_poster: https://api.mediux.pro/assets/e05f4908-f09d-4b12-ae55-c6351fcab045
