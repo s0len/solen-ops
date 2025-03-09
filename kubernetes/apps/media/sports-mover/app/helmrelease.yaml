@@ -32,7 +32,7 @@ spec:
         containers:
           app:
             image:
-              repository: ghcr.io/linuxserver/docker-baseimage-alpine
+              repository: ghcr.io/linuxserver/baseimage-alpine
               tag: 3.21-79f3bc4b-ls10
             env:
               - name: PUID
