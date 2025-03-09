@@ -84,14 +84,14 @@ spec:
                     # Determine episode number based on session type
                     local episode=""
                     case "$session" in
-                      "Practice"*"1"|"Practice"*"One") episode="01" ;;
-                      "Practice"*"2"|"Practice"*"Two") episode="02" ;;
-                      "Qualifying"*"1"|"Qualifying"*"One") episode="03" ;;
-                      "Qualifying"*"2"|"Qualifying"*"Two") episode="04" ;;
-                      "Qualifying") episode="03" ;; # Default to Q1 if not specified
-                      "Sprint") episode="05" ;;
-                      "Race") episode="06" ;;
-                      *) episode="00" ;;
+                      "Practice"*"1"|"Practice"*"One") episode="1" ;;
+                      "Practice"*"2"|"Practice"*"Two") episode="2" ;;
+                      "Qualifying"*"1"|"Qualifying"*"One") episode="3" ;;
+                      "Qualifying"*"2"|"Qualifying"*"Two") episode="4" ;;
+                      "Qualifying") episode="3" ;; # Default to Q1 if not specified
+                      "Sprint") episode="5" ;;
+                      "Race") episode="6" ;;
+                      *) episode="0" ;;
                     esac
 
                     # Create target directories
