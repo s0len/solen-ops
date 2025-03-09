@@ -57,18 +57,17 @@ spec:
                 /tmp/scripts/organize_sports.sh
             securityContext:
               allowPrivilegeEscalation: false
-              readOnlyRootFilesystem: true
+              readOnlyRootFilesystem: false
               capabilities: { drop: ["ALL"] }
 
     defaultPodOptions:
       automountServiceAccountToken: false
       enableServiceLinks: false
       securityContext:
-        runAsUser: 568
-        runAsGroup: 568
-        runAsNonRoot: true
+        runAsUser: 0
+        runAsGroup: 0
+        runAsNonRoot: false
         fsGroup: 568
-        fsGroupChangePolicy: OnRootMismatch
 
     persistence:
       scripts-ro:
