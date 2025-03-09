@@ -22,35 +22,77 @@ organize_moto() {
         return 0
     fi
 
-    # Modified regex pattern to match your file naming convention more flexibly
-    if [[ $file =~ (Moto(?:GP|[23]))\.([0-9]{4})\.Round([0-9]{2})\.([A-Za-z]+)\.([A-Za-z]+) ]]; then
-        local moto_class="${BASH_REMATCH[1]}"
-        local year="${BASH_REMATCH[2]}"
-        local round="${BASH_REMATCH[3]}"
-        local location="${BASH_REMATCH[4]}"
-        local session="${BASH_REMATCH[5]}"
-        local extension="${file##*.}"
+    # Extract the important parts using a more flexible pattern
+    # Capture class, year, round, location, session
+    local moto_class=""
+    local year=""
+    local round=""
+    local location=""
+    local session=""
+    local extension="${file##*.}"
 
-        echo "Matched components:"
+    # Match the basic parts (class, year, round, location)
+    if [[ $filename =~ ^(Moto(?:GP|[23]))\.([0-9]{4})\.Round([0-9]{2})\.([^\.]+) ]]; then
+        moto_class="${BASH_REMATCH[1]}"
+        year="${BASH_REMATCH[2]}"
+        round="${BASH_REMATCH[3]}"
+        location="${BASH_REMATCH[4]}"
+
+        echo "Base elements matched:"
         echo "- Class: $moto_class"
         echo "- Year: $year"
         echo "- Round: $round"
         echo "- Location: $location"
-        echo "- Session: $session"
-        echo "- Extension: $extension"
+
+        # Now extract the session type
+        if [[ $filename =~ \.([^\.]+)\.(WEB-DL|TNT|720p|1080p) ]]; then
+            session="${BASH_REMATCH[1]}"
+            echo "- Session matched: $session"
+        else
+            # Try alternative pattern for session
+            if [[ $filename =~ \.(Race|Sprint|Qualifying|Practice)[^\.]*\. ]]; then
+                session="${BASH_REMATCH[1]}"
+                echo "- Session matched (alt): $session"
+
+                # Check for Q1/Q2 designations
+                if [[ $filename =~ Qualifying\.(Q[12]) ]]; then
+                    session="Qualifying ${BASH_REMATCH[1]}"
+                    echo "- Session refined: $session"
+                fi
+            fi
+        fi
 
         # Determine episode number based on session type
         local episode=""
         case "$session" in
         "Practice"*"1" | "Practice"*"One") episode="1" ;;
         "Practice"*"2" | "Practice"*"Two") episode="2" ;;
-        "Qualifying"*"1" | "Qualifying"*"One") episode="3" ;;
-        "Qualifying"*"2" | "Qualifying"*"Two") episode="4" ;;
+        "Qualifying Q1" | "Qualifying.Q1") episode="3" ;;
+        "Qualifying Q2" | "Qualifying.Q2") episode="4" ;;
         "Qualifying") episode="3" ;; # Default to Q1 if not specified
         "Sprint") episode="5" ;;
         "Race") episode="6" ;;
-        *) episode="0" ;;
+        *)
+            # If we still can't determine, try direct filename matching
+            if [[ $filename =~ Qualifying\.Q1 ]]; then
+                session="Qualifying Q1"
+                episode="3"
+            elif [[ $filename =~ Qualifying\.Q2 ]]; then
+                session="Qualifying Q2"
+                episode="4"
+            else
+                episode="0"
+            fi
+            ;;
         esac
+
+        echo "- Episode number: $episode"
+
+        # Special case handling for the TNT part in Race files
+        if [[ $filename =~ Race\.TNT ]]; then
+            session="Race"
+            episode="6"
+        fi
 
         # Create target directories
         local season_dir="$DEST_DIR/$moto_class $year"
@@ -73,7 +115,7 @@ organize_moto() {
     fi
 }
 
-# Process existing files and directories with more direct approach
+# Process existing files and directories
 find "$SRC_DIR" -type f -name "*.mkv" | grep -E '(Moto(GP|[23]))' | while read file; do
     echo "Found MKV file: $file"
     organize_moto "$file"
