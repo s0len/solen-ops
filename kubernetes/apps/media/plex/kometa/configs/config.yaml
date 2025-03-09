@@ -731,7 +731,7 @@ libraries:
   Sport:
     collection_files:
     metadata_files:
-      - url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/metadata_files/motogp_2024.yaml
+      - url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/metadata_files/motogp_2025.yaml
       - url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/metadata_files/erc_2024.yaml
       - url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/metadata_files/wrc_2024.yaml
     operations:
@@ -806,7 +806,7 @@ webhooks: # Can be individually specified per library as well
   delete:
 
 plex: # Can be individually specified per library as well; REQUIRED for the script to run
-  url: http://192.168.10.145:32400
+  url: http://${PLEX_IP}:32400
   token: <<PLEX_API_KEY>>
   timeout: 60
   clean_bundles: false
