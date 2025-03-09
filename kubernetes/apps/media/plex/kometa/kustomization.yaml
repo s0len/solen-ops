@@ -15,6 +15,5 @@ configMapGenerator:
       - ./custom/best-of.yaml
       - ./custom/movies_collections.yaml
       - ./custom/series_collections.yaml
-      - ./custom/title_cards.yaml
 generatorOptions:
   disableNameSuffixHash: true

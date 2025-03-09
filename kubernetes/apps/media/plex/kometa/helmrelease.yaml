@@ -9,7 +9,7 @@ spec:
   chart:
     spec:
       chart: app-template
-      version: 3.7.1
+      version: 3.7.2
       sourceRef:
         kind: HelmRepository
         name: bjw-s
@@ -184,7 +184,4 @@ spec:
             readOnly: true
           - path: /config/series_collections.yaml
             subPath: series_collections.yaml
-            readOnly: true
-          - path: /config/title_cards.yaml
-            subPath: title_cards.yaml
             readOnly: true
