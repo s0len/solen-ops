@@ -32,7 +32,7 @@ spec:
         containers:
           app:
             image:
-              repository: ghcr.io/linuxserver/baseimage-alpine
+              repository: ghcr.io/linuxserver/alpine
               tag: 3.18
             env:
               - name: PUID
