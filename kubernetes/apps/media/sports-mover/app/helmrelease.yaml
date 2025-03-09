@@ -36,13 +36,6 @@ spec:
         fsGroup: 568
         fsGroupChangePolicy: OnRootMismatch
 
-    service:
-      app:
-        controller: *app
-        ports:
-          http:
-            port: *port
-
     persistence:
       data:
         type: nfs
