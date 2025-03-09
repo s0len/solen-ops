@@ -5,7 +5,7 @@ kind: Kustomization
 resources:
   - ./helmrelease.yaml
 configMapGenerator:
-  - name: sports-mover-configmap
+  - name: sports-organizer-configmap
     files:
       - organize_sports.sh=./scripts/organize_sports.sh
 generatorOptions:

@@ -3,7 +3,7 @@
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: &app sports-mover
+  name: &app sports-organizer
   namespace: media
 spec:
   interval: 15m
@@ -56,23 +56,24 @@ spec:
                 echo "Starting sports file organization service..."
                 /tmp/scripts/organize_sports.sh
             securityContext:
-              runAsUser: 0
-              runAsGroup: 0
-              runAsNonRoot: false
               allowPrivilegeEscalation: false
-              readOnlyRootFilesystem: false
+              readOnlyRootFilesystem: true
+              capabilities: { drop: ["ALL"] }
 
     defaultPodOptions:
       automountServiceAccountToken: false
       enableServiceLinks: false
       securityContext:
+        runAsUser: 568
+        runAsGroup: 568
+        runAsNonRoot: true
         fsGroup: 568
         fsGroupChangePolicy: OnRootMismatch
 
     persistence:
       scripts-ro:
         type: configMap
-        name: sports-mover-configmap
+        name: sports-organizer-configmap
         defaultMode: 0644
         globalMounts:
           - path: /scripts-ro

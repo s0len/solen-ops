@@ -65,11 +65,22 @@ organize_moto() {
     # Check for Race
     if [[ $filename == *Race* ]]; then
         session="Race"
-        episode="6"
-    # Check for Sprint
+        if [[ $moto_class == "MotoGP" ]]; then
+            episode="6" # MotoGP races are episode 6 (after Sprint)
+        else
+            episode="5" # Moto2/3 races are episode 5 (no Sprint)
+        fi
+    # Check for Sprint - only for MotoGP class
     elif [[ $filename == *Sprint* ]]; then
-        session="Sprint"
-        episode="5"
+        if [[ $moto_class == "MotoGP" ]]; then
+            session="Sprint"
+            episode="5"
+        else
+            # For Moto2/3 classes that don't have Sprint races
+            session="Unknown"
+            episode="0"
+            echo "Warning: Sprint session found for $moto_class which shouldn't have sprints"
+        fi
     # Check for Qualifying
     elif [[ $filename == *Qualifying* ]]; then
         if [[ $filename == *Q1* ]]; then
