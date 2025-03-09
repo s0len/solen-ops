@@ -9,26 +9,35 @@ organize_moto() {
     local file="$1"
     local filename=$(basename "$file")
 
+    # Debug output
+    echo "Processing file: $file"
+
     # Handle both files and directories
     if [[ -d "$file" ]]; then
         # For directories, look for matching video files inside
         find "$file" -type f -name "*.mkv" -o -name "*.mp4" | while read video_file; do
+            echo "Found video file in directory: $video_file"
             organize_moto "$video_file"
         done
         return 0
     fi
 
-    # Extract moto class, year, round, location and session type using regex
-    if [[ $filename =~ (Moto(?:GP|[23]))\.([0-9]{4})\.Round([0-9]{2})\.([^\.]+)\.([^\.]+) ]]; then
+    # Modified regex pattern to match your file naming convention more flexibly
+    if [[ $file =~ (Moto(?:GP|[23]))\.([0-9]{4})\.Round([0-9]{2})\.([A-Za-z]+)\.([A-Za-z]+) ]]; then
         local moto_class="${BASH_REMATCH[1]}"
         local year="${BASH_REMATCH[2]}"
         local round="${BASH_REMATCH[3]}"
-        local location="${BASH_REMATCH[3]%% *}"
-        local session="${BASH_REMATCH[5]%%.*}" # Extract session name before first dot
-        local extension="${filename##*.}"
+        local location="${BASH_REMATCH[4]}"
+        local session="${BASH_REMATCH[5]}"
+        local extension="${file##*.}"
 
-        # Clean up location if needed
-        location="${BASH_REMATCH[4]}"
+        echo "Matched components:"
+        echo "- Class: $moto_class"
+        echo "- Year: $year"
+        echo "- Round: $round"
+        echo "- Location: $location"
+        echo "- Session: $session"
+        echo "- Extension: $extension"
 
         # Determine episode number based on session type
         local episode=""
@@ -56,23 +65,37 @@ organize_moto() {
         ln "$file" "$target_file" || cp "$file" "$target_file"
 
         return 0
+    else
+        echo "File doesn't match expected Moto pattern (detailed): $file"
+        # Print the filename for debugging
+        echo "Filename: $filename"
+        return 1
     fi
-
-    # If we get here, the file didn't match our pattern
-    echo "File doesn't match expected Moto pattern: $file"
-    return 1
 }
 
-# Process existing files and directories
-find "$SRC_DIR" -type f -o -type d | grep -E '(Moto(GP|[23]))\.([0-9]{4})' | while read item; do
-    organize_moto "$item"
+# Process existing files and directories with more direct approach
+find "$SRC_DIR" -type f -name "*.mkv" | grep -E '(Moto(GP|[23]))' | while read file; do
+    echo "Found MKV file: $file"
+    organize_moto "$file"
 done
 
+# Alternative regex pattern for directory search
+find "$SRC_DIR" -type d | grep -E '(Moto(GP|[23]))' | while read dir; do
+    echo "Found directory: $dir"
+    organize_moto "$dir"
+done
+
+echo "Initial file processing completed. Starting file monitoring..."
+
 # Monitor for new files and directories
-inotifywait -m -r -e create -e moved_to "$SRC_DIR" | while read path action file; do
-    if [[ $file =~ Moto(GP|[23])\.[0-9]{4} ]]; then
-        # Allow a small delay for file to finish copying
-        sleep 5
-        organize_moto "$path/$file"
-    fi
+while true; do
+    echo "Waiting for new files..."
+    # Use a simpler approach since inotifywait might have issues
+    sleep 60
+
+    # Check for new files periodically
+    find "$SRC_DIR" -type f -name "*.mkv" -mmin -2 | grep -E '(Moto(GP|[23]))' | while read file; do
+        echo "Found new MKV file: $file"
+        organize_moto "$file"
+    done
 done

@@ -42,37 +42,40 @@ spec:
               - name: TZ
                 value: "${TIMEZONE}"
             command:
-              - /bin/bash
+              - /bin/sh
               - -c
               - |
-                apk add --no-cache bash inotify-tools coreutils findutils sed
-                chmod +x /scripts/organize_sports.sh
+                # Copy script to a writable location
+                mkdir -p /tmp/scripts
+                cp /scripts-ro/organize_sports.sh /tmp/scripts/
+                chmod +x /tmp/scripts/organize_sports.sh
+
+                # Install needed packages
+                apk update && apk add --no-cache bash inotify-tools coreutils findutils sed
+
                 echo "Starting sports file organization service..."
-                /scripts/organize_sports.sh
+                /tmp/scripts/organize_sports.sh
             securityContext:
-              runAsUser: 568
-              runAsGroup: 568
-              runAsNonRoot: true
+              runAsUser: 0
+              runAsGroup: 0
+              runAsNonRoot: false
               allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: false
 
     defaultPodOptions:
       automountServiceAccountToken: false
       enableServiceLinks: false
       securityContext:
-        runAsUser: 568
-        runAsGroup: 568
-        runAsNonRoot: true
         fsGroup: 568
         fsGroupChangePolicy: OnRootMismatch
 
     persistence:
-      scripts:
+      scripts-ro:
         type: configMap
         name: sports-mover-configmap
-        defaultMode: 0775
+        defaultMode: 0644
         globalMounts:
-          - path: /scripts/organize_sports.sh
-            subPath: organize_sports.sh
+          - path: /scripts-ro
             readOnly: true
 
       data:
@@ -82,3 +85,7 @@ spec:
         globalMounts:
           - path: /data
             readOnly: false
+
+      tmp:
+        type: emptyDir
+        medium: Memory
