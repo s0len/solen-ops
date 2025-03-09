@@ -4,3 +4,11 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
   - ./helmrelease.yaml
+configMapGenerator:
+  - name: sports-mover-configmap
+    files:
+      - organize_sports.sh=./scripts/organize_sports.sh
+generatorOptions:
+  disableNameSuffixHash: true
+  annotations:
+    kustomize.toolkit.fluxcd.io/substitute: disabled
