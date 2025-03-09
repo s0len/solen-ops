@@ -10,121 +10,121 @@ organize_moto() {
     local filename=$(basename "$file")
 
     # Debug output
-    echo "Processing file: $file"
+    echo "Processing file: $file with direct string parsing"
 
     # Handle both files and directories
     if [[ -d "$file" ]]; then
         # For directories, look for matching video files inside
-        find "$file" -type f -name "*.mkv" -o -name "*.mp4" | while read video_file; do
+        find "$file" -type f -name "*.mkv" | while read video_file; do
             echo "Found video file in directory: $video_file"
             organize_moto "$video_file"
         done
         return 0
     fi
 
-    # Extract the important parts using a more flexible pattern
-    # Capture class, year, round, location, session
-    local moto_class=""
-    local year=""
-    local round=""
-    local location=""
-    local session=""
-    local extension="${file##*.}"
-
-    # Match the basic parts (class, year, round, location)
-    if [[ $filename =~ ^(Moto(?:GP|[23]))\.([0-9]{4})\.Round([0-9]{2})\.([^\.]+) ]]; then
-        moto_class="${BASH_REMATCH[1]}"
-        year="${BASH_REMATCH[2]}"
-        round="${BASH_REMATCH[3]}"
-        location="${BASH_REMATCH[4]}"
-
-        echo "Base elements matched:"
-        echo "- Class: $moto_class"
-        echo "- Year: $year"
-        echo "- Round: $round"
-        echo "- Location: $location"
-
-        # Now extract the session type
-        if [[ $filename =~ \.([^\.]+)\.(WEB-DL|TNT|720p|1080p) ]]; then
-            session="${BASH_REMATCH[1]}"
-            echo "- Session matched: $session"
-        else
-            # Try alternative pattern for session
-            if [[ $filename =~ \.(Race|Sprint|Qualifying|Practice)[^\.]*\. ]]; then
-                session="${BASH_REMATCH[1]}"
-                echo "- Session matched (alt): $session"
-
-                # Check for Q1/Q2 designations
-                if [[ $filename =~ Qualifying\.(Q[12]) ]]; then
-                    session="Qualifying ${BASH_REMATCH[1]}"
-                    echo "- Session refined: $session"
-                fi
-            fi
-        fi
-
-        # Determine episode number based on session type
-        local episode=""
-        case "$session" in
-        "Practice"*"1" | "Practice"*"One") episode="1" ;;
-        "Practice"*"2" | "Practice"*"Two") episode="2" ;;
-        "Qualifying Q1" | "Qualifying.Q1") episode="3" ;;
-        "Qualifying Q2" | "Qualifying.Q2") episode="4" ;;
-        "Qualifying") episode="3" ;; # Default to Q1 if not specified
-        "Sprint") episode="5" ;;
-        "Race") episode="6" ;;
-        *)
-            # If we still can't determine, try direct filename matching
-            if [[ $filename =~ Qualifying\.Q1 ]]; then
-                session="Qualifying Q1"
-                episode="3"
-            elif [[ $filename =~ Qualifying\.Q2 ]]; then
-                session="Qualifying Q2"
-                episode="4"
-            else
-                episode="0"
-            fi
-            ;;
-        esac
-
-        echo "- Episode number: $episode"
-
-        # Special case handling for the TNT part in Race files
-        if [[ $filename =~ Race\.TNT ]]; then
-            session="Race"
-            episode="6"
-        fi
-
-        # Create target directories
-        local season_dir="$DEST_DIR/$moto_class $year"
-        local round_dir="$season_dir/$round $location"
-        mkdir -p "$round_dir"
-
-        # Create the target filename
-        local target_file="$round_dir/${round}x${episode} ${session}.${extension}"
-
-        echo "Moving: $file to $target_file"
-        # Create hardlink instead of moving
-        ln "$file" "$target_file" || cp "$file" "$target_file"
-
-        return 0
-    else
-        echo "File doesn't match expected Moto pattern (detailed): $file"
-        # Print the filename for debugging
-        echo "Filename: $filename"
+    # Simple checks to ensure this is a file we want to process
+    if [[ ! $filename == Moto* ]] || [[ ! $filename == *.mkv ]]; then
+        echo "Not a Moto video file: $filename"
         return 1
     fi
+
+    # Direct string parsing without regex
+    # Format: Moto[GP|2|3].YEAR.RoundXX.LOCATION.SESSION...
+
+    # Get class (MotoGP, Moto2, Moto3)
+    if [[ $filename == MotoGP* ]]; then
+        moto_class="MotoGP"
+    elif [[ $filename == Moto2* ]]; then
+        moto_class="Moto2"
+    elif [[ $filename == Moto3* ]]; then
+        moto_class="Moto3"
+    else
+        echo "Unknown Moto class in filename: $filename"
+        return 1
+    fi
+
+    # Get year (next part after the first dot)
+    IFS='.' read -ra PARTS <<<"$filename"
+    if [[ ${#PARTS[@]} -lt 4 ]]; then
+        echo "Not enough parts in filename: $filename"
+        return 1
+    fi
+
+    year="${PARTS[1]}"
+    echo "Year: $year"
+
+    # Get round number and location
+    round="${PARTS[2]#Round}" # Remove 'Round' prefix
+    location="${PARTS[3]}"
+    echo "Round: $round, Location: $location"
+
+    # Determine session and episode
+    session=""
+    episode=""
+
+    # Check for Race
+    if [[ $filename == *Race* ]]; then
+        session="Race"
+        episode="6"
+    # Check for Sprint
+    elif [[ $filename == *Sprint* ]]; then
+        session="Sprint"
+        episode="5"
+    # Check for Qualifying
+    elif [[ $filename == *Qualifying* ]]; then
+        if [[ $filename == *Q1* ]]; then
+            session="Qualifying Q1"
+            episode="3"
+        elif [[ $filename == *Q2* ]]; then
+            session="Qualifying Q2"
+            episode="4"
+        else
+            session="Qualifying"
+            episode="3"
+        fi
+    # Check for Practice
+    elif [[ $filename == *Practice* ]]; then
+        if [[ $filename == *"1"* ]] || [[ $filename == *"One"* ]]; then
+            session="Practice 1"
+            episode="1"
+        elif [[ $filename == *"2"* ]] || [[ $filename == *"Two"* ]]; then
+            session="Practice 2"
+            episode="2"
+        else
+            session="Practice"
+            episode="0"
+        fi
+    else
+        session="Unknown"
+        episode="0"
+    fi
+
+    echo "Session: $session, Episode: $episode"
+
+    # Get file extension
+    extension="${filename##*.}"
+
+    # Create target directories
+    local season_dir="$DEST_DIR/$moto_class $year"
+    local round_dir="$season_dir/$round $location"
+    mkdir -p "$round_dir"
+
+    # Create the target filename
+    local target_file="$round_dir/${round}x${episode} ${session}.${extension}"
+
+    echo "Moving: $file to $target_file"
+    # Create hardlink instead of moving
+    ln "$file" "$target_file" || cp "$file" "$target_file"
+    echo "Successfully processed file!"
+
+    return 0
 }
 
-# Process existing files and directories
-find "$SRC_DIR" -type f -name "*.mkv" | grep -E '(Moto(GP|[23]))' | while read file; do
+# Process existing files (direct approach)
+echo "Looking for MotoGP files..."
+find "$SRC_DIR" -name "*.mkv" | grep -E 'Moto(GP|2|3)' | while read file; do
     echo "Found MKV file: $file"
     organize_moto "$file"
-done
-
-# Alternative regex pattern for directory search
-find "$SRC_DIR" -type d | grep -E '(Moto(GP|[23]))' | while read dir; do
-    echo "Found directory: $dir"
-    organize_moto "$dir"
 done
 
 echo "Initial file processing completed. Starting file monitoring..."
@@ -136,7 +136,7 @@ while true; do
     sleep 60
 
     # Check for new files periodically
-    find "$SRC_DIR" -type f -name "*.mkv" -mmin -2 | grep -E '(Moto(GP|[23]))' | while read file; do
+    find "$SRC_DIR" -name "*.mkv" -mmin -2 | grep -E 'Moto(GP|2|3)' | while read file; do
         echo "Found new MKV file: $file"
         organize_moto "$file"
     done
