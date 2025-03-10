@@ -731,9 +731,11 @@ libraries:
   Sport:
     collection_files:
     metadata_files:
-      - url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/metadata_files/motogp_2025.yaml
-      - url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/metadata_files/erc_2024.yaml
-      - url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/metadata_files/wrc_2024.yaml
+      - url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/metadata-files/moto3_2025.yaml
+      - url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/metadata-files/moto2_2025.yaml
+      - url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/metadata-files/motogp_2025.yaml
+      - url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/metadata-files/erc_2024.yaml
+      - url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/metadata-files/wrc_2024.yaml
     operations:
       assets_for_all: true
     minimum_items: 1

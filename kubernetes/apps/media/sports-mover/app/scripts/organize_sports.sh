@@ -3,6 +3,7 @@
 # Set source and destination directories
 SRC_DIR="/data/torrents/sport"
 DEST_DIR="/data/media/sport"
+PROCESS_INTERVAL=60 # Check every 60 seconds
 
 # Function to organize motorcycle racing files
 organize_moto() {
@@ -143,8 +144,7 @@ echo "Initial file processing completed. Starting file monitoring..."
 # Monitor for new files and directories
 while true; do
     echo "Waiting for new files..."
-    # Use a simpler approach since inotifywait might have issues
-    sleep 60
+    sleep $PROCESS_INTERVAL
 
     # Check for new files periodically
     find "$SRC_DIR" -name "*.mkv" -mmin -2 | grep -E 'Moto(GP|2|3)' | while read file; do
