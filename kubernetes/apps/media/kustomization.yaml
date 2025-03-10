@@ -15,7 +15,7 @@ resources:
   # - ./podgrab/ks.yaml
   - ./qbittorrent/ks.yaml
   - ./sonarr/ks.yaml
-  - ./sports-organizer/ks.yaml
+  # - ./sports-organizer/ks.yaml
   - ./radarr/ks.yaml
   # - ./readarr/ks.yaml
   - ./recyclarr/ks.yaml
