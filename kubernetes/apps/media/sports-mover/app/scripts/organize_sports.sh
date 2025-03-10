@@ -95,16 +95,16 @@ organize_moto() {
             episode="3"
         fi
     # Check for Practice
-    elif [[ $filename == *Practice* ]]; then
-        if [[ $filename == *"1"* ]] || [[ $filename == *"One"* ]]; then
+    elif [[ $filename == *Practice* ]] || [[ $filename == *"FP"* ]]; then
+        if [[ $filename == *"FP1"* ]] || [[ $filename == *"Free Practice 1"* ]]; then
             session="Practice 1"
             episode="1"
-        elif [[ $filename == *"2"* ]] || [[ $filename == *"Two"* ]]; then
+        elif [[ $filename == *"FP2"* ]] || [[ $filename == *"Free Practice 2"* ]]; then
             session="Practice 2"
             episode="2"
         else
             session="Practice"
-            episode="0"
+            episode="1"
         fi
     else
         session="Unknown"
