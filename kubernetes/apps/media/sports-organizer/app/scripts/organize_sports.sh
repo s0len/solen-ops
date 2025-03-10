@@ -122,7 +122,7 @@ organize_moto() {
     mkdir -p "$round_dir"
 
     # Create the target filename
-    local target_file="$round_dir/${round}x${episode} ${session}.${extension}"
+    local target_file="$round_dir/${round}x${episode} ${moto_class} ${session}.${extension}"
 
     echo "Moving: $file to $target_file"
     # Create hardlink instead of moving
