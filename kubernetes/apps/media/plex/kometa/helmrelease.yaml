@@ -119,25 +119,13 @@ spec:
         type: *type
         cronjob:
           <<: *cronjob
-          schedule: "0 */1 * * *"
+          schedule: "*/5 * * * *"
         containers:
           app:
             <<: *container_app
             args:
               - |
                 python3 kometa.py --run --read-only-config --run-libraries "Sport"
-
-      motorsport:
-        type: *type
-        cronjob:
-          <<: *cronjob
-          schedule: "15 8,12,15,18,21 * * *"
-        containers:
-          app:
-            <<: *container_app
-            args:
-              - |
-                python3 kometa.py --run --read-only-config --run-libraries "Motorsport"
 
     defaultPodOptions:
       securityContext:
