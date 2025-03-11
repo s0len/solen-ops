@@ -119,7 +119,7 @@ spec:
         type: *type
         cronjob:
           <<: *cronjob
-          schedule: "*/5 * * * *"
+          schedule: "* */1 * * *"
         containers:
           app:
             <<: *container_app
