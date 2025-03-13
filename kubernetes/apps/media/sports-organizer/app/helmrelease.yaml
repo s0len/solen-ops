@@ -34,7 +34,6 @@ spec:
             image:
               repository: ghcr.io/s0len/sports-organizer
               tag: develop
-              pullPolicy: Always
             env:
               SRC_DIR: /data/torrents/sport
               DEST_DIR: /data/media/sport
@@ -45,6 +44,8 @@ spec:
                   name: sports-organizer-secret
             securityContext:
               privileged: false
+        annotations:
+          rollme: "$(date +%s)"
 
     defaultPodOptions:
       automountServiceAccountToken: false
