@@ -39,8 +39,6 @@ spec:
               DEST_DIR: /data/media/sport
               PROCESS_INTERVAL: 60
               PUSHOVER_NOTIFICATION: true
-              PUSHOVER_USER_KEY: "${PUSHOVER_USER_KEY}"
-              PUSHOVER_API_TOKEN: "${PUSHOVER_API_TOKEN}"
             envFrom:
               - secretRef:
                   name: sports-organizer-secret
