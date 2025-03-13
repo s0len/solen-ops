@@ -32,52 +32,31 @@ spec:
         containers:
           app:
             image:
-              repository: ghcr.io/linuxserver/baseimage-alpine
-              tag: 3.21-79f3bc4b-ls10
+              repository: ghcr.io/s0len/sports-organizer
+              tag: develop
             env:
-              - name: PUID
-                value: "568"
-              - name: PGID
-                value: "568"
-              - name: TZ
-                value: "${TIMEZONE}"
-            command:
-              - /bin/sh
-              - -c
-              - |
-                # Copy script to a writable location
-                mkdir -p /tmp/scripts
-                cp /scripts-ro/organize_sports.sh /tmp/scripts/
-                chmod +x /tmp/scripts/organize_sports.sh
-
-                # Install needed packages
-                apk update && apk add --no-cache bash inotify-tools coreutils findutils sed
-
-                echo "Starting sports file organization service..."
-                /tmp/scripts/organize_sports.sh
+              SRC_DIR: /data/torrents/sport
+              DEST_DIR: /data/media/sport
+              PROCESS_INTERVAL: 60
+              PUSHOVER_NOTIFICATION: true
+              PUSHOVER_USER_KEY: "${PUSHOVER_USER_KEY}"
+              PUSHOVER_API_TOKEN: "${PUSHOVER_API_TOKEN}"
+            envFrom:
+              - secretRef:
+                  name: sports-organizer-secret
             securityContext:
-              allowPrivilegeEscalation: false
-              readOnlyRootFilesystem: false
-              capabilities: { drop: ["ALL"] }
+              privileged: false
 
     defaultPodOptions:
       automountServiceAccountToken: false
       enableServiceLinks: false
       securityContext:
-        runAsUser: 0
-        runAsGroup: 0
-        runAsNonRoot: false
+        runAsUser: 568
+        runAsGroup: 568
+        runAsNonRoot: true
         fsGroup: 568
 
     persistence:
-      scripts-ro:
-        type: configMap
-        name: sports-organizer-configmap
-        defaultMode: 0644
-        globalMounts:
-          - path: /scripts-ro
-            readOnly: true
-
       data:
         type: nfs
         server: "${TRUENAS_IP}"
