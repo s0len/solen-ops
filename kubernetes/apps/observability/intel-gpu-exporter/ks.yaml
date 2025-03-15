@@ -13,7 +13,7 @@ spec:
   dependsOn:
     - name: kube-prometheus-stack
   path: ./kubernetes/apps/observability/intel-gpu-exporter
-  prune: true
+  prune: false # Enable later
   sourceRef:
     kind: GitRepository
     name: home-kubernetes

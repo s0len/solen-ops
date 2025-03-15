@@ -8,7 +8,7 @@ metadata:
 spec:
   targetNamespace: network
   path: ./kubernetes/apps/network/external-service/truenas
-  prune: true
+  prune: false # Enable later
   sourceRef:
     kind: GitRepository
     name: home-kubernetes
@@ -25,7 +25,7 @@ metadata:
 spec:
   targetNamespace: network
   path: ./kubernetes/apps/network/external-service/homeassistant
-  prune: true
+  prune: false # Enable later
   sourceRef:
     kind: GitRepository
     name: home-kubernetes

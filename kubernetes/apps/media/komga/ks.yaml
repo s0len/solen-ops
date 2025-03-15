@@ -14,7 +14,7 @@ spec:
     - name: external-secrets-stores
     - name: volsync
   path: ./kubernetes/apps/media/komga/app
-  prune: true
+  prune: false # Enable later
   sourceRef:
     kind: GitRepository
     name: home-kubernetes

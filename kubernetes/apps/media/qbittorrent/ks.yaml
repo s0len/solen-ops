@@ -14,7 +14,7 @@ spec:
     - name: external-secrets-stores
   wait: false
   path: ./kubernetes/apps/media/qbittorrent/qbittorrent
-  prune: true
+  prune: false # Enable later
   sourceRef:
     kind: GitRepository
     name: home-kubernetes
@@ -41,7 +41,7 @@ spec:
     - name: external-secrets-stores
   wait: false
   path: ./kubernetes/apps/media/qbittorrent/qbitmanage
-  prune: true
+  prune: false # Enable later
   sourceRef:
     kind: GitRepository
     name: home-kubernetes

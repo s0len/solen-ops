@@ -13,7 +13,7 @@ spec:
   dependsOn:
     - name: external-secrets-stores
   path: ./kubernetes/apps/media/readarr/audiobook
-  prune: true
+  prune: false # Enable later
   sourceRef:
     kind: GitRepository
     name: home-kubernetes

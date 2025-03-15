@@ -14,7 +14,7 @@ spec:
     - name: dragonfly-cluster
     - name: external-secrets-stores
   path: ./kubernetes/apps/default/nextcloud/app
-  prune: true
+  prune: false # Enable later
   sourceRef:
     kind: GitRepository
     name: home-kubernetes

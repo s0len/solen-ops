@@ -11,7 +11,7 @@ spec:
     labels:
       app.kubernetes.io/name: *app
   path: ./kubernetes/apps/media/plex/plex
-  prune: true
+  prune: false # Enable later
   sourceRef:
     kind: GitRepository
     name: home-kubernetes
@@ -41,7 +41,7 @@ spec:
     - name: external-secrets-stores
   interval: 10m
   path: kubernetes/apps/media/plex/plex-auto-languages
-  prune: true
+  prune: false # Enable later
   sourceRef:
     kind: GitRepository
     name: home-kubernetes
@@ -65,7 +65,7 @@ spec:
     - name: external-secrets-stores
   interval: 10m
   path: kubernetes/apps/media/plex/kometa
-  prune: true
+  prune: false # Enable later
   sourceRef:
     kind: GitRepository
     name: home-kubernetes
@@ -90,7 +90,7 @@ spec:
   interval: 30m
   timeout: 5m
   path: "./kubernetes/apps/media/plex/trakt-sync"
-  prune: true
+  prune: false # Enable later
   sourceRef:
     kind: GitRepository
     name: home-kubernetes
@@ -119,7 +119,7 @@ spec:
     - name: external-secrets-stores
   interval: 10m
   path: kubernetes/apps/media/plex/daps
-  prune: true
+  prune: false # Enable later
   sourceRef:
     kind: GitRepository
     name: home-kubernetes
@@ -140,7 +140,7 @@ spec:
     - name: external-secrets-stores
   interval: 10m
   path: kubernetes/apps/media/plex/plex-image-cleanup
-  prune: true
+  prune: false # Enable later
   sourceRef:
     kind: GitRepository
     name: home-kubernetes
@@ -158,7 +158,7 @@ spec:
     labels:
       app.kubernetes.io/name: *app
   path: ./kubernetes/apps/media/plex/tautulli
-  prune: true
+  prune: false # Enable later
   sourceRef:
     kind: GitRepository
     name: home-kubernetes
