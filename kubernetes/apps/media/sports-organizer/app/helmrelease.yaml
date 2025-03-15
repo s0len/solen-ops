@@ -10,7 +10,7 @@ spec:
   chart:
     spec:
       chart: app-template
-      version: 3.7.2
+      version: 3.7.3
       sourceRef:
         kind: HelmRepository
         name: bjw-s
@@ -33,7 +33,7 @@ spec:
           app:
             image:
               repository: ghcr.io/s0len/sports-organizer
-              tag: develop@sha256:7ad26af712ec6d038d0d655da98a801f15d65f0e6fd9cd11922467efe9a71365
+              tag: develop@sha256:013eb5362d654ac3cb644ed8e100cd00df16d62e4be4cf6d0cb70973c3144c27
               pullPolicy: Always
             env:
               SRC_DIR: /data/torrents/sport
