@@ -1,0 +1,226 @@
+version: v1alpha1
+debug: false
+persist: true
+machine:
+    type: controlplane
+    token: ENC[AES256_GCM,data:rsCFCk0yt2nfXgiTOCed8O9+ZdDqD336rSl9aSB4,iv:tgeTiQ6euMXzTrUyshaWwAC+j8qfjiTFAtVMaFEC6dE=,tag:6NeK2yNmsH7xYvtCC2weZg==,type:str]
+    ca:
+        crt: ENC[AES256_GCM,data:bY342PB+BXUkJBCsH+ETX15+2DQL8ThYeJNAWAdlAQ==,iv:rN+DeA/9hD0x+pLrPURoKZN1PJJMciQezb7YMLf9uJI=,tag:V9pY6hmxbYCgPO7aw3kT9A==,type:str]
+        key: ENC[AES256_GCM,data:vFQy6KMQQrPKn/9ze1ZlyUA8eE878sHwd1PlOwGc/Q==,iv:8vKIlZ62lnFYkYfiggbhcqmbtipK+NaLWIR61XNzCXU=,tag:LdGMY4YGqfMXnl7gS9WoZw==,type:str]
+    certSANs:
+        - 192.168.10.80
+        - 127.0.0.1
+    kubelet:
+        image: ghcr.io/siderolabs/kubelet:{{ ENV.KUBERNETES_VERSION }}
+        extraArgs:
+            rotate-server-certificates: "true"
+        extraConfig:
+            maxPods: 150
+        extraMounts:
+            - destination: /var/openebs/local
+              type: bind
+              source: /var/openebs/local
+              options:
+                - bind
+                - rshared
+                - rw
+        defaultRuntimeSeccompProfileEnabled: true
+        nodeIP:
+            validSubnets:
+                - 192.168.10.0/24
+        disableManifestsDirectory: true
+    kernel:
+        modules:
+            - name: zfs
+    network:
+        hostname: control-1
+        interfaces:
+            - deviceSelector:
+                hardwareAddr: ac:1f:6b:2d:f2:94
+              addresses:
+                - 192.168.10.76/24
+              routes:
+                - network: 0.0.0.0/0
+                  gateway: 192.168.10.1
+              mtu: 9000
+              dhcp: false
+              vip:
+                ip: 192.168.10.80
+        nameservers:
+            - 1.1.1.1
+            - 1.0.0.1
+        disableSearchDomain: true
+    install:
+        disk: /dev/sda
+        image: factory.talos.dev/installer/8de8ff0564a256e9c3ccc261be0bfc4b910c3725b40b3d09fe5d74ef80eb6650:{{ ENV.TALOS_VERSION }}
+        wipe: false
+        extraKernelArgs:
+            - i915.enable_guc=3
+            - apparmor=0
+            - init_on_alloc=0
+            - init_on_free=0
+            - intel_iommu=on
+            - iommu=pt
+            - mitigations=off
+            - security=none
+            - sysctl.kernel.kexec_load_disabled=1
+            - talos.auditd.disabled=1
+    files:
+        - op: create
+          path: /etc/cri/conf.d/20-customization.part
+          content: |
+            [plugins."io.containerd.cri.v1.images"]
+            discard_unpacked_layers = false
+        - op: overwrite
+          permissions: 420
+          path: /etc/nfsmount.conf
+          content: |
+            [ NFSMount_Global_Options ]
+            nfsvers=4.2
+            hard=True
+            nconnect=16
+            noatime=True
+    sysctls:
+        fs.inotify.max_queued_events: "65536"
+        fs.inotify.max_user_instances: "8192"
+        fs.inotify.max_user_watches: "1048576"
+        net.core.bpf_jit_harden: "1"
+        net.core.default_qdisc: fq
+        net.core.rmem_max: "67108864"
+        net.core.wmem_max: "67108864"
+        net.core.rmem_default: "67108864"
+        net.core.wmem_default: "67108864"
+        net.core.optmem_max: "67108864"
+        net.core.netdev_max_backlog: "250000"
+        net.ipv4.tcp_timestamps: "0"
+        net.ipv4.tcp_congestion_control: bbr
+        net.ipv4.tcp_fastopen: 3
+        net.ipv4.tcp_max_syn_backlog: "8192"
+        net.ipv4.tcp_rmem: 4096 262144 67108864
+        net.ipv4.tcp_wmem: 4096 262144 67108864
+        net.ipv4.tcp_mtu_probing: "1"
+        vm.nr_hugepages: "3072"
+    sysfs:
+        module.zfs.parameters.zfs_arc_max: 33552457142
+        module.zfs.parameters.zfs_arc_sys_free: 15098820000
+        devices.system.cpu.intel_pstate.hwp_dynamic_boost: 1
+        devices.system.cpu.cpu0.cpufreq.energy_performance_preference: balance_performance
+        devices.system.cpu.cpu1.cpufreq.energy_performance_preference: balance_performance
+        devices.system.cpu.cpu2.cpufreq.energy_performance_preference: balance_performance
+        devices.system.cpu.cpu3.cpufreq.energy_performance_preference: balance_performance
+        devices.system.cpu.cpu4.cpufreq.energy_performance_preference: balance_performance
+        devices.system.cpu.cpu5.cpufreq.energy_performance_preference: balance_performance
+        devices.system.cpu.cpu6.cpufreq.energy_performance_preference: balance_performance
+        devices.system.cpu.cpu7.cpufreq.energy_performance_preference: balance_performance
+        devices.system.cpu.cpu8.cpufreq.energy_performance_preference: balance_performance
+        devices.system.cpu.cpu9.cpufreq.energy_performance_preference: balance_performance
+        devices.system.cpu.cpu10.cpufreq.energy_performance_preference: balance_performance
+        devices.system.cpu.cpu11.cpufreq.energy_performance_preference: balance_performance
+    features:
+        rbac: true
+        stableHostname: true
+        kubernetesTalosAPIAccess:
+            enabled: true
+            allowedRoles:
+                - os:admin
+            allowedKubernetesNamespaces:
+                - system-upgrade
+        apidCheckExtKeyUsage: true
+        diskQuotaSupport: true
+        kubePrism:
+            enabled: true
+            port: 7445
+        hostDNS:
+            enabled: true
+            forwardKubeDNSToHost: false
+            resolveMemberNames: true
+    udev:
+        rules:
+            - SUBSYSTEM=="drm", KERNEL=="renderD*", GROUP="44", MODE="0660"
+    nodeLabels:
+        intel.feature.node.kubernetes.io/gpu: "true"
+        factory.talos.dev/schematic-id.part-0: ${TALOS_SCHEMATIC_ID_PART_0}
+        factory.talos.dev/schematic-id.part-1: ${TALOS_SCHEMATIC_ID_PART_1}
+cluster:
+    id: ENC[AES256_GCM,data:LHgdZlUWR8/Ui0UirSUqtYDuEnstRJoMkR/o,iv:MlQRNRpnQf53+GDh/oiIfYuUMYFhsucZj0rbUuwlxu4=,tag:+0n39wwkTAbAQ/7ErLOhzg==,type:str]
+    secret: ENC[AES256_GCM,data:WgpLXbX/hhYw0t3Oa8JOmc1QjMPkaNXCCrEZtxmkQg==,iv:y2Mn8KSJULd87BWlVTmcB3djuDlP1ILgkkyRjNdfEXw=,tag:3+CtrPJZJErmZp1asOJjWg==,type:str]
+    controlPlane:
+        endpoint: https://192.168.10.80:6443
+    clusterName: solen-cluster
+    network:
+        cni:
+            name: none
+        dnsDomain: cluster.local
+        podSubnets:
+            - 10.69.0.0/16
+        serviceSubnets:
+            - 10.96.0.0/16
+    token: ENC[AES256_GCM,data:UXb+ezUY0JtTYYcSs78pOA1MiYA9ZgpFxGm6SXBM,iv:bxaz+l8/vPzOKkFTZb3c9gqVlXSLr6hyZbbpTO8oNIg=,tag:CfZEbG8jwAT4meH/T5BFVQ==,type:str]
+    secretboxEncryptionSecret: ENC[AES256_GCM,data:kAzLlES5ddsgPzQfLZUY3F2/q5HOVccV+tATKHNVyWMGQOd4zdzVC9ri8NfqesYsXVQ=,iv:bCnBcmicHEXKlwOILHV8SFocw5d4gawRhDEbFcbWGXs=,tag:Qy7p5UTPgtoYF+PfManZnA==,type:str]
+    ca:
+        crt: ENC[AES256_GCM,data:LIcA5g/nUm/z9vVluWmccC4JnZKHs9oEN4mftHeVjQ==,iv:8eE6/s9vTIatyxm7qcrcvoL4+A+0tuXVODWsIgJo63c=,tag:1qEFSmP7pObjQNdnZ8+K+Q==,type:str]
+        key: ENC[AES256_GCM,data:E1Y2LUD8Na9kaLsjTwguJ1HcJ21yLlTrIaYKs423yg==,iv:AZr+Q8veoOt8w7MXtA1ReWBkY5k3nrontkirRJR0Nvw=,tag:mjLMAtrCu0/Lwg3lv6NmBQ==,type:str]
+    aggregatorCA:
+        crt: ENC[AES256_GCM,data:RX8wmcE3chxRyy+lXnwfjMfLgN4LDw7ladI6nJLlDUs6kflQQqv8lyA=,iv:KejXUPaYtuww76yx2xZGKErj6k47mhaM9HYpMvUSbso=,tag:8M2Jg7cp9er45R9ViQSDhw==,type:str]
+        key: ENC[AES256_GCM,data:0pwUQAcZKZTp3Emnjacf0J3jifs7bMgwar/DUZf/i5PfVk7eFsHZ7Fw=,iv:FEYd0uPQgBhdiiX10BiJAnaNfvAv2aKJpvcVUlgE3mg=,tag:Yo72FMQgEy0KJBC0+KBosw==,type:str]
+    serviceAccount:
+        key: ENC[AES256_GCM,data:zK4isOZo2hB8NBHhq82wmWCK1WTkTWD4dSQ9sNMn/W9/jXlGMkMBOuofuw==,iv:kaIDxyLjENcivlxUkrmLTkv2/I9lYO7rKqhBTFZcrcU=,tag:grjyNuMDZC62KNybSXSGlg==,type:str]
+    apiServer:
+        image: registry.k8s.io/kube-apiserver:{{ ENV.KUBERNETES_VERSION }}
+        certSANs:
+            - 192.168.10.80
+            - 127.0.0.1
+        disablePodSecurityPolicy: true
+        auditPolicy:
+            apiVersion: audit.k8s.io/v1
+            kind: Policy
+            rules:
+                - level: Metadata
+    controllerManager:
+        image: registry.k8s.io/kube-controller-manager:{{ ENV.KUBERNETES_VERSION }}
+        extraArgs:
+            bind-address: 0.0.0.0
+    proxy:
+        disabled: true
+    scheduler:
+        image: registry.k8s.io/kube-scheduler:{{ ENV.KUBERNETES_VERSION }}
+        extraArgs:
+            bind-address: 0.0.0.0
+    discovery:
+        enabled: true
+        registries:
+            kubernetes:
+                disabled: true
+            service:
+                disabled: false
+    etcd:
+        ca:
+            crt: ENC[AES256_GCM,data:cDNsakzop3DoLhdY23hVZvJBkc13ylyoY9dqWJs6mdSOeSFB,iv:L9XAFTTF7AzO1Aaaiy883Q2hE0OZu2L9hqkRlpWFZ7M=,tag:mqOiW+e1lW6l/d6aq6wqdg==,type:str]
+            key: ENC[AES256_GCM,data:zS4oKpea31nx6M4DS7zPbCOtywzELs3qMISNNj+stJAF4A2W,iv:kILUmCBkOF5vA/9qKOqbv1OpBQ1gy/fHQGJm4rMsyG4=,tag:6fr0Vk2zjWQ/8x06MovMOA==,type:str]
+        extraArgs:
+            listen-metrics-urls: http://0.0.0.0:2381
+        advertisedSubnets:
+            - 192.168.10.0/24
+    coreDNS:
+        disabled: true
+    allowSchedulingOnControlPlanes: true
+sops:
+    kms: []
+    gcp_kms: []
+    azure_kv: []
+    hc_vault: []
+    age:
+        - recipient: age1w9dv5enm6meku23cr82tfdgdmkqntrg0mnw5qyt7azyd59qvnc0q0xunp8
+          enc: |
+            -----BEGIN AGE ENCRYPTED FILE-----
+            YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSArVWFJRytTTHk4ODk4Y21X
+            eU94eFVoQnhCZVpPSHhFb3k3TDZiWjFwcmtFCk5SN1lqU2JUN29tMFVvd3h4Mkk0
+            aDV1RCtTeURjbHl1VEZHOUFWa0plM00KLS0tIGNmOFc2cUZuS3ZwSmV1dkpYTTFV
+            WjJCbkdnVWJyNm1CbjNLbzM5eDBnNTAKsGKyOlTnMkdP3wTE573qlgsyX/yrCDzj
+            9k83Q7R1TZJkYs5ChoaYdHMWLohrRfGevi0nuB02IraIV0wOzZHXmg==
+            -----END AGE ENCRYPTED FILE-----
+    lastmodified: "2025-03-15T21:02:04Z"
+    mac: ENC[AES256_GCM,data:CnDUrgqU/SwQhAKjP2wggE/p000GqPN/D49Ru4fkhepBeEa8uS99E3tNrmcr7bzryt4ZCkLV2dgh3XTZmrbIX6A8jQglOFHyYI7p4rjgidCCba6CrXYjy360mV9o/EsWOc0x8x2esf+Cofndp3tgJRGXyQBkZ1z90WmY0L3RP3Y=,iv:aSoEGmocaXjEJq1bQ7Q6dUqrQO0fKh9sJ5v5S1ORRVI=,tag:BzUp4HFsfLh/FuiA+1P1qQ==,type:str]
+    pgp: []
+    encrypted_regex: ^(token|crt|key|id|secret|secretboxEncryptionSecret|ca)$
+    version: 3.9.4
