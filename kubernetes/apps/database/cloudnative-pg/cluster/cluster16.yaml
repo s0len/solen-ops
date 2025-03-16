@@ -6,7 +6,7 @@ metadata:
   name: postgres16
 spec:
   instances: 3
-  imageName: ghcr.io/cloudnative-pg/postgresql:16.8-2
+  imageName: ghcr.io/cloudnative-pg/postgresql:16.8@sha256:968fde47c946fcc86b2005f49eaf98f8e47e2a168eadc95880d60cf87fa526c6
   primaryUpdateStrategy: unsupervised
   storage:
     size: 20Gi
@@ -17,7 +17,8 @@ spec:
   postgresql:
     parameters:
       max_connections: "400"
-      shared_buffers: 256MB
+      shared_buffers: 512MB
+      huge_pages: "on"
   nodeMaintenanceWindow:
     inProgress: false
     reusePVC: true
@@ -26,6 +27,7 @@ spec:
       cpu: 500m
     limits:
       memory: 4Gi
+      hugepages-2Mi: 2Gi
   monitoring:
     enablePodMonitor: true
   backup:
