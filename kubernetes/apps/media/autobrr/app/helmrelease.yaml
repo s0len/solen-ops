@@ -6,14 +6,10 @@ metadata:
   name: &app autobrr
 spec:
   interval: 30m
-  chart:
-    spec:
-      chart: app-template
-      version: 3.7.3
-      sourceRef:
-        kind: HelmRepository
-        name: bjw-s
-        namespace: flux-system
+  chartRef:
+    kind: OCIRepository
+    name: app-template
+    namespace: flux-system
   install:
     remediation:
       retries: 3
@@ -41,6 +37,7 @@ spec:
               repository: ghcr.io/autobrr/autobrr
               tag: v1.59.0@sha256:2c0dda4c7cc4e0597292132e3abe93b86e38fa21a491bef4de32861eb6700029
             env:
+              TZ: ${TIMEZONE}
               AUTOBRR__CHECK_FOR_UPDATES: "false"
               AUTOBRR__HOST: 0.0.0.0
               AUTOBRR__PORT: &port 80
@@ -66,7 +63,6 @@ spec:
             resources:
               requests:
                 cpu: 10m
-                memory: 64Mi
               limits:
                 memory: 256Mi
     defaultPodOptions:
@@ -74,17 +70,20 @@ spec:
         runAsNonRoot: true
         runAsUser: 65534
         runAsGroup: 65534
-        seccompProfile: { type: RuntimeDefault }
     service:
       app:
-        controller: autobrr
+        controller: *app
         ports:
           http:
             port: *port
     ingress:
       app:
         annotations:
-          external-dns.alpha.kubernetes.io/target: "external.${SECRET_DOMAIN}"
+          nginx.ingress.kubernetes.io/auth-method: GET
+          nginx.ingress.kubernetes.io/auth-url: "https://auth.${SECRET_DOMAIN}/api/verify"
+          nginx.ingress.kubernetes.io/auth-signin: "https://auth.${SECRET_DOMAIN}/?rm=$request_method"
+          nginx.ingress.kubernetes.io/auth-response-headers: Remote-User,Remote-Name,Remote-Groups,Remote-Email
+          nginx.ingress.kubernetes.io/auth-snippet: proxy_set_header X-Forwarded-Method $request_method;
         className: external
         hosts:
           - host: "{{ .Release.Name }}.${SECRET_DOMAIN}"
@@ -96,4 +95,3 @@ spec:
     persistence:
       tmp:
         type: emptyDir
-

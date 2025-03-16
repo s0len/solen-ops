@@ -1,22 +1,27 @@
 ---
-# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/kustomize.toolkit.fluxcd.io/kustomization_v1.json
+# yaml-language-server: $schema=https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/kustomization-kustomize-v1.json
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
   name: &app radarr-standard
-  namespace: flux-system
+  namespace: &namespace media
 spec:
-  targetNamespace: media
+  targetNamespace: *namespace
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
+  components:
+    - ../../../../components/gatus/guarded
+    - ../../../../components/volsync
   dependsOn:
-    - name: external-secrets-stores
+    - name: external-secrets
+      namespace: external-secrets
   path: ./kubernetes/apps/media/radarr/standard
   prune: false # Enable later
   sourceRef:
     kind: GitRepository
-    name: home-kubernetes
+    name: flux-system
+    namespace: flux-system
   wait: false
   interval: 30m
   timeout: 5m
@@ -26,26 +31,30 @@ spec:
       GATUS_SUBDOMAIN: radarr-standard
       VOLSYNC_CAPACITY: 6Gi
       VOLSYNC_RECORD_SIZE: 256k
-
 ---
-# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/kustomize.toolkit.fluxcd.io/kustomization_v1.json
+# yaml-language-server: $schema=https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/kustomization-kustomize-v1.json
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
   name: &app radarr-kids
-  namespace: flux-system
+  namespace: &namespace media
 spec:
-  targetNamespace: media
+  targetNamespace: *namespace
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
+  components:
+    - ../../../../components/gatus/guarded
+    - ../../../../components/volsync
   dependsOn:
-    - name: external-secrets-stores
-  path: ./kubernetes/apps/media/radarr/kids
+    - name: external-secrets
+      namespace: external-secrets
+  path: ./kubernetes/apps/media/radarr/standard
   prune: false # Enable later
   sourceRef:
     kind: GitRepository
-    name: home-kubernetes
+    name: flux-system
+    namespace: flux-system
   wait: false
   interval: 30m
   timeout: 5m
@@ -55,26 +64,30 @@ spec:
       GATUS_SUBDOMAIN: radarr-kids
       VOLSYNC_CAPACITY: 6Gi
       VOLSYNC_RECORD_SIZE: 256k
-
 ---
-# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/kustomize.toolkit.fluxcd.io/kustomization_v1.json
+# yaml-language-server: $schema=https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/kustomization-kustomize-v1.json
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
   name: &app radarr-anime
-  namespace: flux-system
+  namespace: &namespace media
 spec:
-  targetNamespace: media
+  targetNamespace: *namespace
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
+  components:
+    - ../../../../components/gatus/guarded
+    - ../../../../components/volsync
   dependsOn:
-    - name: external-secrets-stores
-  path: ./kubernetes/apps/media/radarr/anime
+    - name: external-secrets
+      namespace: external-secrets
+  path: ./kubernetes/apps/media/radarr/standard
   prune: false # Enable later
   sourceRef:
     kind: GitRepository
-    name: home-kubernetes
+    name: flux-system
+    namespace: flux-system
   wait: false
   interval: 30m
   timeout: 5m

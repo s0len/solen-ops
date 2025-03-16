@@ -14,7 +14,9 @@ cgroup:
   hostRoot: /sys/fs/cgroup
 cluster:
   id: 1
-  name: solen-cluster
+  name: main
+devices: enp130s0f0+
+enableIPv4BIGTCP: true # Requires compatible NIC
 endpointRoutes:
   enabled: true
 envoy:
@@ -31,6 +33,7 @@ kubeProxyReplacementHealthzBindAddr: 0.0.0.0:10256
 l2announcements:
   enabled: true
 loadBalancer:
+  acceleration: native # Requires compatible NIC and compatible MTU
   algorithm: maglev
   mode: dsr
 localRedirectPolicy: true
@@ -39,8 +42,6 @@ operator:
   replicas: 1
 dashboards:
   enabled: true
-  annotations:
-    grafana_folder: Cilium
 rollOutCiliumPods: true
 routingMode: native
 securityContext:

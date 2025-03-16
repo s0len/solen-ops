@@ -4,20 +4,25 @@ apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
   name: &app qbittorrent
-  namespace: flux-system
+  namespace: &namespace media
 spec:
-  targetNamespace: media
+  targetNamespace: *namespace
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
+  components:
+    - ../../../../components/gatus/guarded
+    - ../../../../components/volsync
   dependsOn:
-    - name: external-secrets-stores
+    - name: onepassword
+      namespace: external-secrets
   wait: false
   path: ./kubernetes/apps/media/qbittorrent/qbittorrent
-  prune: false # Enable later
+  prune: false
   sourceRef:
     kind: GitRepository
-    name: home-kubernetes
+    name: flux-system
+    namespace: flux-system
   interval: 30m
   timeout: 5m
   postBuild:
@@ -25,25 +30,28 @@ spec:
       APP: *app
       GATUS_SUBDOMAIN: qbit
       VOLSYNC_CAPACITY: 5Gi
+      VOLSYNC_RECORD_SIZE: 64k
 ---
 # yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/kustomize.toolkit.fluxcd.io/kustomization_v1.json
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
   name: &app qbitmanage
-  namespace: flux-system
+  namespace: &namespace media
 spec:
-  targetNamespace: media
+  targetNamespace: *namespace
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
   dependsOn:
-    - name: external-secrets-stores
+    - name: onepassword
+      namespace: external-secrets
   wait: false
   path: ./kubernetes/apps/media/qbittorrent/qbitmanage
-  prune: false # Enable later
+  prune: false
   sourceRef:
     kind: GitRepository
-    name: home-kubernetes
+    name: flux-system
+    namespace: flux-system
   interval: 30m
   timeout: 5m

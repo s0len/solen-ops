@@ -6,14 +6,10 @@ metadata:
   name: &app cross-seed
 spec:
   interval: 30m
-  chart:
-    spec:
-      chart: app-template
-      version: 3.7.3
-      sourceRef:
-        kind: HelmRepository
-        name: bjw-s
-        namespace: flux-system
+  chartRef:
+    kind: OCIRepository
+    name: app-template
+    namespace: flux-system
   install:
     remediation:
       retries: 3
@@ -51,9 +47,8 @@ spec:
             resources:
               requests:
                 cpu: 10m
-                memory: 32Mi
               limits:
-                memory: 1Gi
+                memory: 10Gi
 
     defaultPodOptions:
       securityContext:
@@ -62,10 +57,9 @@ spec:
         runAsGroup: 568
         fsGroup: 568
         fsGroupChangePolicy: OnRootMismatch
-        seccompProfile: { type: RuntimeDefault }
 
     service:
-      cross-seed:
+      app:
         controller: cross-seed
         ports:
           http:
@@ -89,6 +83,7 @@ spec:
           - path: /qbittorrent/qBittorrent/BT_backup
             subPath: qBittorrent/BT_backup
             readOnly: true
+
       data:
         type: nfs
         server: ${TRUENAS_IP}
