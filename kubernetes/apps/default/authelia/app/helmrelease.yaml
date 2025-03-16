@@ -6,14 +6,10 @@ metadata:
   name: &app authelia
 spec:
   interval: 30m
-  chart:
-    spec:
-      chart: app-template
-      version: 3.7.3
-      sourceRef:
-        kind: HelmRepository
-        name: bjw-s
-        namespace: flux-system
+  chartRef:
+    kind: OCIRepository
+    name: app-template
+    namespace: flux-system
   install:
     remediation:
       retries: 3
@@ -25,22 +21,15 @@ spec:
   dependsOn:
     - name: glauth
       namespace: default
+
   values:
     controllers:
       authelia:
         replicas: 1
         strategy: RollingUpdate
-
         annotations:
           reloader.stakater.com/auto: "true"
-        initContainers:
-          init-db:
-            image:
-              repository: ghcr.io/onedr0p/postgres-init
-              tag: 16
-            envFrom: &envFrom
-              - secretRef:
-                  name: authelia-db-secret
+
         containers:
           app:
             image:
@@ -53,7 +42,9 @@ spec:
               AUTHELIA_TELEMETRY_METRICS_ENABLED: "true"
               AUTHELIA_THEME: dark
               X_AUTHELIA_CONFIG: /config/configuration.yaml
-            envFrom: *envFrom
+            envFrom:
+              - secretRef:
+                  name: authelia-db-secret
             probes:
               liveness: &probes
                 enabled: true
@@ -76,19 +67,14 @@ spec:
                 cpu: 10m
               limits:
                 memory: 500Mi
+
     defaultPodOptions:
+      enableServiceLinks: false
       securityContext:
         runAsNonRoot: true
         runAsUser: 65534
         runAsGroup: 65534
-        seccompProfile: { type: RuntimeDefault }
-      topologySpreadConstraints:
-        - maxSkew: 1
-          topologyKey: kubernetes.io/hostname
-          whenUnsatisfiable: DoNotSchedule
-          labelSelector:
-            matchLabels:
-              app.kubernetes.io/name: *app
+
     service:
       app:
         controller: *app
@@ -97,6 +83,7 @@ spec:
             port: *port
           metrics:
             port: 8080
+
     serviceMonitor:
       app:
         serviceName: *app
@@ -106,15 +93,15 @@ spec:
             path: /metrics
             interval: 1m
             scrapeTimeout: 10s
+
     ingress:
       app:
         annotations:
-          external-dns.alpha.kubernetes.io/target: "external.${SECRET_DOMAIN}"
-          nginx.ingress.kubernetes.io/configuration-snippet: |
-            add_header Cache-Control "no-store";
-            add_header Pragma "no-cache";
-            add_header X-Frame-Options "SAMEORIGIN";
-            add_header X-XSS-Protection "1; mode=block";
+          nginx.org/proxy-set-headers: >
+            X-Frame-Options: SAMEORIGIN,
+            X-XSS-Protection: 1; mode=block,
+            Cache-Control: no-store,
+            Pragma: no-cache
         className: external
         hosts:
           - host: "auth.${SECRET_DOMAIN}"
