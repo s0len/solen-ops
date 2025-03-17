@@ -16,7 +16,6 @@ schedule:
 
 instances:
   radarr:
-    # Instance name can be whatever you want, it just needs to match the name used in other sections
     radarr_standard:
       url: http://radarr-standard.media.svc.cluster.local
       api: "{{ .RADARR_API_KEY }}"
@@ -27,30 +26,15 @@ instances:
       url: http://radarr-anime.media.svc.cluster.local
       api: "{{ .RADARR_API_KEY }}"
   sonarr:
-    # Instance name can be whatever you want, it just needs to match the name used in other sections
     sonarr:
-      url: http://sonarr-standard.media.svc.cluster.local
+      url: http://sonarr.media.svc.cluster.local
       api: "{{ .SONARR_API_KEY }}"
   plex:
-    plex_standard:
-      # API key can be found here: https://support.plex.tv/articles/204059436-finding-an-authentication-token-x-plex-token/
-      url: http://192.168.10.145:32400 # http://plex.ix-plex.svc.cluster.local:32400
-      api: "{{ .PLEX_TOKEN_1 }}"
+    plex:
+      url: http://plex.ix-plex.svc.cluster.local:32400
+      api: "{{ .PLEX_TOKEN }}"
   qbittorrent:
-    # Instance name can be whatever you want, it just needs to match the name used in other sections
-    qbittorrent_standard:
-      url: http://qbittorrent.media.svc.cluster.local
-      username: "{{ .QBIT_USER }}"
-      password: "{{ .QBIT_PASS }}"
-    qbittorrent_kids:
-      url: http://qbittorrent.media.svc.cluster.local
-      username: "{{ .QBIT_USER }}"
-      password: "{{ .QBIT_PASS }}"
-    qbittorrent_anime:
-      url: http://qbittorrent.media.svc.cluster.local
-      username: "{{ .QBIT_USER }}"
-      password: "{{ .QBIT_PASS }}"
-    qbittorrent_sport:
+    qbittorrent:
       url: http://qbittorrent.media.svc.cluster.local
       username: "{{ .QBIT_USER }}"
       password: "{{ .QBIT_PASS }}"
@@ -223,7 +207,7 @@ poster_renamerr:
     - /posters/prioritize
   destination_dir: /config/assets
   instances:
-    - plex_standard
+    - plex
     - radarr_standard
     - radarr_kids
     - radarr_anime
@@ -287,7 +271,7 @@ unmatched_assets:
   # your series will appear in the movies section.
   log_level: info
   instances:
-    - plex_standard
+    - plex
     - radarr_standard
     - radarr_kids
     - radarr_anime
@@ -335,7 +319,7 @@ poster_cleanarr:
   log_level: info
   dry_run: true
   instances:
-    - plex_1
+    - plex
     - radarr_1
     - sonarr
   # Libraries are ONLY used for collections
@@ -452,7 +436,7 @@ labelarr:
       library_names:
         - Movies
       plex_instances:
-        - plex_1
+        - plex
       # Labels/tags to sync between Radarr/Sonarr and Plex
       labels:
         - kids
@@ -461,7 +445,7 @@ labelarr:
         - Animated Series
         - Childrens Series
       plex_instances:
-        - plex_1
+        - plex
       labels:
         - kids
 
@@ -475,9 +459,7 @@ health_checkarr:
     - radarr_standard
     - radarr_kids
     - radarr_anime
-    - sonarr_standard
-    - sonarr_kids
-    - sonarr_anime
+    - sonarr
 
 bash_scripts:
   # Bash Scripts
