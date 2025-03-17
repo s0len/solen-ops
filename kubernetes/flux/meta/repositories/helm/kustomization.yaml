@@ -5,25 +5,27 @@ resources:
   - ./actions-runner-controller.yaml
   - ./backube.yaml
   - ./bitnami.yaml
-  - ./bjw-s.yaml
   - ./cilium.yaml
   - ./cloudnative-pg.yaml
   - ./coredns.yaml
+  - ./dcgm-exporter.yaml
   - ./democratic-csi.yaml
+  - ./external-dns.yaml
+  - ./external-secrets.yaml
+  - ./fluxcd-community.yaml
   - ./grafana.yaml
+  - ./headlamp.yaml
+  - ./ingress-nginx.yaml
   - ./intel.yaml
   - ./jetstack.yaml
   - ./k8s-gateway.yaml
-  - ./node-feature-discovery.yaml
-  - ./nvidia-plugin.yaml
   - ./metrics-server.yaml
   - ./nextcloud.yaml
+  - ./node-feature-discovery.yaml
+  - ./nvidia-plugin.yaml
   - ./openebs.yaml
   - ./piraeus.yaml
   - ./postfinance.yaml
   - ./prometheus-community.yaml
   - ./spegel.yaml
   - ./stakater.yaml
-  - ./external-dns.yaml
-  - ./external-secrets.yaml
-  - ./ingress-nginx.yaml
