@@ -54,7 +54,7 @@ jobs:
   sync:
     name: Helm Repo Sync - Sync Helm Repos
     needs: ["pre-job", "extract"]
-    runs-on: heavy-ops-runner
+    runs-on: solen-ops-runner
     if: ${{ needs.pre-job.outputs.any_changed == 'true' && needs.extract.outputs.repos != '[]' }}
     steps:
       - name: Install flux

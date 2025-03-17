@@ -6,6 +6,6 @@ metadata:
   name: github
 spec:
   type: github
-  address: https://github.com/Heavybullets8/heavy-ops
+  address: https://github.com/s0len/solen-ops
   secretRef:
     name: github-token-secret
