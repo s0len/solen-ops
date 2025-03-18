@@ -47,10 +47,10 @@ machine:
         dhcp: false
         vip:
           ip: 192.168.10.80
-      nameservers:
-          - 1.1.1.1
-          - 1.0.0.1
-      disableSearchDomain: true
+    nameservers:
+        - 1.1.1.1
+        - 1.0.0.1
+    disableSearchDomain: true
   install:
     disk: /dev/sda
     image: factory.talos.dev/installer/8de8ff0564a256e9c3ccc261be0bfc4b910c3725b40b3d09fe5d74ef80eb6650:{{ ENV.TALOS_VERSION }}
