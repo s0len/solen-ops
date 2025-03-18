@@ -30,7 +30,7 @@ spec:
       replicaCount: 2
       service:
         annotations:
-          external-dns.alpha.kubernetes.io/hostname: "internal.${SECRET_DOMAIN}"
+          external-dns.alpha.kubernetes.io/hostname: &hostname "internal.${SECRET_DOMAIN}"
           lbipam.cilium.io/ips: "${NGINX_INTERNAL_IP}"
       ingressClassResource:
         name: internal
@@ -67,9 +67,6 @@ spec:
           "http_user_agent": "$http_user_agent"}
         proxy-body-size: 0
         proxy-buffer-size: 16k
-        proxy_connect_timeout: 600
-        proxy_send_timeout: 600
-        proxy_read_timeout: 30m
         ssl-protocols: TLSv1.3 TLSv1.2
         use-forwarded-headers: "true"
       metrics:
@@ -80,7 +77,10 @@ spec:
             any: true
       extraArgs:
         default-ssl-certificate: "network/${SECRET_DOMAIN//./-}-tls"
+        publish-status-address: *hostname
       terminationGracePeriodSeconds: 120
+      publishService:
+        enabled: false
       resources:
         requests:
           cpu: 100m

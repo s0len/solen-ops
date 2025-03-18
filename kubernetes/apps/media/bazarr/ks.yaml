@@ -4,7 +4,7 @@ apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
   name: &app bazarr
-  namespace: flux-system
+  namespace: media
 spec:
   targetNamespace: media
   commonMetadata:
@@ -16,7 +16,8 @@ spec:
   prune: false # Enable later
   sourceRef:
     kind: GitRepository
-    name: home-kubernetes
+    name: flux-system
+    namespace: flux-system
   wait: false
   interval: 30m
   timeout: 5m

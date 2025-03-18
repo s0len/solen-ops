@@ -5,6 +5,3 @@ kind: Kustomization
 resources:
   - ./pvc.yaml
   - ./helmrelease.yaml
-  - ../../../../templates/volsync
-  # TODO: Uncomment once pushover is setup
-  - ../../../../templates/gatus/external

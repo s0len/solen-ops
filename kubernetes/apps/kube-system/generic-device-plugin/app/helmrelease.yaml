@@ -6,14 +6,10 @@ metadata:
   name: generic-device-plugin
 spec:
   interval: 30m
-  chart:
-    spec:
-      chart: app-template
-      version: 3.7.3
-      sourceRef:
-        kind: HelmRepository
-        name: bjw-s
-        namespace: flux-system
+  chartRef:
+    kind: OCIRepository
+    name: app-template
+    namespace: flux-system
   install:
     remediation:
       retries: 3
@@ -48,6 +44,13 @@ spec:
                   - count: 1000
                     paths:
                       - path: /dev/net/tun
+              - --device
+              - |
+                name: zfs
+                groups:
+                  - count: 1
+                    paths:
+                      - path: /dev/zfs
             ports:
               - containerPort: 8080
                 name: http

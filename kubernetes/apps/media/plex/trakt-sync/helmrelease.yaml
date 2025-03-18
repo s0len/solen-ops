@@ -5,16 +5,27 @@ kind: HelmRelease
 metadata:
   name: &app plex-trakt-sync
 spec:
-  chart:
-    spec:
-      chart: app-template
-      version: 3.7.3
-      interval: 30m
-      sourceRef:
-        kind: HelmRepository
-        name: bjw-s
-        namespace: flux-system
   interval: 30m
+  chartRef:
+    kind: OCIRepository
+    name: app-template
+    namespace: flux-system
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      strategy: rollback
+      retries: 3
+  dependsOn:
+    - name: plex
+      namespace: media
+    - name: openebs
+      namespace: openebs-system
+    - name: volsync
+      namespace: volsync-system
+
   values:
     controllers:
       plex-trakt-sync:
@@ -40,8 +51,8 @@ spec:
             # - sleep
             # - infinity
             env:
-              PLEX_BASEURL: http://192.168.10.145:32400
-              PLEX_LOCALURL: http://192.168.10.145:32400
+              PLEX_BASEURL: http://${PLEX_IP}:32400
+              PLEX_LOCALURL: http://${PLEX_IP}:32400
               PLEX_USERNAME: zooLen
               TRAKT_USERNAME: Solentankar
             probes:

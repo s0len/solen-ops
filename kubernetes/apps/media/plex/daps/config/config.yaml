@@ -16,7 +16,6 @@ schedule:
 
 instances:
   radarr:
-    # Instance name can be whatever you want, it just needs to match the name used in other sections
     radarr_standard:
       url: http://radarr-standard.media.svc.cluster.local
       api: "{{ .RADARR_API_KEY }}"
@@ -27,7 +26,6 @@ instances:
       url: http://radarr-anime.media.svc.cluster.local
       api: "{{ .RADARR_API_KEY }}"
   sonarr:
-    # Instance name can be whatever you want, it just needs to match the name used in other sections
     sonarr:
       url: http://sonarr.media.svc.cluster.local
       api: "{{ .SONARR_API_KEY }}"

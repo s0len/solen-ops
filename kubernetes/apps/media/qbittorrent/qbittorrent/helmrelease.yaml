@@ -6,14 +6,10 @@ metadata:
   name: &app qbittorrent
 spec:
   interval: 30m
-  chart:
-    spec:
-      chart: app-template
-      version: 3.7.3
-      sourceRef:
-        kind: HelmRepository
-        name: bjw-s
-        namespace: flux-system
+  chartRef:
+    kind: OCIRepository
+    name: app-template
+    namespace: flux-system
   dependsOn:
     - name: generic-device-plugin
       namespace: kube-system
@@ -27,10 +23,6 @@ spec:
       qbittorrent:
         annotations:
           reloader.stakater.com/auto: "true"
-        pod:
-          securityContext:
-            fsGroup: 568
-            fsGroupChangePolicy: "OnRootMismatch"
 
         containers:
           app:
@@ -51,9 +43,9 @@ spec:
                     path: /api/v2/app/version
                     port: *port
                   initialDelaySeconds: 0
-                  periodSeconds: 10
-                  timeoutSeconds: 1
-                  failureThreshold: 3
+                  periodSeconds: 5
+                  timeoutSeconds: 10
+                  failureThreshold: 5
               readiness: *probes
             securityContext:
               runAsUser: 568

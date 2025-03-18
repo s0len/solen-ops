@@ -5,8 +5,6 @@ kind: Kustomization
 resources:
   - ./helmrelease.yaml
   - ./externalsecret.yaml
-  - ../../../../templates/gatus/guarded
-  - ../../../../templates/volsync
 configMapGenerator:
   - name: qbittorrent-loki-rules
     files:
@@ -14,8 +12,5 @@ configMapGenerator:
     options:
       labels:
         loki_rule: "true"
-  - name: qbittorrent-dnsdist
-    files:
-      - ./config/dnsdist.conf
 generatorOptions:
   disableNameSuffixHash: true

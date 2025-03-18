@@ -6,14 +6,10 @@ metadata:
   name: qbitmanage
 spec:
   interval: 30m
-  chart:
-    spec:
-      chart: app-template
-      version: 3.7.3
-      sourceRef:
-        kind: HelmRepository
-        name: bjw-s
-        namespace: flux-system
+  chartRef:
+    kind: OCIRepository
+    name: app-template
+    namespace: flux-system
   install:
     remediation:
       retries: 3
@@ -46,7 +42,7 @@ spec:
               QBT_CONFIG: "/config/config.yaml"
               QBT_CAT_UPDATE: false
               QBT_CROSS_SEED: false
-              QBT_DIVIDER: '='
+              QBT_DIVIDER: "="
               QBT_DRY_RUN: false
               QBT_LOG_LEVEL: INFO
               QBT_RECHECK: true
@@ -73,7 +69,12 @@ spec:
             lifecycle:
               postStart:
                 exec:
-                  command: ["/bin/sh", "-c", "cp /secret/config.yaml /config/config.yaml"]
+                  command:
+                    [
+                      "/bin/sh",
+                      "-c",
+                      "cp /secret/config.yaml /config/config.yaml",
+                    ]
 
     defaultPodOptions:
       securityContext:

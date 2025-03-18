@@ -5,6 +5,3 @@ kind: Kustomization
 resources:
   - ./helmrelease.yaml
   - ./externalsecret.yaml
-  # TODO: Uncomment once pushover is setup
-  # - ../../../../templates/gatus/guarded
-  - ../../../../templates/volsync
