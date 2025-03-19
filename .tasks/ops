@@ -5,7 +5,7 @@ ROOT_DIR="$(git rev-parse --show-toplevel)"
 TASK_DIR="$ROOT_DIR/.tasks"
 TALOS_DIR="$ROOT_DIR/talos"
 BOOTSTRAP_DIR="$ROOT_DIR/bootstrap"
-NODE_IP="192.168.10.98"
+NODE_IP="192.168.10.76"
 
 source "$TASK_DIR/common.sh"
 
