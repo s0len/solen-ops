@@ -15,8 +15,7 @@ cgroup:
 cluster:
   id: 1
   name: main
-devices: enp130s0f0+
-enableIPv4BIGTCP: true # Requires compatible NIC
+devices: enp1s0f0
 endpointRoutes:
   enabled: true
 envoy:
@@ -33,7 +32,6 @@ kubeProxyReplacementHealthzBindAddr: 0.0.0.0:10256
 l2announcements:
   enabled: true
 loadBalancer:
-  acceleration: native # Requires compatible NIC and compatible MTU
   algorithm: maglev
   mode: dsr
 localRedirectPolicy: true
