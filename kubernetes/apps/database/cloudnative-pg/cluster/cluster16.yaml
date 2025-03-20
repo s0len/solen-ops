@@ -17,7 +17,7 @@ spec:
   postgresql:
     parameters:
       max_connections: "400"
-      shared_buffers: 512MB
+      shared_buffers: 256MB
       huge_pages: "on"
   nodeMaintenanceWindow:
     inProgress: false
