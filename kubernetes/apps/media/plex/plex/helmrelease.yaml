@@ -113,8 +113,8 @@ spec:
       cache:
         type: persistentVolumeClaim
         accessMode: ReadWriteOnce
-        storageClass: openebs-zfs-64k
-        size: 100Gi
+        storageClass: openebs-zfs-1m
+        size: 200Gi
         globalMounts:
           - path: /config/Library/Application Support/Plex Media Server/Cache
 
