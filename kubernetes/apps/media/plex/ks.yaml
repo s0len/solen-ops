@@ -103,7 +103,7 @@ spec:
   interval: 30m
   timeout: 5m
   path: "./kubernetes/apps/media/plex/trakt-sync"
-  prune: false # Enable later
+  prune: false
   sourceRef:
     kind: GitRepository
     name: flux-system
