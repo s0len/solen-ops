@@ -19,7 +19,7 @@ spec:
       strategy: rollback
       retries: 3
   dependsOn:
-    - name: nvidia-device-plugin
+    - name: intel-device-plugin
       namespace: kube-system
     - name: openebs
       namespace: openebs-system
