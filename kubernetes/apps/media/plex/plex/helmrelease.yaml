@@ -19,8 +19,6 @@ spec:
       strategy: rollback
       retries: 3
   dependsOn:
-    - name: intel-device-plugin
-      namespace: kube-system
     - name: openebs
       namespace: openebs-system
     - name: volsync
