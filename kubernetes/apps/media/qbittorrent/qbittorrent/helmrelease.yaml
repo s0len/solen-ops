@@ -201,6 +201,7 @@ spec:
                 readOnly: true
 
       addons:
-        type: emptyDir
-        globalMounts:
-          - path: /addons
+        type: persistentVolumeClaim
+        accessMode: ReadWriteOnce
+        storageClass: openebs-hostpath
+        size: 1Gi
