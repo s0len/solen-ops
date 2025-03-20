@@ -1,17 +1,29 @@
 ---
 creation_rules:
-  - path_regex: kubernetes/.+\.sops\.yaml
-    encrypted_regex: ^(age.agekey|token|crt|key|id|secret|secretboxEncryptionSecret|ca)$
-    mac_only_encrypted: true
+  - # IMPORTANT: Keep this rule first
+    path_regex: talos/.+\.secret(\.sops)?\.ya?ml
+    input_type: yaml
+    encrypted_regex: ^(token|crt|key|id|secret|secretboxEncryptionSecret|ca)$
     key_groups:
       - age:
-          - age172ga8ydq62pezn7jcg2xkc4ytc4uf7ymzahvydqjszul30j2accstykn84
-  - path_regex: kubernetes/.+\.sops\.yaml
+          - age1w9dv5enm6meku23cr82tfdgdmkqntrg0mnw5qyt7azyd59qvnc0q0xunp8
+  - path_regex: kubernetes/.+\.secret(\.sops)?\.ya?ml
+    input_type: yaml
     encrypted_regex: ^(data|stringData)$
-    mac_only_encrypted: true
     key_groups:
       - age:
-          - age172ga8ydq62pezn7jcg2xkc4ytc4uf7ymzahvydqjszul30j2accstykn84
+          - age1w9dv5enm6meku23cr82tfdgdmkqntrg0mnw5qyt7azyd59qvnc0q0xunp8
+  - path_regex: kubernetes/.+\.secret(\.sops)?\.env
+    input_type: env
+    key_groups:
+      - age:
+          - age1w9dv5enm6meku23cr82tfdgdmkqntrg0mnw5qyt7azyd59qvnc0q0xunp8
+  - path_regex: apps/external-secrets/onepassword-connect/app/.+\.sops\.ya?ml
+    input_type: yaml
+    encrypted_regex: ^(token|ORG_ID)$
+    key_groups:
+      - age:
+          - age1w9dv5enm6meku23cr82tfdgdmkqntrg0mnw5qyt7azyd59qvnc0q0xunp8
 stores:
   yaml:
     indent: 2
