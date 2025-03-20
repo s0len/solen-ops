@@ -6,7 +6,6 @@ namespace: media
 components:
   - ../../components/common
 resources:
-  - ./namespace.yaml
   - ./audiobookshelf/ks.yaml
   - ./autobrr/ks.yaml
   - ./bazarr/ks.yaml
