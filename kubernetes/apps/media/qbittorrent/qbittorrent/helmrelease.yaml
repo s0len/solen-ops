@@ -203,5 +203,5 @@ spec:
       addons:
         type: persistentVolumeClaim
         accessMode: ReadWriteOnce
-        storageClass: openebs-hostpath
+        storageClass: openebs-zfs-128k
         size: 1Gi
