@@ -11,7 +11,8 @@ spec:
     labels:
       app.kubernetes.io/name: *app
   dependsOn:
-    - name: external-secrets-stores
+    - name: onepassword
+      namespace: external-secrets
   path: ./kubernetes/apps/media/readarr/audiobook
   prune: false # Enable later
   sourceRef:
