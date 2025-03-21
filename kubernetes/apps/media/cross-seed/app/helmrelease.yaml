@@ -77,13 +77,6 @@ spec:
             subPath: config.js
             readOnly: true
 
-      qbittorrent:
-        existingClaim: qbittorrent
-        globalMounts:
-          - path: /qbittorrent/qBittorrent/BT_backup
-            subPath: qBittorrent/BT_backup
-            readOnly: true
-
       data:
         type: nfs
         server: ${TRUENAS_IP}
