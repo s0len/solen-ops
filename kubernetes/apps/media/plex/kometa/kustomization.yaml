@@ -16,3 +16,13 @@ configMapGenerator:
       - ./custom/series_collections.yaml
 generatorOptions:
   disableNameSuffixHash: true
+patches:
+  - patch: |
+      $patch: delete
+      apiVersion: storage.k8s.io/v1
+      kind: StorageClass
+      metadata:
+        name: openebs-zfs-1m
+    target:
+      kind: StorageClass
+      name: openebs-zfs-1m
