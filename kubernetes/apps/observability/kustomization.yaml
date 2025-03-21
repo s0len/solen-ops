@@ -7,9 +7,9 @@ components:
   - ../../components/common
 resources:
   - ./gatus/ks.yaml
-  # - ./grafana/ks.yaml
-  # - ./intel-gpu-exporter/ks.yaml
-  # - ./kube-prometheus-stack/ks.yaml
-  # - ./loki/ks.yaml
-  # - ./promtail/ks.yaml
-  # - ./smartctl-exporter/ks.yaml
+  - ./grafana/ks.yaml
+  - ./intel-gpu-exporter/ks.yaml
+  - ./kube-prometheus-stack/ks.yaml
+  - ./loki/ks.yaml
+  - ./promtail/ks.yaml
+  - ./smartctl-exporter/ks.yaml
