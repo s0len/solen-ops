@@ -50,7 +50,7 @@ module.exports = {
 
   // ======== TORRENT CLIENT =========
   qbittorrentUrl: "http://qbittorrent.media.svc.cluster.local",
-  torrentDir: "/qbittorrent/qBittorrent/BT_backup",
+  torrentDir: null,
   useClientTorrents: true,
 
   // ======== NOTIFICATIONS =========
