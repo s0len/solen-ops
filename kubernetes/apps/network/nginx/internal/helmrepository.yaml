@@ -3,12 +3,14 @@
 apiVersion: source.toolkit.fluxcd.io/v1beta2
 kind: OCIRepository
 metadata:
-  name: promtail
+  name: ingress-nginx
 spec:
   interval: 1h
   layerSelector:
     mediaType: application/vnd.cncf.helm.chart.content.v1.tar+gzip
     operation: copy
   ref:
-    tag: 6.16.6
-  url: oci://ghcr.io/grafana/helm-charts/promtail
+    tag: 4.12.0
+  url: oci://ghcr.io/home-operations/charts-mirror/ingress-nginx
+  verify:
+    provider: cosign
