@@ -19,7 +19,7 @@ spec:
     - name: dragonfly-cluster
       namespace: database
   path: ./kubernetes/apps/default/hortusfox-web/app
-  prune: false
+  prune: true
   sourceRef:
     kind: GitRepository
     name: flux-system

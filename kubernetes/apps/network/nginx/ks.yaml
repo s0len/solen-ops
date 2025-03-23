@@ -14,7 +14,7 @@ spec:
     - name: onepassword
       namespace: external-secrets
   path: ./kubernetes/apps/network/nginx/certificates
-  prune: false
+  prune: true
   sourceRef:
     kind: GitRepository
     name: flux-system
@@ -38,7 +38,7 @@ spec:
     - name: nginx-certificates
       namespace: network
   path: ./kubernetes/apps/network/nginx/external
-  prune: false
+  prune: true
   sourceRef:
     kind: GitRepository
     name: flux-system
@@ -62,7 +62,7 @@ spec:
     - name: nginx-certificates
       namespace: network
   path: ./kubernetes/apps/network/nginx/internal
-  prune: false
+  prune: true
   sourceRef:
     kind: GitRepository
     name: flux-system

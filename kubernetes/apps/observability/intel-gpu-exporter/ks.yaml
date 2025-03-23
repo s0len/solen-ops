@@ -13,7 +13,7 @@ spec:
   dependsOn:
     - name: kube-prometheus-stack
   path: ./kubernetes/apps/observability/intel-gpu-exporter
-  prune: false # Enable later
+  prune: true # Enable later
   sourceRef:
     kind: GitRepository
     name: flux-system

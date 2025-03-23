@@ -15,7 +15,7 @@ spec:
     - ../../../../components/volsync
   wait: false
   path: kubernetes/apps/media/plex/plex
-  prune: false
+  prune: true
   sourceRef:
     kind: GitRepository
     name: flux-system
@@ -45,7 +45,7 @@ spec:
       namespace: external-secrets
   wait: false
   path: kubernetes/apps/media/plex/plex-auto-languages
-  prune: false
+  prune: true
   sourceRef:
     kind: GitRepository
     name: flux-system
@@ -73,7 +73,7 @@ spec:
       namespace: external-secrets
   wait: false
   path: kubernetes/apps/media/plex/kometa
-  prune: false
+  prune: true
   sourceRef:
     kind: GitRepository
     name: flux-system
@@ -104,7 +104,7 @@ spec:
   interval: 30m
   timeout: 5m
   path: "./kubernetes/apps/media/plex/trakt-sync"
-  prune: false
+  prune: true
   sourceRef:
     kind: GitRepository
     name: flux-system
@@ -133,7 +133,7 @@ spec:
       namespace: external-secrets
   wait: false
   path: kubernetes/apps/media/plex/daps
-  prune: false
+  prune: true
   sourceRef:
     kind: GitRepository
     name: flux-system
@@ -159,7 +159,7 @@ spec:
       namespace: external-secrets
   wait: false
   path: kubernetes/apps/media/plex/plex-image-cleanup
-  prune: false
+  prune: true
   sourceRef:
     kind: GitRepository
     name: flux-system
@@ -185,7 +185,7 @@ spec:
     - ../../../../components/volsync
   wait: false
   path: kubernetes/apps/media/plex/tautulli
-  prune: false
+  prune: true
   sourceRef:
     kind: GitRepository
     name: flux-system

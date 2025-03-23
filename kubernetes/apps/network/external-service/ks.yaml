@@ -8,7 +8,7 @@ metadata:
 spec:
   targetNamespace: *namespace
   path: ./kubernetes/apps/network/external-service/truenas
-  prune: false
+  prune: true
   sourceRef:
     kind: GitRepository
     name: flux-system
@@ -26,7 +26,7 @@ metadata:
 spec:
   targetNamespace: *namespace
   path: ./kubernetes/apps/network/external-service/homeassistant
-  prune: false
+  prune: true
   sourceRef:
     kind: GitRepository
     name: flux-system

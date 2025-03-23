@@ -14,7 +14,7 @@ spec:
     - name: onepassword
       namespace: external-secrets
   path: ./kubernetes/apps/media/readarr/audiobook
-  prune: false # Enable later
+  prune: true # Enable later
   sourceRef:
     kind: GitRepository
     name: flux-system
