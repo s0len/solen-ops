@@ -5,13 +5,10 @@ kind: HelmRelease
 metadata:
   name: intel-device-plugin-gpu
 spec:
-  interval: 30m
+  interval: 1h
   chartRef:
     kind: OCIRepository
-    name: metrics-server
-  install:
-    remediation:
-      retries: 3
+    name: intel-device-plugins-gpu
   upgrade:
     cleanupOnFail: true
     remediation:
