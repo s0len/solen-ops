@@ -18,8 +18,8 @@ spec:
       strategy: rollback
       retries: 3
   dependsOn:
-    - name: plex
-      namespace: media
+    # - name: plex
+    #   namespace: media
     - name: openebs
       namespace: openebs-system
     - name: volsync
