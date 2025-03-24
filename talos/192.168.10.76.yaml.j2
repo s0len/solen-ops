@@ -142,14 +142,12 @@ machine:
       - SUBSYSTEM=="drm", KERNEL=="renderD*", GROUP="44", MODE="0660"
   nodeLabels:
     intel.feature.node.kubernetes.io/gpu: "true"
-    factory.talos.dev/schematic-id.part-0: ${TALOS_SCHEMATIC_ID_PART_0}
-    factory.talos.dev/schematic-id.part-1: ${TALOS_SCHEMATIC_ID_PART_1}
 cluster:
   id: op://talos/talos/CLUSTER_ID
   secret: op://talos/talos/CLUSTER_SECRET
   controlPlane:
     endpoint: https://192.168.10.80:6443
-  clusterName: main
+  clusterName: solen-cluster
   network:
     cni:
       name: none
