@@ -52,7 +52,6 @@ spec:
               RADARR__AUTH__REQUIRED: DisabledForLocalAddresses
               RADARR__LOG__LEVEL: info
               RADARR__SERVER__PORT: &port 80
-              RADARR__UPDATE__BRANCH: develop
               TZ: ${TIMEZONE}
 
             envFrom:
@@ -88,9 +87,6 @@ spec:
     service:
       app:
         controller: *app
-        type: LoadBalancer
-        annotations:
-          lbipam.cilium.io/ips: "192.168.10.112"
         ports:
           http:
             port: *port
@@ -108,14 +104,6 @@ spec:
           nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
           nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
           nginx.ingress.kubernetes.io/proxy-connect-timeout: "600"
-          # nginx.ingress.kubernetes.io/configuration-snippet: |-
-          #   proxy_set_header Accept-Encoding "";
-          #   sub_filter
-          #   '</head>'
-          #   '<link rel="stylesheet" type="text/css" href="https://theme-park.${SECRET_DOMAIN}/css/base/radarr/overseerr.css">
-          #   <link rel="stylesheet" type="text/css" href="https://theme-park.${SECRET_DOMAIN}/css/addons/radarr/radarr-alt-calendar/radarr-alt-calendar.css">
-          #   </head>';
-          #   sub_filter_once on;
         hosts:
           - host: "{{ .Release.Name }}.${SECRET_DOMAIN}"
             paths:

@@ -43,7 +43,7 @@ spec:
           app:
             image:
               repository: ghcr.io/heavybullets8/radarr
-              tag: 5.19.3.9730@sha256:e8128fba8f6255721ad8ef5be79e937637d2034d0945ba22457d1c390a5493d1
+              tag: 5.20.2.9777@sha256:09bbad50d37952245137606b8f2b8156677c0cf5f69e01fa069d1431dcd77f46
 
             env:
               RADARR__APP__INSTANCENAME: "Radarr Anime"
@@ -52,7 +52,6 @@ spec:
               RADARR__AUTH__REQUIRED: DisabledForLocalAddresses
               RADARR__LOG__LEVEL: info
               RADARR__SERVER__PORT: &port 80
-              RADARR__UPDATE__BRANCH: develop
               TZ: ${TIMEZONE}
 
             envFrom:
@@ -105,14 +104,6 @@ spec:
           nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
           nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
           nginx.ingress.kubernetes.io/proxy-connect-timeout: "600"
-          # nginx.ingress.kubernetes.io/configuration-snippet: |-
-          #   proxy_set_header Accept-Encoding "";
-          #   sub_filter
-          #   '</head>'
-          #   '<link rel="stylesheet" type="text/css" href="https://theme-park.${SECRET_DOMAIN}/css/base/radarr/overseerr.css">
-          #   <link rel="stylesheet" type="text/css" href="https://theme-park.${SECRET_DOMAIN}/css/addons/radarr/radarr-alt-calendar/radarr-alt-calendar.css">
-          #   </head>';
-          #   sub_filter_once on;
         hosts:
           - host: "{{ .Release.Name }}.${SECRET_DOMAIN}"
             paths:
