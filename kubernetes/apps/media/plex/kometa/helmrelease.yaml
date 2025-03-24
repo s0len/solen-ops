@@ -93,7 +93,7 @@ spec:
         type: *type
         cronjob:
           <<: *cronjob
-          schedule: "10 12 * * *"
+          schedule: "10 7,12,15,18 * * *"
         containers:
           app:
             <<: *container_app
@@ -105,7 +105,7 @@ spec:
         type: *type
         cronjob:
           <<: *cronjob
-          schedule: "30 9,16 * * *"
+          schedule: "30 9,16,19 * * *"
         containers:
           app:
             <<: *container_app
