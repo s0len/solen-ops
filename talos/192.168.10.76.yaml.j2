@@ -56,6 +56,7 @@ machine:
     image: factory.talos.dev/installer/8de8ff0564a256e9c3ccc261be0bfc4b910c3725b40b3d09fe5d74ef80eb6650:{{ ENV.TALOS_VERSION }}
     wipe: false
     extraKernelArgs:
+      - talos.platform=metal
       - i915.enable_guc=3
       - apparmor=0
       - init_on_alloc=0
@@ -125,7 +126,8 @@ machine:
       allowedRoles:
         - os:admin
       allowedKubernetesNamespaces:
-        - system-upgrade
+        - kube-system
+        - actions-runner-system
     apidCheckExtKeyUsage: true
     diskQuotaSupport: true
     kubePrism:
@@ -147,7 +149,7 @@ cluster:
   secret: op://talos/talos/CLUSTER_SECRET
   controlPlane:
     endpoint: https://192.168.10.80:6443
-  clusterName: solen-cluster
+  clusterName: main
   network:
     cni:
       name: none
