@@ -5,7 +5,7 @@ metadata:
   name: cluster-settings
   namespace: flux-system
 data:
-  CLUSTER_NAME: solen-cluster
+  CLUSTER_NAME: main
   TIMEZONE: "Europe/Stockholm"
   CLUSTER_CLOUDFLARE_TUNNEL_ID: 64368854-db82-408e-9b92-db90dae200ea
 

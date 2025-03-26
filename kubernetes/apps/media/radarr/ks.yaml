@@ -17,7 +17,7 @@ spec:
     - name: external-secrets
       namespace: external-secrets
   path: ./kubernetes/apps/media/radarr/standard
-  prune: true # Enable later
+  prune: true
   sourceRef:
     kind: GitRepository
     name: flux-system
@@ -49,8 +49,8 @@ spec:
   dependsOn:
     - name: external-secrets
       namespace: external-secrets
-  path: ./kubernetes/apps/media/radarr/standard
-  prune: true # Enable later
+  path: ./kubernetes/apps/media/radarr/kids
+  prune: true
   sourceRef:
     kind: GitRepository
     name: flux-system
@@ -82,8 +82,8 @@ spec:
   dependsOn:
     - name: external-secrets
       namespace: external-secrets
-  path: ./kubernetes/apps/media/radarr/standard
-  prune: true # Enable later
+  path: ./kubernetes/apps/media/radarr/anime
+  prune: true
   sourceRef:
     kind: GitRepository
     name: flux-system
