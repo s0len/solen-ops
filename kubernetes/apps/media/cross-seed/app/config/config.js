@@ -43,7 +43,7 @@ module.exports = {
   // searchCadence: "2 weeks",
 
   // ======== PROWLARR =========
-  torznab: [1, 2, 5, 6, 7, 8, 10, 11, 16, 18].map(
+  torznab: [1, 2, 3, 4, 5].map(
     (i) =>
       `http://prowlarr.media.svc.cluster.local/$${i}/api?apikey={{ .PROWLARR_API_KEY }}`
   ),

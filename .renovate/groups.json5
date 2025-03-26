@@ -50,7 +50,7 @@
       "description": ["Dragonfly Operator Group"],
       "groupName": "Dragonfly Operator",
       "matchDatasources": ["docker", "github-releases"],
-      "matchPackageNames": ["/dragonfly/"],
+      "matchPackageNames": ["/dragonflydb/"],
       "group": {
         "commitMessageTopic": "{{{groupName}}} group"
       },
