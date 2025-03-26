@@ -17,9 +17,9 @@
     ":semanticCommits",
     ":timezone(Europe/Stockholm)",
   ],
-  "dependencyDashboardTitle": "Renovate Dashboard 🤖",
-  "suppressNotifications": ["prEditedNotification", "prIgnoreNotification"],
-  "ignorePaths": ["**/*.sops.*", "**/resources/**"],
+  dependencyDashboardTitle: "Renovate Dashboard 🤖",
+  suppressNotifications: ["prEditedNotification", "prIgnoreNotification"],
+  ignorePaths: ["**/*.sops.*", "**/resources/**"],
   flux: {
     fileMatch: ["(^|/)kubernetes/.+\\.ya?ml$"],
   },
