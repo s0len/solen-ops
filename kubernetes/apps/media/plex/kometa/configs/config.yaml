@@ -735,7 +735,10 @@ libraries:
       - url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/metadata-files/motogp-2025.yaml
       - url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/metadata-files/formula1-2025.yaml
       - url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/metadata-files/ufc.yaml
-
+      - url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/metadata-files/wsbk-2025.yaml
+      - url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/metadata-files/wssp-2025.yaml
+      - url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/metadata-files/wssp300-2025.yaml
+      - url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/metadata-files/isle-of-man-tt.yaml
     operations:
       assets_for_all: true
     minimum_items: 1
