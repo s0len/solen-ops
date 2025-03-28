@@ -31,7 +31,7 @@ instances:
       api: "{{ .SONARR_API_KEY }}"
   plex:
     plex:
-      url: http://plex.ix-plex.svc.cluster.local:32400
+      url: http://plex.media.svc.cluster.local:32400
       api: "{{ .PLEX_TOKEN }}"
   qbittorrent:
     qbittorrent:
