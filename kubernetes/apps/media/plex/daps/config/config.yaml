@@ -454,7 +454,7 @@ health_checkarr:
   # up in the health check. This is useful for removing movies and shows that have been removed
   # from TMDB or TVDB.
   log_level: info
-  dry_run: true
+  dry_run: false
   instances:
     - radarr_standard
     - radarr_kids
