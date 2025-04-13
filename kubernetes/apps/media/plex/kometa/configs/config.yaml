@@ -762,7 +762,7 @@ settings:
   asset_directory: config/assets
   asset_folders: true
   cache: true
-  cache_expiration: 1
+  cache_expiration: 5
   check_nightly: false
   create_asset_folders: true
   custom_repo: ""
