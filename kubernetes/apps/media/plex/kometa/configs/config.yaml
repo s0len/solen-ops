@@ -760,7 +760,7 @@ settings:
   asset_depth: 2
   asset_directory: config/assets
   asset_folders: true
-  cache: true
+  cache: false
   cache_expiration: 1
   check_nightly: false
   create_asset_folders: true
