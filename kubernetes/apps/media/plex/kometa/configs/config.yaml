@@ -734,6 +734,7 @@ libraries:
       - url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/metadata-files/moto2-2025.yaml
       - url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/metadata-files/motogp-2025.yaml
       - url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/metadata-files/formula1-2025.yaml
+      - url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/metadata-files/formulae-2025.yaml
       - url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/metadata-files/ufc.yaml
       - url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/metadata-files/wsbk-2025.yaml
       - url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/metadata-files/wssp-2025.yaml
