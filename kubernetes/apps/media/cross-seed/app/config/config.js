@@ -8,6 +8,7 @@ module.exports = {
   includeNonVideos: true,
   rssCadence: "10 minutes",
   includeSingleEpisodes: true,
+  ignoreNonRelevantFilesToResume: true,
 
   // ======== Blocklist =========
   blockList: ["category:snatches"],
