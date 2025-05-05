@@ -26,7 +26,7 @@ spec:
           app:
             image:
               repository: ghcr.io/s0len/sports-organizer
-              tag: develop@sha256:2a3fa1cbf99e4b54ac789bd786141c176c7b55b8272b7a16e93c4e7509494ac0
+              tag: develop@sha256:7c9476cafe983ac57b970792bed4beb36ba1bb7d7d07c0ac93609e309490d94e
               pullPolicy: Always
             env:
               SRC_DIR: /data/torrents/sport
