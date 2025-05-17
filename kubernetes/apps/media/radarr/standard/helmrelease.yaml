@@ -43,7 +43,7 @@ spec:
           app:
             image:
               repository: ghcr.io/heavybullets8/radarr
-              tag: 5.22.4.9896@sha256:3fde2f1ba62c03b4f23c1f90f422233feadfa87efe20bec647127d5523abf96c
+              tag: 5.23.3.9987@sha256:5305604685ea16e9579a73bce7aeed33f3b98165a7f67e284bc1463364903ecc
 
             env:
               RADARR__APP__INSTANCENAME: "Radarr Standard"
