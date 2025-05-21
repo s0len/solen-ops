@@ -63,7 +63,8 @@ webauthn:
   disable: false
   display_name: "Authelia"
   attestation_conveyance_preference: "indirect"
-  user_verification: "preferred"
+  selection_criteria:
+    user_verification: "preferred"
   timeout: "60s"
 
 access_control:
@@ -81,6 +82,13 @@ access_control:
       resources:
         - "^/css/(addons|base)/.*\\.css$"
       policy: bypass
+
+    # Rules for uniflix.vip domain
+    - domain: "sonarr.uniflix.vip"
+      policy: one_factor
+
+    - domain: "*.uniflix.vip"
+      policy: two_factor
 
 identity_validation:
   reset_password:
