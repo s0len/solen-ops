@@ -140,7 +140,7 @@ sync_gdrive:
       location: /posters/majorgiant
     - id: 1LIVG1RbTEd7tTJMbzZr7Zak05XznLFia # Overbook874 - Contains homemade, mostly bollywood / indian
       location: /posters/overbook874
-    - id: 1aRngLdC9yO93gvSrTI2LQ_I9BSoGD-7o # IamSpartacus - Can contain white text versions of black text MM2K posters
+    - id: 1HjwMWfI6XpQVYH36VBzYiJA4UWfoqcQ9 # IamSpartacus - Can contain white text versions of black text MM2K posters
       location: /posters/IamSpartacus
     - id: 1wOhY88zc0wdQU-QQmhm4FzHL9QiCQnpu # zarox - Can contain white text versions of black text MM2K posters
       location: /posters/zarox
@@ -154,6 +154,12 @@ sync_gdrive:
       location: /posters/tokenminal
     - id: 1hEY9qEdXVDzIbnQ4z9Vpo0SVXXuZBZR-
       location: /posters/mareau
+    - id: 1XXZL-TpqWqfbKBWCifN2-MRdGDbSzHTj
+      location: /posters/dweagle76
+    - id: 1ejgRXwX6opexs8oAX8CnpSpKQt7Hrf00
+      location: /posters/darkkazul
+    - id: 1Wz0S18sKOeyBURkJ1uT3RtkEmSsK1-PG
+      location: /posters/WenIsInMood
 
 poster_renamerr:
   # This script will rename your posters to match Plex-Meta-Manager's naming scheme from TPDB's naming utilizing Radarr/Sonarr as a source.
@@ -187,6 +193,9 @@ poster_renamerr:
     - /posters/solens-collection
     - /posters/jpalenz77
     - /posters/Reitenth
+    - /posters/darkkazul
+    - /posters/WenIsInMood
+    - /posters/dweagle76
     - /posters/TheOtherGuy
     - /posters/miniMyself
     - /posters/kalyanrajnish
