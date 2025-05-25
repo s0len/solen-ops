@@ -37,9 +37,6 @@ spec:
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
-  dependsOn:
-    - name: nginx-certificates
-      namespace: network
   path: ./kubernetes/apps/network/nginx/internal
   prune: true
   retryInterval: 2m
