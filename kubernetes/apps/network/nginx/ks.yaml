@@ -13,8 +13,6 @@ spec:
   dependsOn:
     - name: onepassword
       namespace: external-secrets
-    - name: nginx-certificates
-      namespace: network
   path: ./kubernetes/apps/network/nginx/external
   prune: true
   retryInterval: 2m
