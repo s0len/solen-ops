@@ -43,7 +43,7 @@ spec:
           app:
             image:
               repository: ghcr.io/heavybullets8/radarr
-              tag: 5.22.4.9896@sha256:bd15d63083f1c4c04fedc9a114711938f47b1d8d05f70afda7f1b5a0b5d6acdc
+              tag: 5.25.0.10024@sha256:9ac84fd239045b4a0beb14d36714e0b5bb283c31e77564020790aa0a1b4a3efb
 
             env:
               RADARR__APP__INSTANCENAME: "Radarr Kids"
