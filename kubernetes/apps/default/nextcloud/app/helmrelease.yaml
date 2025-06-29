@@ -24,6 +24,10 @@ spec:
     nginx:
       enabled: true
 
+    phpClientHttpsFix:
+      enabled: true
+      protocol: https
+
     nextcloud:
       extraInitContainers:
         - name: init-db
@@ -37,6 +41,12 @@ spec:
           value: dragonfly.database.svc.cluster.local.
         - name: REDIS_HOST_PORT
           value: "6379"
+        - name: PHP_MEMORY_LIMIT
+          value: "8G"
+        - name: PHP_UPLOAD_LIMIT
+          value: "16G"
+        - name: PHP_POST_MAX_SIZE
+          value: "16G"
 
       existingSecret:
         enabled: true
@@ -48,6 +58,7 @@ spec:
         smtpHostKey: SMTP_HOST
 
       host: cloud.${SECRET_DOMAIN}
+      containerPort: 80
 
       mail:
         enabled: true
@@ -58,6 +69,24 @@ spec:
           port: 465
           authtype: LOGIN
           secure: ssl
+
+      lifecycle:
+        postStartCommand:
+          - "/bin/sh"
+          - "-c"
+          - "su -s /bin/sh www-data -c 'php occ db:add-missing-indices' || true"
+
+      phpConfigs:
+        www.conf: |
+          [www]
+          user = www-data
+          group = www-data
+          listen = 127.0.0.1:9000
+          pm = dynamic
+          pm.max_children = 50
+          pm.start_servers = 12
+          pm.min_spare_servers = 6
+          pm.max_spare_servers = 18
 
       configs:
         logging.config.php: |-
@@ -74,6 +103,11 @@ spec:
             'trusted_proxies' => array(
               0 => '127.0.0.1',
               1 => '10.96.0.0/16',
+              2 => '10.69.0.0/16',
+            ),
+            'trusted_domains' => array(
+              0 => '127.0.0.1',
+              1 => 'cloud.${SECRET_DOMAIN}',
             ),
             'forwarded_for_headers' => array('HTTP_X_FORWARDED_FOR'),
           );
@@ -128,7 +162,7 @@ spec:
       className: external
       annotations:
         external-dns.alpha.kubernetes.io/target: "external.${SECRET_DOMAIN}"
-        nginx.ingress.kubernetes.io/proxy-body-size: "10G"
+        nginx.ingress.kubernetes.io/proxy-body-size: "16G"
         nginx.ingress.kubernetes.io/proxy-buffering: "off"
         nginx.ingress.kubernetes.io/proxy-request-buffering: "off"
         nginx.ingress.kubernetes.io/server-snippet: |-
@@ -175,8 +209,8 @@ spec:
 
     resources:
       requests:
-        cpu: 500m
-        memory: 512Mi
+        cpu: 1000m
+        memory: 2Gi
       limits:
         cpu: 4
-        memory: 5Gi
+        memory: 8Gi
