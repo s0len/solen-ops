@@ -38,7 +38,7 @@ spec:
 
       extraEnv:
         - name: REDIS_HOST
-          value: dragonfly.database.svc.cluster.local.
+          value: dragonfly.database.svc.cluster.local
         - name: REDIS_HOST_PORT
           value: "6379"
         - name: PHP_MEMORY_LIMIT
@@ -74,7 +74,10 @@ spec:
         postStartCommand:
           - "/bin/sh"
           - "-c"
-          - "su -s /bin/sh www-data -c 'php occ db:add-missing-indices' || true"
+          - |
+            su -s /bin/sh www-data -c 'php occ db:add-missing-indices' || true
+            su -s /bin/sh www-data -c 'php occ maintenance:repair --include-expensive' || true
+            su -s /bin/sh www-data -c 'php occ files:scan --all' || true
 
       phpConfigs:
         www.conf: |
@@ -94,7 +97,7 @@ spec:
           $CONFIG = array (
             'log_type' => 'file',
             'logfile' => 'nextcloud.log',
-            'loglevel' => 1,
+            'loglevel' => 2,
             'logdateformat' => 'F d, Y H:i:s'
             );
         proxy.config.php: |-
@@ -121,6 +124,22 @@ spec:
           <?php
           $CONFIG = array (
             'default_phone_region' => 'US',
+            'maintenance_window_start' => 1,
+          );
+        redis.config.php: |-
+          <?php
+          $CONFIG = array (
+            'memcache.local' => '\OC\Memcache\APCu',
+            'memcache.distributed' => '\OC\Memcache\Redis',
+            'memcache.locking' => '\OC\Memcache\Redis',
+            'redis' => array(
+              'host' => 'dragonfly.database.svc.cluster.local',
+              'port' => 6379,
+              'timeout' => 0.0,
+              'dbindex' => 0,
+            ),
+            'session_lifetime' => 60 * 60 * 24,
+            'session_keepalive' => true,
           );
         preview.config.php: |-
           <?php
@@ -165,6 +184,8 @@ spec:
         nginx.ingress.kubernetes.io/proxy-body-size: "16G"
         nginx.ingress.kubernetes.io/proxy-buffering: "off"
         nginx.ingress.kubernetes.io/proxy-request-buffering: "off"
+        nginx.ingress.kubernetes.io/configuration-snippet: |-
+          more_set_headers "Strict-Transport-Security: max-age=31536000; includeSubDomains; preload";
         nginx.ingress.kubernetes.io/server-snippet: |-
           server_tokens off;
           proxy_hide_header X-Powered-By;
