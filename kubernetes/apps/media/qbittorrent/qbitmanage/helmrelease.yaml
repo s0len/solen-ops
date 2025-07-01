@@ -90,6 +90,7 @@ spec:
         globalMounts:
           - path: /app/config
           - path: /config
+          - path: /tmp
 
       config-file:
         type: secret
