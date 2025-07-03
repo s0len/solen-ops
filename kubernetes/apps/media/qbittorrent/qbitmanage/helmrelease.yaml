@@ -54,7 +54,7 @@ spec:
               QBT_TAG_NOHARDLINKS: true
               QBT_TAG_TRACKER_ERROR: true
               QBT_TAG_UPDATE: true
-              QBT_WIDTH: 100
+              QBT_WIDTH: 400
             resources:
               requests:
                 cpu: 10m
