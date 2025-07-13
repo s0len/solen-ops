@@ -94,7 +94,7 @@ spec:
               VPN_SERVICE_PROVIDER: airvpn
               WIREGUARD_MTU: 1320
               SERVER_COUNTRIES: Sweden
-              SERVER_NAMES: Menkab
+              SERVER_NAMES: Ain
             envFrom:
               - secretRef:
                   name: airvpn-secret
