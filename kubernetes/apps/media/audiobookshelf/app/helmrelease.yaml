@@ -18,23 +18,19 @@ spec:
     remediation:
       strategy: rollback
       retries: 3
+
   values:
     controllers:
       audiobookshelf:
-        pod:
-          securityContext:
-            runAsNonRoot: true
-            runAsUser: 568
-            runAsGroup: 568
-            fsGroup: 568
-            fsGroupChangePolicy: OnRootMismatch
-            seccompProfile: { type: RuntimeDefault }
+        annotations:
+          reloader.stakater.com/auto: "true"
         containers:
           app:
             image:
               repository: ghcr.io/advplyr/audiobookshelf
               tag: 2.26.0@sha256:16685fbba37a21d403f5390b907d286e15b3086d26527269b4ad785f71f571e5
             env:
+              TZ: ${TIMEZONE}
               AUDIOBOOKSHELF_UID: 568
               AUDIOBOOKSHELF_GID: 568
               CONFIG_PATH: /config
@@ -58,21 +54,27 @@ spec:
               capabilities: { drop: ["ALL"] }
             resources:
               requests:
-                cpu: 100m
-                memory: 150Mi
+                cpu: 10m
               limits:
-                memory: 2Gi
+                memory: 8Gi
+
+    defaultPodOptions:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 568
+        runAsGroup: 568
+        fsGroup: 568
+
     service:
       app:
-        controller: audiobookshelf
+        controller: *app
         ports:
           http:
             port: *port
+
     ingress:
       app:
         className: external
-        annotations:
-          external-dns.alpha.kubernetes.io/target: "external.${SECRET_DOMAIN}"
         hosts:
           - host: "{{ .Release.Name }}.${SECRET_DOMAIN}"
             paths:
@@ -80,14 +82,10 @@ spec:
                 service:
                   identifier: app
                   port: http
+
     persistence:
       config:
         existingClaim: *app
-
-      cache:
-        type: emptyDir
-        globalMounts:
-          - path: /.npm
 
       media:
         type: nfs
@@ -95,4 +93,3 @@ spec:
         path: /mnt/rust/data/media
         globalMounts:
           - path: /media
-            readOnly: true

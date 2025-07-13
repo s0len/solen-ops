@@ -12,18 +12,19 @@ spec:
       app.kubernetes.io/name: *app
   components:
     - ../../../../components/gatus/guarded
+    - ../../../../components/volsync
   path: ./kubernetes/apps/media/audiobookshelf/app
+  prune: true
+  retryInterval: 2m
   sourceRef:
     kind: GitRepository
     name: flux-system
     namespace: flux-system
-  prune: true
   wait: false
   interval: 30m
   timeout: 5m
   postBuild:
     substitute:
       APP: *app
-      VOLSYNC_CAPACITY: 500Mi
-      GATUS_PATH: /ping
-      GATUS_SUBDOMAIN: audiobookshelf
+      VOLSYNC_CAPACITY: 1Gi
+      VOLSYNC_RECORD_SIZE: 64k
