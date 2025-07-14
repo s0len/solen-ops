@@ -42,8 +42,8 @@ spec:
                     path: /api/v2/app/version
                     port: *port
                   initialDelaySeconds: 0
-                  periodSeconds: 5
                   timeoutSeconds: 10
+                  periodSeconds: 5
                   failureThreshold: 5
               readiness: *probes
             securityContext:
@@ -202,5 +202,5 @@ spec:
       addons:
         type: persistentVolumeClaim
         accessMode: ReadWriteOnce
-        storageClass: openebs-zfs-128k
+        storageClass: openebs-hostpath
         size: 1Gi
