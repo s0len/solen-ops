@@ -28,7 +28,7 @@ spec:
       GATUS_PATH: /web/index.html
       VOLSYNC_CAPACITY: 600Gi
       VOLSYNC_RECORD_SIZE: 64k
-      VOLSYNC_CACHE_CAPACITY: 20Gi
+      VOLSYNC_CACHE_CAPACITY: 50Gi
 ---
 # yaml-language-server: $schema=https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/kustomization-kustomize-v1.json
 apiVersion: kustomize.toolkit.fluxcd.io/v1
