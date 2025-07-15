@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 
 CONFIG_FILE="${TALOS_DIR}/${NODE_IP}.yaml.j2"
-OPTIONS=("Apply Talos Config" "Upgrade Talos" "Upgrade Kubernetes" "Reboot Talos" "Shutdown Talos" "Reset Talos" "Generate Kubeconfig" "Help" "Back")
+SCHEMATIC_FILE="${TALOS_DIR}/schematic.yaml"
+OPTIONS=("Apply Talos Config" "Upgrade Talos" "Upgrade Kubernetes" "Reboot Talos" "Shutdown Talos" "Reset Talos" "Generate Kubeconfig" "Rotate Client Certs" "Help" "Back")
 
 function show_help() {
     echo "Usage: $0 [command]"
@@ -25,6 +26,24 @@ function menu() {
     fi
 }
 
+function generate_schematic() {
+    gum log --structured --level info "Generating Talos schematic"
+
+    if [[ ! -f "$SCHEMATIC_FILE" ]]; then
+        gum log --structured --level error "Schematic file not found" "file" "$SCHEMATIC_FILE"
+        exit 1
+    fi
+
+    local schematic_id
+    if ! schematic_id=$(curl --silent -X POST --data-binary @"$SCHEMATIC_FILE" https://factory.talos.dev/schematics | jq --raw-output '.id'); then
+        gum log --structured --level error "Failed to generate schematic ID"
+        exit 1
+    fi
+
+    export TALOS_SCHEMATIC="$schematic_id"
+    gum log --structured --level info "Schematic ID generated" "id" "$schematic_id"
+}
+
 function main() {
     local args=("$@")
 
@@ -41,6 +60,7 @@ function main() {
         check_env NODE_IP CONFIG_FILE
         check_cli minijinja-cli op talosctl
         gum log --structured --level info "Applying Talos config to node ${NODE_IP}"
+        generate_schematic
         op_signin
         if ! minijinja-cli "${CONFIG_FILE}" | op inject | talosctl --nodes "${NODE_IP}" apply-config --mode auto --file /dev/stdin; then
             gum log --structured --level error "Failed to apply Talos config"
@@ -53,6 +73,7 @@ function main() {
         check_env NODE_IP CONFIG_FILE
         check_cli minijinja-cli talosctl yq
         gum log --structured --level info "Upgrading Talos on node ${NODE_IP}"
+        generate_schematic
         if ! FACTORY_IMAGE=$(minijinja-cli "${CONFIG_FILE}" | yq --exit-status 'select(document_index == 0) | .machine.install.image'); then
             gum log --structured --level error "Failed to fetch factory image"
             exit 1
@@ -125,6 +146,42 @@ function main() {
         else
             gum log --structured --level info "Successfully generated kubeconfig"
         fi
+        ;;
+
+    "Rotate Client Certs" | "rotate-certs")
+        check_env NODE_IP CONFIG_FILE
+        check_cli minijinja-cli op yq talosctl base64 gum
+
+        gum log --structured --level info "Rotating client cert"
+        op_signin
+
+        local injected
+        injected=$(mktemp)
+        minijinja-cli "${CONFIG_FILE}" | op inject >"${injected}"
+
+        local ca_crt_b64
+        local ca_key_b64
+        ca_crt_b64=$(yq -r 'select(document_index==0) | .machine.ca.crt' "${injected}" | tr -d '\n')
+        ca_key_b64=$(yq -r 'select(document_index==0) | .machine.ca.key' "${injected}" | tr -d '\n')
+
+        local tmp
+        tmp=$(mktemp -d)
+        trap 'rm -rf "${tmp}"' EXIT
+        echo "${ca_crt_b64}" | base64 -d >"${tmp}/ca.crt"
+        echo "${ca_key_b64}" | base64 -d >"${tmp}/ca.key"
+
+        pushd "${tmp}" >/dev/null || return 1
+        talosctl gen key --name admin                         # admin.key
+        talosctl gen csr --key admin.key --ip 127.0.0.1       # admin.csr
+        talosctl gen crt --ca ca --csr admin.csr --name admin # admin.crt
+        popd >/dev/null || return 1
+
+        yq -i '
+          .contexts.main.crt = "'"$(base64 -w0 "${tmp}/admin.crt")"'" |
+          .contexts.main.key = "'"$(base64 -w0 "${tmp}/admin.key")"'"
+        ' talosconfig
+
+        gum log --structured --level info "Rotation complete – talosconfig updated"
         ;;
 
     "-h" | "--help" | "Help")

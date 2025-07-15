@@ -53,20 +53,8 @@ machine:
     disableSearchDomain: true
   install:
     disk: /dev/sda
-    image: factory.talos.dev/installer/8de8ff0564a256e9c3ccc261be0bfc4b910c3725b40b3d09fe5d74ef80eb6650:{{ ENV.TALOS_VERSION }}
-    wipe: false
-    extraKernelArgs:
-      - talos.platform=metal
-      - i915.enable_guc=3
-      - apparmor=0
-      - init_on_alloc=0
-      - init_on_free=0
-      - intel_iommu=on
-      - iommu=pt
-      - mitigations=off
-      - security=none
-      - sysctl.kernel.kexec_load_disabled=1
-      - talos.auditd.disabled=1
+    image: factory.talos.dev/metal-installer/{{ ENV.TALOS_SCHEMATIC }}:{{ ENV.TALOS_VERSION }}
+    wipe: true
   files:
     - op: create
       path: /etc/cri/conf.d/20-customization.part
@@ -78,7 +66,6 @@ machine:
       path: /etc/nfsmount.conf
       content: |
         [ NFSMount_Global_Options ]
-        nfsvers=4.2
         hard=True
         nconnect=16
         noatime=True
