@@ -18,6 +18,7 @@ spec:
       namespace: external-secrets
   path: ./kubernetes/apps/media/radarr/standard
   prune: true
+  retryInterval: 2m
   sourceRef:
     kind: GitRepository
     name: flux-system
@@ -51,6 +52,7 @@ spec:
       namespace: external-secrets
   path: ./kubernetes/apps/media/radarr/kids
   prune: true
+  retryInterval: 2m
   sourceRef:
     kind: GitRepository
     name: flux-system
@@ -84,6 +86,7 @@ spec:
       namespace: external-secrets
   path: ./kubernetes/apps/media/radarr/anime
   prune: true
+  retryInterval: 2m
   sourceRef:
     kind: GitRepository
     name: flux-system

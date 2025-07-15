@@ -20,6 +20,7 @@ spec:
       namespace: database
   path: ./kubernetes/apps/default/hortusfox-web/app
   prune: true
+  retryInterval: 2m
   sourceRef:
     kind: GitRepository
     name: flux-system

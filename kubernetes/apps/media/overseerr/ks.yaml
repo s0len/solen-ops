@@ -15,6 +15,7 @@ spec:
     - ../../../../components/volsync
   path: ./kubernetes/apps/media/overseerr/app
   prune: true
+  retryInterval: 2m
   sourceRef:
     kind: GitRepository
     name: flux-system

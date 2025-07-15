@@ -16,6 +16,7 @@ spec:
   wait: false
   path: kubernetes/apps/media/plex/plex
   prune: true
+  retryInterval: 2m
   sourceRef:
     kind: GitRepository
     name: flux-system
@@ -47,6 +48,7 @@ spec:
   wait: false
   path: kubernetes/apps/media/plex/plex-auto-languages
   prune: true
+  retryInterval: 2m
   sourceRef:
     kind: GitRepository
     name: flux-system
@@ -75,6 +77,7 @@ spec:
   wait: false
   path: kubernetes/apps/media/plex/kometa
   prune: true
+  retryInterval: 2m
   sourceRef:
     kind: GitRepository
     name: flux-system
@@ -105,6 +108,7 @@ spec:
   timeout: 5m
   path: "./kubernetes/apps/media/plex/trakt-sync"
   prune: true
+  retryInterval: 2m
   sourceRef:
     kind: GitRepository
     name: flux-system
@@ -134,6 +138,7 @@ spec:
   wait: false
   path: kubernetes/apps/media/plex/daps
   prune: true
+  retryInterval: 2m
   sourceRef:
     kind: GitRepository
     name: flux-system
@@ -160,6 +165,7 @@ spec:
   wait: false
   path: kubernetes/apps/media/plex/plex-image-cleanup
   prune: true
+  retryInterval: 2m
   sourceRef:
     kind: GitRepository
     name: flux-system
@@ -186,6 +192,7 @@ spec:
   wait: false
   path: kubernetes/apps/media/plex/tautulli
   prune: true
+  retryInterval: 2m
   sourceRef:
     kind: GitRepository
     name: flux-system

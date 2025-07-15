@@ -18,6 +18,7 @@ spec:
       namespace: external-secrets
   path: ./kubernetes/apps/media/bazarr/app
   prune: true
+  retryInterval: 2m
   sourceRef:
     kind: GitRepository
     name: flux-system
