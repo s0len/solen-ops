@@ -13,12 +13,12 @@ customization:
     - sysctl.kernel.kexec_load_disabled=1
     - talos.auditd.disabled=1
     - -selinux
-systemExtensions:
-  officialExtensions:
-    - siderolabs/nvme-cli
-    - siderolabs/i915-ucode
-    - siderolabs/intel-ice-firmware
-    - siderolabs/intel-ucode
-    - siderolabs/realtek-firmware
-    - siderolabs/util-linux-tools
-    - siderolabs/zfs
+  systemExtensions:
+    officialExtensions:
+      - siderolabs/nvme-cli
+      - siderolabs/i915-ucode
+      - siderolabs/intel-ice-firmware
+      - siderolabs/intel-ucode
+      - siderolabs/realtek-firmware
+      - siderolabs/util-linux-tools
+      - siderolabs/zfs
