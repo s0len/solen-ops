@@ -9,8 +9,7 @@ function apply_talos_config() {
     local output
     if ! output=$(echo "$machine_config" | talosctl --nodes "$NODE_IP" apply-config --insecure --file /dev/stdin 2>&1); then
         if [[ "$output" == *"certificate required"* ]]; then
-            gum log --structured --level warn "Looks like Talos is already bootstrapped..."
-            gum log --structured --level warn "Will still attempt to bootstrap applications..."
+            gum log --structured --level warn "Talos already has an applied configuration..."
         else
             gum log --structured --level error "Failed to apply Talos config" "output" "$output"
             exit 1
@@ -21,18 +20,13 @@ function apply_talos_config() {
 }
 
 function bootstrap_talos() {
-    local bootstrapped=true
     local output
     gum log --structured --level info "Bootstrapping Talos"
-    until output=$(talosctl --nodes "$NODE_IP" bootstrap 2>&1); do
-        if [[ "$bootstrapped" == true && "$output" == *"AlreadyExists"* ]]; then
-            gum log --structured --level info "Talos is bootstrapped"
-            break
-        fi
-        bootstrapped=false
-        gum log --structured --level info "Talos bootstrap failed, retrying in 10s"
+    until output=$(talosctl --nodes "$NODE_IP" bootstrap 2>&1 || true) && [[ "${output}" == *"AlreadyExists"* ]]; do
+        gum log --structured --level info "Talos bootstrap in progress, waiting 10 seconds..."
         sleep 10
     done
+    gum log --structured --level info "Talos is bootstrapped"
 }
 
 function wait_for_nodes() {
@@ -77,7 +71,8 @@ function apply_crds() {
         # renovate: datasource=github-releases depName=prometheus-operator/prometheus-operator
         https://github.com/prometheus-operator/prometheus-operator/releases/download/v0.84.0/stripped-down-crds.yaml
         # renovate: datasource=github-releases depName=kubernetes-sigs/external-dns
-        https://raw.githubusercontent.com/kubernetes-sigs/external-dns/refs/tags/v0.18.0/config/crd/standard/dnsendpoint.yaml)
+        https://raw.githubusercontent.com/kubernetes-sigs/external-dns/refs/tags/v0.18.0/config/crd/standard/dnsendpoints.externaldns.k8s.io.yaml
+    )
     for crd in "${crds[@]}"; do
         if kubectl diff --filename "${crd}" &>/dev/null; then
             gum log --structured --level info "CRDs are up-to-date" "crd" "$crd"
