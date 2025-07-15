@@ -15,10 +15,10 @@ customization:
     - -selinux
   systemExtensions:
     officialExtensions:
-      - siderolabs/nvme-cli
-      - siderolabs/i915-ucode
+      - siderolabs/i915
       - siderolabs/intel-ice-firmware
       - siderolabs/intel-ucode
+      - siderolabs/nvme-cli
       - siderolabs/realtek-firmware
       - siderolabs/util-linux-tools
       - siderolabs/zfs
