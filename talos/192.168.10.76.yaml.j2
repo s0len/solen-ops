@@ -88,6 +88,9 @@ machine:
     net.ipv4.tcp_rmem: 4096 262144 67108864
     net.ipv4.tcp_wmem: 4096 262144 67108864
     net.ipv4.tcp_mtu_probing: "1"
+    net.ipv4.tcp_window_scaling: "1"
+    sunrpc.tcp_slot_table_entries: "128"
+    sunrpc.tcp_max_slot_table_entries: "128"
     user.max_user_namespaces: "11255"
     vm.nr_hugepages: "3072"
   sysfs:
