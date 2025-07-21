@@ -77,22 +77,17 @@ spec:
               repository: ghcr.io/qdm12/gluetun
               tag: v3.40.0
             env:
-              DNS_ADDRESS: "127.0.0.2"
+              DNS_ADDRESS: "10.96.0.10"
               DOT: "off"
-              FIREWALL_INPUT_PORTS: 80,8888,9999
+              FIREWALL_INPUT_PORTS: 80,8388,9999
               FIREWALL_OUTBOUND_SUBNETS: 10.69.0.0/16,10.96.0.0/16
               FIREWALL_VPN_INPUT_PORTS: *BT-port
-              HTTPPROXY: "on"
-              HTTPPROXY_LISTENING_ADDRESS: :8888
               HEALTH_SERVER_ADDRESS: :9999
-              HEALTH_SUCCESS_WAIT_DURATION: 10s
               HEALTH_TARGET_ADDRESS: airvpn.org
-              PUBLICIP_ENABLED: "true"
-              HTTPPROXY_LOG: "on"
               VPN_TYPE: wireguard
               VPN_INTERFACE: tun0
               VPN_SERVICE_PROVIDER: airvpn
-              WIREGUARD_MTU: 1320
+              WIREGUARD_MTU: 3418
               SERVER_COUNTRIES: Sweden
               SERVER_NAMES: Ain
             envFrom:
@@ -129,32 +124,35 @@ spec:
               limits:
                 kernel.org/tun: 1
 
-          dnsdist:
-            image:
-              repository: docker.io/powerdns/dnsdist-19
-              tag: 1.9.10
+          # TODO: Replace once gluetun supports socks5, nothing supports shadowsocks
+          socks5:
             restartPolicy: Always
+            image:
+              repository: serjs/go-socks5-proxy
+              tag: latest@sha256:aad36c623f16850d7cea0171d1aa79d706129191db9e270b6dfd7db6b552c734
+            env:
+              PROXY_PORT: &proxy-port 8388
 
     defaultPodOptions:
-      terminationGracePeriodSeconds: 300
       securityContext:
         fsGroup: 568
         fsGroupChangePolicy: "OnRootMismatch"
 
     service:
       app:
-        controller: *app
         nameOverride: *app
+        controller: *app
         ports:
           http:
             port: *port
 
       gluetun:
-        controller: *app
         nameOverride: gluetun
+        controller: *app
         ports:
-          gluetun-http:
-            port: 8888
+          socks-proxy:
+            enabled: true
+            port: *proxy-port
 
     ingress:
       app:
@@ -188,16 +186,6 @@ spec:
         path: /mnt/rust/data/torrents
         globalMounts:
           - path: /data/torrents
-
-      dnsdist:
-        type: configMap
-        name: qbittorrent-dnsdist
-        advancedMounts:
-          qbittorrent:
-            dnsdist:
-              - path: /etc/dnsdist/dnsdist.conf
-                subPath: dnsdist.conf
-                readOnly: true
 
       addons:
         type: persistentVolumeClaim
