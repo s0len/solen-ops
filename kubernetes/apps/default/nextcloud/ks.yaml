@@ -34,5 +34,6 @@ spec:
     substitute:
       APP: *app
       VOLSYNC_CAPACITY: 400Gi
+      VOLSYNC_CACHE_CAPACITY: 32Gi
       GATUS_SUBDOMAIN: cloud
       VOLSYNC_RECORD_SIZE: 1m
