@@ -192,3 +192,9 @@ spec:
         accessMode: ReadWriteOnce
         storageClass: openebs-hostpath
         size: 1Gi
+        advancedMounts:
+          qbittorrent:
+            app:
+              - path: /addons
+            vuetorrent:
+              - path: /addons
