@@ -56,20 +56,20 @@ spec:
                 drop:
                   - ALL
 
-          vuetorrent:
-            dependsOn: app
-            image:
-              repository: registry.k8s.io/git-sync/git-sync
-              tag: v4.4.2
-            args:
-              - --repo=https://github.com/WDaan/VueTorrent
-              - --ref=latest-release
-              - --period=86400s
-              - --root=/addons
-            resources:
-              requests:
-                cpu: 10m
-                memory: 25Mi
+          # vuetorrent:
+          #   dependsOn: app
+          #   image:
+          #     repository: registry.k8s.io/git-sync/git-sync
+          #     tag: v4.4.2
+          #   args:
+          #     - --repo=https://github.com/WDaan/VueTorrent
+          #     - --ref=latest-release
+          #     - --period=86400s
+          #     - --root=/addons
+          #   resources:
+          #     requests:
+          #       cpu: 10m
+          #       memory: 25Mi
 
         initContainers:
           gluetun:
@@ -187,14 +187,14 @@ spec:
         globalMounts:
           - path: /data/torrents
 
-      addons:
-        type: persistentVolumeClaim
-        accessMode: ReadWriteOnce
-        storageClass: openebs-hostpath
-        size: 1Gi
-        advancedMounts:
-          qbittorrent:
-            app:
-              - path: /addons
-            vuetorrent:
-              - path: /addons
+      # addons:
+      #   type: persistentVolumeClaim
+      #   accessMode: ReadWriteOnce
+      #   storageClass: openebs-hostpath
+      #   size: 1Gi
+      #   advancedMounts:
+      #     qbittorrent:
+      #       app:
+      #         - path: /addons
+      #       vuetorrent:
+      #         - path: /addons
