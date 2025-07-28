@@ -56,21 +56,22 @@ spec:
                 drop:
                   - ALL
 
-        initContainers:
           vuetorrent:
+            dependsOn: app
             image:
               repository: registry.k8s.io/git-sync/git-sync
               tag: v4.4.2
             args:
-              - --one-time
               - --repo=https://github.com/WDaan/VueTorrent
               - --ref=latest-release
+              - --period=86400s
               - --root=/addons
             resources:
               requests:
                 cpu: 10m
                 memory: 25Mi
 
+        initContainers:
           gluetun:
             image:
               repository: ghcr.io/qdm12/gluetun
