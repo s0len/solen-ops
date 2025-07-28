@@ -36,3 +36,9 @@ spec:
     manager:
       devices:
         gpu: true
+        fpga: false
+        sgx: false
+        dlb: false
+        dsa: false
+        qat: false
+        iaa: false
