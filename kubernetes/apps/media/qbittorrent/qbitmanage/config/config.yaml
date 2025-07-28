@@ -44,8 +44,7 @@ cat:
   sportseries: /data/torrents/sportseries
   usedforseeding: /data/torrents/usedforseeding
 
-tracker: {{ .QBITMANAGE_TRACKERS | nindent 2 }}
-
+tracker: { { .QBITMANAGE_TRACKERS | nindent 2 } }
 
 nohardlinks:
   - movies:
@@ -72,22 +71,22 @@ recyclebin:
   empty_after_x_days: 3
   save_torrents: false
   split_by_category: false
-  max_orphaned_files_to_delete: 50
+  max_orphaned_files_to_delete: 300
 
 orphaned:
   empty_after_x_days: 3
   exclude_patterns:
-  - '**/.DS_Store'
-  - '**/Thumbs.db'
-  - '**/@eaDir'
-  - '**/*.!qB'
-  - '**/*_unpackerred'
-  - /data/torrents/temp/**
-  - /data/torrents/completed/**
-  - /data/torrents/cross-seed/**
-  - /data/torrents/usedforseeding/**
-  - /data/torrents/links/**
-  max_orphaned_files_to_delete: 100
+    - "**/.DS_Store"
+    - "**/Thumbs.db"
+    - "**/@eaDir"
+    - "**/*.!qB"
+    - "**/*_unpackerred"
+    - /data/torrents/temp/**
+    - /data/torrents/completed/**
+    - /data/torrents/cross-seed/**
+    - /data/torrents/usedforseeding/**
+    - /data/torrents/links/**
+  max_orphaned_files_to_delete: 300
 
 notifiarr:
   apikey: "{{ .NOTIFIARR_QBITMANAGE_API_KEY }}"
