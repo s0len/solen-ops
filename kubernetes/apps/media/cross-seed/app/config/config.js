@@ -6,7 +6,7 @@ module.exports = {
   duplicateCategories: false,
   flatLinking: false,
   includeNonVideos: true,
-  rssCadence: "10 minutes",
+  rssCadence: "30 minutes",
   includeSingleEpisodes: true,
   ignoreNonRelevantFilesToResume: true,
 
