@@ -18,12 +18,6 @@ spec:
     parameters:
       max_connections: "400"
       shared_buffers: 256MB
-      # Reduce checkpoint I/O pressure
-      checkpoint_timeout: "30min" # Instead of default 5min
-      checkpoint_completion_target: "0.9" # Spread checkpoint I/O over time
-      wal_buffers: "16MB" # Reduce WAL pressure
-      effective_io_concurrency: "200" # Better for SSDs
-      random_page_cost: "1.1" # Optimize for SSD storage
       # huge_pages: "on"
   nodeMaintenanceWindow:
     inProgress: false
@@ -43,7 +37,7 @@ spec:
         compression: bzip2
       wal:
         compression: bzip2
-        maxParallel: 4
+        maxParallel: 8
       destinationPath: s3://cloudnative-pg/
       endpointURL: "${SECRET_R2_HOST}"
       # Note: serverName version needs to be inclemented
