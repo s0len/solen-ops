@@ -11,7 +11,7 @@ spec:
   interval: 30m
   values:
     controllers:
-      new-plex-dubs:
+      cloudflare-ddns:
         annotations:
           reloader.stakater.com/auto: "true"
         containers:
