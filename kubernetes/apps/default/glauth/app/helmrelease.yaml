@@ -20,6 +20,8 @@ spec:
   values:
     controllers:
       glauth:
+        serviceAccount:
+          identifier: glauth
         replicas: 1
         strategy: RollingUpdate
         annotations:
@@ -67,6 +69,9 @@ spec:
             enabled: true
             port: 389
             protocol: TCP
+    serviceAccount:
+      glauth: {}
+
     serviceMonitor:
       app:
         serviceName: *app

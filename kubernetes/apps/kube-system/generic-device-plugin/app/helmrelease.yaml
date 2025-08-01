@@ -28,6 +28,8 @@ spec:
           effect: "NoSchedule"
     controllers:
       generic-device-plugin:
+        serviceAccount:
+          identifier: generic-device-plugin
         containers:
           generic-device-plugin:
             image:
@@ -63,6 +65,9 @@ spec:
             securityContext:
               privileged: true
               readOnlyRootFilesystem: true
+
+    serviceAccount:
+      generic-device-plugin: {}
 
     persistence:
       dev:
