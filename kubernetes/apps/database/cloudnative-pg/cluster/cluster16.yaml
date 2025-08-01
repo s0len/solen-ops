@@ -17,7 +17,7 @@ spec:
   postgresql:
     parameters:
       max_connections: "400"
-      shared_buffers: "1GB" # Increased from 256MB (25% of 4GB)
+      shared_buffers: "512MB" # Balanced for 4GB RAM
       checkpoint_timeout: "15min" # Reduce checkpoint frequency
       checkpoint_completion_target: "0.9" # Spread I/O over time
       # huge_pages: "on"
