@@ -140,14 +140,14 @@ spec:
 
     service:
       app:
-        nameOverride: *app
+        forceRename: *app
         controller: *app
         ports:
           http:
             port: *port
 
       gluetun:
-        nameOverride: gluetun
+        suffix: gluetun
         controller: *app
         ports:
           socks-proxy:

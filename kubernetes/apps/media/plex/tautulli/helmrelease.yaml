@@ -33,20 +33,11 @@ spec:
         containers:
           app:
             image:
-              repository: ghcr.io/tautulli/tautulli
-              tag: v2.15.2@sha256:0003dd1f2c6d8cd1ce3013ff94f62b17530b3573439de6b52aefa3a10e724f9e
+              repository: ghcr.io/home-operations/tautulli
+              tag: 2.15.2@sha256:4e7d75c9fe8f96ae766269fb451fc5ad215451b30a463c11142c492512c021cd
             env:
               TZ: ${TIMEZONE}
-            command: ["/usr/local/bin/python", "Tautulli.py"]
-            args:
-              [
-                "--config",
-                "/config/config.ini",
-                "--datadir",
-                "/config",
-                "--port",
-                "80",
-              ]
+              TAUTULLI__PORT: &port 80
             probes:
               liveness: &probes
                 enabled: true
@@ -54,20 +45,21 @@ spec:
                 spec:
                   httpGet:
                     path: /status
-                    port: &port 80
+                    port: *port
                   initialDelaySeconds: 0
                   periodSeconds: 10
                   timeoutSeconds: 1
                   failureThreshold: 3
               readiness: *probes
-            securityContext: &securityContext
+            securityContext:
               allowPrivilegeEscalation: false
               readOnlyRootFilesystem: true
               capabilities: { drop: ["ALL"] }
             resources:
               requests:
                 cpu: 10m
-                memory: 128Mi
+              limits:
+                memory: 1Gi
 
     defaultPodOptions:
       securityContext:
@@ -83,10 +75,9 @@ spec:
         ports:
           http:
             port: *port
+
     ingress:
       app:
-        annotations:
-          external-dns.alpha.kubernetes.io/target: "external.${SECRET_DOMAIN}"
         className: external
         hosts:
           - host: "{{ .Release.Name }}.${SECRET_DOMAIN}"
@@ -95,13 +86,16 @@ spec:
                 service:
                   identifier: app
                   port: http
+
     persistence:
       config:
         existingClaim: *app
 
+      cache:
+        existingClaim: tautulli-cache
+        globalMounts:
+          - path: /config/cache
+
       tmp:
         type: emptyDir
         medium: Memory
-
-      add-ons:
-        type: emptyDir

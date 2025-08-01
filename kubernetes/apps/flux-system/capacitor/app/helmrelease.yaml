@@ -20,8 +20,12 @@ spec:
   uninstall:
     keepHistory: false
   values:
+    serviceAccount:
+      capacitor: {}
     controllers:
       capacitor:
+        serviceAccount:
+          identifier: capacitor
         strategy: RollingUpdate
         containers:
           app:
@@ -42,10 +46,6 @@ spec:
         runAsNonRoot: true
         runAsUser: 568
         runAsGroup: 568
-
-    serviceAccount:
-      create: true
-      name: "capacitor"
 
     service:
       app:
