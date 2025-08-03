@@ -22,7 +22,7 @@ spec:
     name: flux-system
     namespace: flux-system
   interval: 30m
-  timeout: 5m
+  timeout: 10m
   postBuild:
     substitute:
       APP: *app
@@ -105,7 +105,7 @@ spec:
     - name: onepassword
       namespace: external-secrets
   interval: 30m
-  timeout: 5m
+  timeout: 10m
   path: "./kubernetes/apps/media/plex/trakt-sync"
   prune: true
   retryInterval: 2m
@@ -198,7 +198,7 @@ spec:
     name: flux-system
     namespace: flux-system
   interval: 30m
-  timeout: 5m
+  timeout: 10m
   postBuild:
     substitute:
       APP: *app
