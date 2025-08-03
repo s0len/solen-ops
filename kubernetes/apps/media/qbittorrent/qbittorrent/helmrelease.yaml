@@ -5,7 +5,6 @@ kind: HelmRelease
 metadata:
   name: &app qbittorrent
 spec:
-  suspend: true
   interval: 30m
   chartRef:
     kind: OCIRepository
@@ -21,6 +20,7 @@ spec:
   values:
     controllers:
       qbittorrent:
+        replicas: 0
         annotations:
           reloader.stakater.com/auto: "true"
 
