@@ -25,7 +25,7 @@ sonarr:
     replace_existing_custom_formats: false
 
     media_naming:
-      series: plex
+      series: plex-tvdb
       season: default
       episodes:
         rename: true
@@ -61,10 +61,10 @@ radarr:
 
     # Media Naming Configuration
     media_naming:
-      folder: plex
+      folder: plex-tmdb
       movie:
         rename: true
-        standard: anime
+        standard: plex-anime-tmdb
 
     # Which quality definition in the guide to sync to Radarr. Only choice right now is 'movie'
     quality_definition:
@@ -149,10 +149,10 @@ radarr:
 
     # Media Naming Configuration
     media_naming:
-      folder: plex
+      folder: plex-tmdb
       movie:
         rename: true
-        standard: default
+        standard: plex-tmdb
 
     include:
       - template: radarr-quality-definition-sqp-uhd
@@ -253,10 +253,10 @@ radarr:
 
     # Media Naming Configuration
     media_naming:
-      folder: plex
+      folder: plex-tmdb
       movie:
         rename: true
-        standard: default
+        standard: plex-tmdb
 
     quality_profiles:
       - name: SQP-1 (1080p)
