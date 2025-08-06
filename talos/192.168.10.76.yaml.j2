@@ -34,7 +34,7 @@ machine:
     modules:
       - name: zfs
   network:
-    hostname: control-1
+    hostname: solen-control
     interfaces:
       - deviceSelector:
           hardwareAddr: ac:1f:6b:2d:f2:94
@@ -52,7 +52,7 @@ machine:
         - 1.0.0.1
     disableSearchDomain: true
   install:
-    disk: /dev/sda
+    disk: /dev/nvme0n1
     image: factory.talos.dev/metal-installer/{{ ENV.TALOS_SCHEMATIC }}:{{ ENV.TALOS_VERSION }}
     wipe: true
   files:
