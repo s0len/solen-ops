@@ -37,7 +37,7 @@ machine:
     hostname: solen-control
     interfaces:
       - deviceSelector:
-          hardwareAddr: ac:1f:6b:2d:f2:94
+          hardwareAddr: ac:1f:6b:2d:f2:95
         addresses:
           - 192.168.10.76/24
         routes:
@@ -53,7 +53,7 @@ machine:
     disableSearchDomain: true
   install:
     disk: /dev/nvme0n1
-    image: factory.talos.dev/metal-installer/{{ ENV.TALOS_SCHEMATIC }}:{{ ENV.TALOS_VERSION }}
+    image:  factory.talos.dev/metal-installer/{{ ENV.TALOS_SCHEMATIC }}:{{ ENV.TALOS_VERSION }}
     wipe: true
   files:
     - op: create
