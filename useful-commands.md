@@ -316,3 +316,9 @@ spec:
               type: File
     restartPolicy: Never
 ```
+
+## If you run into an issue where cluster-secrets are not being created
+
+```sh
+sops -d cluster-secrets.sops.yaml | kubectl apply -f -
+```
