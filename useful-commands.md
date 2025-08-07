@@ -262,3 +262,57 @@ command:
     - sleep
     - infinity
 ```
+
+## pod with tools for zfs
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+    name: zfs-tools
+    namespace: kube-system
+spec:
+    hostNetwork: true
+    hostPID: true
+    containers:
+        - name: zfs-tools
+          image: ubuntu:22.04
+          command:
+              - /bin/bash
+              - -c
+              - |
+                  apt update && \
+                  apt install -y --no-install-recommends zfsutils-linux smartmontools nvme-cli gdisk && \
+                  export PATH=$PATH:/sbin:/usr/sbin && \
+                  sleep infinity
+          securityContext:
+              privileged: true
+          volumeMounts:
+              - name: dev
+                mountPath: /dev
+              - name: sys
+                mountPath: /sys
+              - name: run
+                mountPath: /run
+              - name: resolv
+                mountPath: /etc/resolv.conf
+                readOnly: true
+    volumes:
+        - name: dev
+          hostPath:
+              path: /dev
+              type: Directory
+        - name: sys
+          hostPath:
+              path: /sys
+              type: Directory
+        - name: run
+          hostPath:
+              path: /run
+              type: Directory
+        - name: resolv
+          hostPath:
+              path: /etc/resolv.conf
+              type: File
+    restartPolicy: Never
+```

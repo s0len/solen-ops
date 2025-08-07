@@ -1,6 +1,6 @@
 version: v1alpha1
 debug: false
-persist: true
+
 machine:
   type: controlplane
   token: op://talos/talos/MACHINE_TOKEN
@@ -12,8 +12,6 @@ machine:
     - 127.0.0.1
   kubelet:
     image: ghcr.io/siderolabs/kubelet:{{ ENV.KUBERNETES_VERSION }}
-    extraArgs:
-      rotate-server-certificates: "true"
     extraConfig:
       maxPods: 150
       serializeImagePulls: false
@@ -38,13 +36,8 @@ machine:
     interfaces:
       - deviceSelector:
           hardwareAddr: ac:1f:6b:2d:f2:95
-        addresses:
-          - 192.168.10.76/24
-        routes:
-          - network: 0.0.0.0/0
-            gateway: 192.168.10.1
         mtu: 9000
-        dhcp: false
+        dhcp: true
         vip:
           ip: 192.168.10.80
     nameservers:
@@ -182,13 +175,6 @@ cluster:
     image: registry.k8s.io/kube-scheduler:{{ ENV.KUBERNETES_VERSION }}
     extraArgs:
       bind-address: 0.0.0.0
-  discovery:
-    enabled: true
-    registries:
-      kubernetes:
-        disabled: true
-      service:
-        disabled: false
   etcd:
     ca:
       crt: op://talos/talos/CLUSTER_ETCD_CA_CRT
