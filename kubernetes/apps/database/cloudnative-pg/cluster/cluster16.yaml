@@ -17,9 +17,7 @@ spec:
   postgresql:
     parameters:
       max_connections: "400"
-      shared_buffers: "512MB" # Balanced for 4GB RAM
-      checkpoint_timeout: "15min" # Reduce checkpoint frequency
-      checkpoint_completion_target: "0.9" # Spread I/O over time
+      shared_buffers: "512MB"
       # huge_pages: "on"
   nodeMaintenanceWindow:
     inProgress: false
@@ -39,7 +37,7 @@ spec:
         compression: bzip2
       wal:
         compression: bzip2
-        maxParallel: 4
+        maxParallel: 8
       destinationPath: s3://cloudnative-pg/
       endpointURL: "${SECRET_R2_HOST}"
       # Note: serverName version needs to be incremented

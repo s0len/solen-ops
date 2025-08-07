@@ -68,27 +68,27 @@ machine:
     fs.inotify.max_user_watches: "1048576"
     net.core.bpf_jit_harden: "1"
     net.core.default_qdisc: fq
-    net.core.rmem_max: "67108864"
-    net.core.wmem_max: "67108864"
-    net.core.rmem_default: "67108864"
-    net.core.wmem_default: "67108864"
-    net.core.optmem_max: "67108864"
-    net.core.netdev_max_backlog: "250000"
+    net.core.rmem_max: "134217728"
+    net.core.wmem_max: "134217728"
+    net.core.rmem_default: "134217728"
+    net.core.wmem_default: "134217728"
+    net.core.optmem_max: "134217728"
+    net.core.netdev_max_backlog: "500000"
     net.ipv4.tcp_timestamps: "0"
     net.ipv4.tcp_congestion_control: bbr
     net.ipv4.tcp_fastopen: 3
     net.ipv4.tcp_max_syn_backlog: "8192"
-    net.ipv4.tcp_rmem: 4096 262144 67108864
-    net.ipv4.tcp_wmem: 4096 262144 67108864
+    net.ipv4.tcp_rmem: 4096 524288 134217728
+    net.ipv4.tcp_wmem: 4096 524288 134217728
     net.ipv4.tcp_mtu_probing: "1"
     net.ipv4.tcp_window_scaling: "1"
     sunrpc.tcp_slot_table_entries: "128"
     sunrpc.tcp_max_slot_table_entries: "128"
     user.max_user_namespaces: "11255"
-    vm.nr_hugepages: "3072"
+    vm.nr_hugepages: "8192"
   sysfs:
-    module.zfs.parameters.zfs_arc_max: 33552457142
-    module.zfs.parameters.zfs_arc_sys_free: 15098820000
+    module.zfs.parameters.zfs_arc_max: 85899345920
+    module.zfs.parameters.zfs_arc_sys_free: 21474836480
     devices.system.cpu.intel_pstate.hwp_dynamic_boost: 1
     devices.system.cpu.cpu0.cpufreq.energy_performance_preference: balance_performance
     devices.system.cpu.cpu1.cpufreq.energy_performance_preference: balance_performance
@@ -102,6 +102,18 @@ machine:
     devices.system.cpu.cpu9.cpufreq.energy_performance_preference: balance_performance
     devices.system.cpu.cpu10.cpufreq.energy_performance_preference: balance_performance
     devices.system.cpu.cpu11.cpufreq.energy_performance_preference: balance_performance
+    devices.system.cpu.cpu12.cpufreq.energy_performance_preference: balance_performance
+    devices.system.cpu.cpu13.cpufreq.energy_performance_preference: balance_performance
+    devices.system.cpu.cpu14.cpufreq.energy_performance_preference: balance_performance
+    devices.system.cpu.cpu15.cpufreq.energy_performance_preference: balance_performance
+    devices.system.cpu.cpu16.cpufreq.energy_performance_preference: balance_performance
+    devices.system.cpu.cpu17.cpufreq.energy_performance_preference: balance_performance
+    devices.system.cpu.cpu18.cpufreq.energy_performance_preference: balance_performance
+    devices.system.cpu.cpu19.cpufreq.energy_performance_preference: balance_performance
+    devices.system.cpu.cpu20.cpufreq.energy_performance_preference: balance_performance
+    devices.system.cpu.cpu21.cpufreq.energy_performance_preference: balance_performance
+    devices.system.cpu.cpu22.cpufreq.energy_performance_preference: balance_performance
+    devices.system.cpu.cpu23.cpufreq.energy_performance_preference: balance_performance
   features:
     rbac: true
     stableHostname: true
