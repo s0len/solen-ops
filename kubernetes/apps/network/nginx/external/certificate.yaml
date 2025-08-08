@@ -1,0 +1,21 @@
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: uniflix-vip-tls
+  namespace: network
+spec:
+  secretName: uniflix-vip-tls
+  issuerRef:
+    kind: ClusterIssuer
+    name: letsencrypt-production
+  commonName: uniflix.vip
+  dnsNames:
+    - uniflix.vip
+    - "*.uniflix.vip"
+  privateKey:
+    algorithm: RSA
+    size: 2048
+  renewBefore: 720h # 30d
+  duration: 2160h   # 90d
+
