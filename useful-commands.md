@@ -6,20 +6,20 @@
 
 ```bash
 # Kolla utgångsdatum för certifikat i network namespace (det som nginx använder)
-kubectl get secret uniflix-vip-tls -n network -o json | jq -r '.data."tls.crt"' | base64 -d | openssl x509 -noout -dates
+kubectl get secret domain-com-tls -n network -o json | jq -r '.data."tls.crt"' | base64 -d | openssl x509 -noout -dates
 
 # Kolla utgångsdatum för certifikat i cert-manager namespace (det förnyade)
-kubectl get secret uniflix-vip-tls -n cert-manager -o json | jq -r '.data."tls.crt"' | base64 -d | openssl x509 -noout -dates
+kubectl get secret domain-com-tls -n cert-manager -o json | jq -r '.data."tls.crt"' | base64 -d | openssl x509 -noout -dates
 ```
 
 ### 2. Kopiera nytt certifikat (om cert-manager har nyare)
 
 ```bash
 # Ta bort gamla utgångna certifikatet
-kubectl delete secret uniflix-vip-tls -n network
+kubectl delete secret domain-com-tls -n network
 
 # Kopiera det nya certifikatet från cert-manager till network namespace
-kubectl get secret uniflix-vip-tls -n cert-manager -o yaml | \
+kubectl get secret domain-com-tls -n cert-manager -o yaml | \
   sed 's/namespace: cert-manager/namespace: network/' | \
   sed '/resourceVersion/d' | \
   sed '/uid:/d' | \
@@ -52,8 +52,8 @@ kubectl logs -n network deployment/cloudflared --tail=10
 
 ```bash
 # Allt i ett svep
-kubectl delete secret uniflix-vip-tls -n network && \
-kubectl get secret uniflix-vip-tls -n cert-manager -o yaml | \
+kubectl delete secret domain-com-tls -n network && \
+kubectl get secret domain-com-tls -n cert-manager -o yaml | \
   sed 's/namespace: cert-manager/namespace: network/' | \
   sed '/resourceVersion/d' | sed '/uid:/d' | sed '/creationTimestamp/d' | \
   kubectl apply -f - && \
