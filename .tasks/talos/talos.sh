@@ -26,24 +26,6 @@ function menu() {
     fi
 }
 
-function generate_schematic() {
-    gum log --structured --level info "Generating Talos schematic"
-
-    if [[ ! -f "$SCHEMATIC_FILE" ]]; then
-        gum log --structured --level error "Schematic file not found" "file" "$SCHEMATIC_FILE"
-        exit 1
-    fi
-
-    local schematic_id
-    if ! schematic_id=$(curl --silent -X POST --data-binary @"$SCHEMATIC_FILE" https://factory.talos.dev/schematics | jq --raw-output '.id'); then
-        gum log --structured --level error "Failed to generate schematic ID"
-        exit 1
-    fi
-
-    export TALOS_SCHEMATIC="$schematic_id"
-    gum log --structured --level info "Schematic ID generated" "id" "$schematic_id"
-}
-
 function main() {
     local args=("$@")
 
@@ -62,7 +44,7 @@ function main() {
         gum log --structured --level info "Applying Talos config to node ${NODE_IP}"
         generate_schematic
         op_signin
-        if ! minijinja-cli "${CONFIG_FILE}" | op inject | talosctl --nodes "${NODE_IP}" apply-config --mode auto --file /dev/stdin; then
+        if ! minijinja-cli "${CONFIG_FILE}" | op inject | talosctl --nodes "${NODE_IP}" apply-config --mode auto --file /dev/stdin --config-patch "@${TALOS_DIR}/patches/patches.yaml"; then
             gum log --structured --level error "Failed to apply Talos config"
         else
             gum log --structured --level info "Successfully applied Talos config"
@@ -74,7 +56,7 @@ function main() {
         check_cli minijinja-cli talosctl yq
         gum log --structured --level info "Upgrading Talos on node ${NODE_IP}"
         generate_schematic
-        if ! FACTORY_IMAGE=$(minijinja-cli "${CONFIG_FILE}" | yq --exit-status 'select(document_index == 0) | .machine.install.image'); then
+        if ! FACTORY_IMAGE=$(minijinja-cli "${CONFIG_FILE}" | yq --exit-status '.machine.install.image'); then
             gum log --structured --level error "Failed to fetch factory image"
             exit 1
         fi
@@ -161,8 +143,8 @@ function main() {
 
         local ca_crt_b64
         local ca_key_b64
-        ca_crt_b64=$(yq -r 'select(document_index==0) | .machine.ca.crt' "${injected}" | tr -d '\n')
-        ca_key_b64=$(yq -r 'select(document_index==0) | .machine.ca.key' "${injected}" | tr -d '\n')
+        ca_crt_b64=$(yq -r '.machine.ca.crt' "${injected}" | tr -d '\n')
+        ca_key_b64=$(yq -r '.machine.ca.key' "${injected}" | tr -d '\n')
 
         local tmp
         tmp=$(mktemp -d)

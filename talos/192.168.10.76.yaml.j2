@@ -15,14 +15,6 @@ machine:
     extraConfig:
       maxPods: 150
       serializeImagePulls: false
-    extraMounts:
-      - destination: /var/openebs/local
-        type: bind
-        source: /var/openebs/local
-        options:
-          - bind
-          - rshared
-          - rw
     defaultRuntimeSeccompProfileEnabled: true
     nodeIP:
       validSubnets:
@@ -45,7 +37,8 @@ machine:
         - 1.0.0.1
     disableSearchDomain: true
   install:
-    disk: /dev/nvme0n1
+    diskSelector:
+      match: disk.serial == "S7HENJ0Y238820E"
     image:  factory.talos.dev/metal-installer/{{ ENV.TALOS_SCHEMATIC }}:{{ ENV.TALOS_VERSION }}
     wipe: true
   files:
