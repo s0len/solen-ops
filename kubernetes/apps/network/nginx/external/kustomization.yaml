@@ -6,4 +6,3 @@ namespace: network
 resources:
   - ./helmrelease.yaml
   - ./helmrepository.yaml
-  - ./certificate.yaml
