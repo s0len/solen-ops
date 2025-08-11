@@ -112,7 +112,7 @@ function apply_helm_releases() {
         gum log --structured --level error "Helmfile not found" "file" "$helmfile_file"
         exit 1
     fi
-    if ! helmfile --file "$helmfile_file" apply --hide-notes --skip-diff-on-install --suppress-diff --suppress-secrets; then
+    if ! helmfile --file "${helmfile_file}" sync --hide-notes; then
         gum log --structured --level error "Failed to apply Helm releases"
         exit 1
     fi
@@ -120,7 +120,7 @@ function apply_helm_releases() {
 }
 
 function main() {
-    check_env KUBECONFIG KUBERNETES_VERSION TALOS_VERSION NODE_IP
+    check_env KUBECONFIG KUBERNETES_VERSION TALOS_VERSION NODE_IP COMPONENTS_DIR
     check_cli helmfile jq kubectl kustomize minijinja-cli op talosctl yq
     gum confirm "Bootstrap the Talos node ${NODE_IP} ... continue?" || exit 0
     op_signin
