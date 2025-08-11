@@ -65,6 +65,8 @@ spec:
           "http_user_agent": "$http_user_agent"}
         proxy-body-size: 0
         proxy-buffer-size: 16k
+        proxy-buffers-number: "8"
+        proxy-busy-buffers-size: 64k
         ssl-protocols: TLSv1.3 TLSv1.2
         use-geoip2: false
         use-forwarded-headers: "true"
@@ -83,6 +85,7 @@ spec:
       resources:
         requests:
           cpu: 100m
+          memory: 128Mi
         limits:
           memory: 5Gi
     defaultBackend:
