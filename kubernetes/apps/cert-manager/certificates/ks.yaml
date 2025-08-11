@@ -12,6 +12,7 @@ spec:
       app.kubernetes.io/name: *app
   dependsOn:
     - name: onepassword
+      namespace: external-secrets
   path: ./kubernetes/apps/cert-manager/certificates/import
   prune: true
   retryInterval: 2m
