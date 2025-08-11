@@ -129,8 +129,8 @@ function main() {
     bootstrap_talos
     fetch_kubeconfig
     wait_for_nodes
-    apply_configs
-    apply_resources
+  apply_resources
+  apply_configs
     apply_crds
     apply_helm_releases
     gum log --structured --level info "Cluster bootstrapped successfully!"
