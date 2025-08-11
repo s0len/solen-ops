@@ -26,12 +26,18 @@ machine:
   network:
     hostname: solen-control
     interfaces:
-      - deviceSelector:
-          hardwareAddr: ac:1f:6b:2d:f2:95
+      - interface: bond0
         mtu: 9000
         dhcp: true
         vip:
           ip: 192.168.10.80
+        bond:
+          mode: 802.3ad
+          lacpRate: fast
+          xmitHashPolicy: layer3+4
+          deviceSelectors:
+            - hardwareAddr: ac:1f:6b:2d:f2:94
+            - hardwareAddr: ac:1f:6b:2d:f2:95
     nameservers:
         - 1.1.1.1
         - 1.0.0.1
