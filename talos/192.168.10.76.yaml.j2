@@ -44,7 +44,7 @@ machine:
     disableSearchDomain: true
   install:
     diskSelector:
-      match: disk.serial == "S7HENJ0Y238820E"
+      serial: "S7HENJ0Y238820E"
     image:  factory.talos.dev/metal-installer/{{ ENV.TALOS_SCHEMATIC }}:{{ ENV.TALOS_VERSION }}
     wipe: true
   files:
