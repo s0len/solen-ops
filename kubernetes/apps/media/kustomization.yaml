@@ -14,7 +14,7 @@ resources:
   - ./maintainerr/ks.yaml
   - ./notifiarr/ks.yaml
   - ./plex/ks.yaml
-  - ./qbittorrent/ks.yaml
+  # - ./qbittorrent/ks.yaml
   - ./sonarr/ks.yaml
   - ./sports-organizer/ks.yaml
   - ./radarr/ks.yaml
