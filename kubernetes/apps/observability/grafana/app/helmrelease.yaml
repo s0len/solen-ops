@@ -41,9 +41,7 @@ spec:
       GF_AUTH_GENERIC_OAUTH_USE_PKCE: true
       GF_AUTH_GENERIC_OAUTH_ROLE_ATTRIBUTE_PATH: contains(groups, 'admins') && 'Admin' || 'Viewer'
       GF_AUTH_GENERIC_OAUTH_ALLOW_ASSIGN_GRAFANA_ADMIN: true
-      GF_AUTH_GENERIC_OAUTH_ALLOW_SIGN_UP: true
-      GF_AUTH_GENERIC_OAUTH_SKIP_ORG_ROLE_UPDATE_SYNC: false
-      GF_SECURITY_DISABLE_INITIAL_ADMIN_CREATION: false
+      GF_SECURITY_DISABLE_INITIAL_ADMIN_CREATION: true
       GF_EXPLORE_ENABLED: true
       GF_FEATURE_TOGGLES_ENABLE: publicDashboards
       GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS: natel-discrete-panel,pr0ps-trackmap-panel,panodata-map-panel
@@ -56,13 +54,6 @@ spec:
         check_for_updates: false
         check_for_plugin_updates: false
         reporting_enabled: false
-      log:
-        level: debug
-        filters: oauth.generic_oauth:debug,user.sync:debug
-      users:
-        auto_assign_org: true
-        auto_assign_org_id: 1
-        auto_assign_org_role: Viewer
     dashboardProviders:
       dashboardproviders.yaml:
         apiVersion: 1
