@@ -20,6 +20,9 @@ spec:
           image: ghcr.io/onedr0p/intel-gpu-exporter:rolling
           securityContext:
             privileged: true
+          env:
+            - name: DEBUG
+              value: "true"
           ports:
             - containerPort: 8080
               name: metrics
