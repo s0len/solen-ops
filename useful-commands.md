@@ -197,7 +197,7 @@ spec:
               [
                   "/bin/sh",
                   "-c",
-                  "apt update && apt install -y zfsutils-linux smartmontools nvme-cli && sleep infinity",
+                  "apt update && apt install -y zfsutils-linux smartmontools nvme-cli parted util-linux gdisk pciutils lsscsi && sleep infinity",
               ]
           securityContext:
               privileged: true
