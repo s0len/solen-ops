@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-CONFIG_FILE="${TALOS_DIR}/${NODE_IP}.yaml.j2"
+CONFIG_FILE="${TALOS_DIR}/${NODE_IP}.yaml"
 OPTIONS=("Apply Talos Config" "Upgrade Talos" "Upgrade Kubernetes" "Reboot Talos" "Shutdown Talos" "Reset Talos" "Generate Kubeconfig" "Rotate Client Certs" "Help" "Back")
 
 function show_help() {
@@ -39,11 +39,11 @@ function main() {
     case "${args[0]}" in
     "Apply Talos Config" | "apply")
         check_env NODE_IP CONFIG_FILE
-        check_cli minijinja-cli op talosctl
+        check_cli op talosctl
         gum log --structured --level info "Applying Talos config to node ${NODE_IP}"
         generate_schematic
         op_signin
-        if ! minijinja-cli "${CONFIG_FILE}" | op inject | talosctl --nodes "${NODE_IP}" apply-config --mode auto --file /dev/stdin --config-patch "@${TALOS_DIR}/patches/patches.yaml"; then
+        if ! op inject -i "${CONFIG_FILE}" | envsubst | talosctl --nodes "${NODE_IP}" apply-config --mode auto --file /dev/stdin --config-patch "@${TALOS_DIR}/patches/patches.yaml"; then
             gum log --structured --level error "Failed to apply Talos config"
         else
             gum log --structured --level info "Successfully applied Talos config"
@@ -52,10 +52,10 @@ function main() {
 
     "Upgrade Talos" | "upgrade")
         check_env NODE_IP CONFIG_FILE
-        check_cli minijinja-cli talosctl yq
+        check_cli talosctl yq
         gum log --structured --level info "Upgrading Talos on node ${NODE_IP}"
         generate_schematic
-        if ! FACTORY_IMAGE=$(minijinja-cli "${CONFIG_FILE}" | yq --exit-status '.machine.install.image'); then
+        if ! FACTORY_IMAGE=$(op inject -i "${CONFIG_FILE}" | envsubst | yq --exit-status '.machine.install.image'); then
             gum log --structured --level error "Failed to fetch factory image"
             exit 1
         fi
@@ -131,14 +131,14 @@ function main() {
 
     "Rotate Client Certs" | "rotate-certs")
         check_env NODE_IP CONFIG_FILE
-        check_cli minijinja-cli op yq talosctl base64 gum
+        check_cli op yq talosctl base64 gum
 
         gum log --structured --level info "Rotating client cert"
         op_signin
 
         local injected
         injected=$(mktemp)
-        minijinja-cli "${CONFIG_FILE}" | op inject >"${injected}"
+        op inject -i "${CONFIG_FILE}" | envsubst >"${injected}"
 
         local ca_crt_b64
         local ca_key_b64
