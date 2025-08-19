@@ -3,7 +3,7 @@
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: daps
+  name: &app daps
 spec:
   interval: 30m
   chartRef:
@@ -40,7 +40,7 @@ spec:
         #   successfulJobsHistory: 1
         #   failedJobsHistory: 1
         containers:
-          app: &container_app
+          app:
             image:
               repository: ghcr.io/drazzilb08/daps
               tag: v2.0.3@sha256:946f04c876c492c546bcd1eb7a6686e6011507f3812b3b8a18e56802f4ec9971
