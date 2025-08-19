@@ -489,3 +489,4 @@ bash_scripts:
 
 main:
   log_level: info
+  update_notifications: true

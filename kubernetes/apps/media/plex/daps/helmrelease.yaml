@@ -51,6 +51,8 @@ spec:
               - -c
             args:
               - |
+                # Copy the read-only config to a writable location
+                cp /config-template/config.yaml /config/config.yml
                 export RCLONE_CONFIG="/config/rclone.conf"
                 exec python3 /app/main.py
             env:
@@ -151,7 +153,7 @@ spec:
         type: secret
         name: daps-secret
         globalMounts:
-          - path: /config/config.yml
+          - path: /config-template/config.yaml
             subPath: config.yaml
             readOnly: true
 
