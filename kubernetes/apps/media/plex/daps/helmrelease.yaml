@@ -39,6 +39,8 @@ spec:
         #   timeZone: &timeZone ${TIMEZONE}
         #   successfulJobsHistory: 1
         #   failedJobsHistory: 1
+        annotations:
+          reloader.stakater.com/auto: "true"
         containers:
           app:
             image:
@@ -104,6 +106,13 @@ spec:
         runAsGroup: 568
         fsGroup: 568
         fsGroupChangePolicy: Always
+
+    service:
+      app:
+        controller: *app
+        ports:
+          http:
+            port: *port
 
     ingress:
       app:
