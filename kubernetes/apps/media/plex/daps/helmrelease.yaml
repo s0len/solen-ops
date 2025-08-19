@@ -52,6 +52,7 @@ spec:
             args:
               - |
                 export RCLONE_CONFIG="/config/rclone.conf"
+                exec python3 /app/main.py
             env:
               TZ: ${TIMEZONE}
               PUID: 568
@@ -110,6 +111,7 @@ spec:
     service:
       app:
         controller: *app
+        enabled: true
         ports:
           http:
             port: 8000
@@ -127,7 +129,9 @@ spec:
 
     persistence:
       config:
-        existingClaim: *app
+        existingClaim: daps-config
+        globalMounts:
+          - path: /config
 
       posters:
         type: nfs
