@@ -112,7 +112,7 @@ spec:
         controller: *app
         ports:
           http:
-            port: *port
+            port: 8000
 
     ingress:
       app:
