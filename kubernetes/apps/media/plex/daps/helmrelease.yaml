@@ -33,12 +33,12 @@ spec:
   values:
     controllers:
       daps:
-        type: &type cronjob
-        cronjob: &cronjob
-          schedule: "05 1,7,10,14,17 * * *"
-          timeZone: &timeZone ${TIMEZONE}
-          successfulJobsHistory: 1
-          failedJobsHistory: 1
+        # type: &type cronjob
+        # cronjob: &cronjob
+        #   schedule: "05 1,7,10,14,17 * * *"
+        #   timeZone: &timeZone ${TIMEZONE}
+        #   successfulJobsHistory: 1
+        #   failedJobsHistory: 1
         containers:
           app: &container_app
             image:
@@ -50,8 +50,6 @@ spec:
             args:
               - |
                 export RCLONE_CONFIG="/config/rclone.conf"
-                python3 /app/main.py poster_renamerr
-                python3 /app/main.py health_checkarr
             env:
               TZ: *timeZone
               PUID: 568
@@ -61,43 +59,43 @@ spec:
                 cpu: 10m
                 memory: 150Mi
 
-      unmatched-assets:
-        type: *type
-        cronjob:
-          <<: *cronjob
-          schedule: "15 9 * * *"
-        containers:
-          app:
-            <<: *container_app
-            args:
-              - |
-                export RCLONE_CONFIG="/config/rclone.conf"
-                python3 /app/main.py unmatched_assets
+      # unmatched-assets:
+      #   type: *type
+      #   cronjob:
+      #     <<: *cronjob
+      #     schedule: "15 9 * * *"
+      #   containers:
+      #     app:
+      #       <<: *container_app
+      #       args:
+      #         - |
+      #           export RCLONE_CONFIG="/config/rclone.conf"
+      #           python3 /app/main.py unmatched_assets
 
-      upgradinatorr:
-        type: *type
-        cronjob:
-          <<: *cronjob
-          schedule: "30 */3 * * *"
-        containers:
-          app:
-            <<: *container_app
-            args:
-              - |
-                export RCLONE_CONFIG="/config/rclone.conf"
-                python3 /app/main.py upgradinatorr
+      # upgradinatorr:
+      #   type: *type
+      #   cronjob:
+      #     <<: *cronjob
+      #     schedule: "30 */3 * * *"
+      #   containers:
+      #     app:
+      #       <<: *container_app
+      #       args:
+      #         - |
+      #           export RCLONE_CONFIG="/config/rclone.conf"
+      #           python3 /app/main.py upgradinatorr
 
-      renameinatorr:
-        type: *type
-        cronjob:
-          <<: *cronjob
-          schedule: "5 1 */7 * *"
-        containers:
-          app:
-            <<: *container_app
-            args:
-              - |
-                python3 /app/main.py renameinatorr
+      # renameinatorr:
+      #   type: *type
+      #   cronjob:
+      #     <<: *cronjob
+      #     schedule: "5 1 */7 * *"
+      #   containers:
+      #     app:
+      #       <<: *container_app
+      #       args:
+      #         - |
+      #           python3 /app/main.py renameinatorr
 
     defaultPodOptions:
       securityContext:
@@ -107,12 +105,20 @@ spec:
         fsGroup: 568
         fsGroupChangePolicy: Always
 
+    ingress:
+      app:
+        className: external
+        hosts:
+          - host: "{{ .Release.Name }}.${SECRET_DOMAIN}"
+            paths:
+              - path: /
+                service:
+                  identifier: app
+                  port: http
+
     persistence:
       config:
-        type: emptyDir
-        medium: Memory
-        globalMounts:
-          - path: /config
+        existingClaim: *app
 
       posters:
         type: nfs
@@ -128,13 +134,13 @@ spec:
         globalMounts:
           - path: /config/assets
 
-      config-file:
-        type: secret
-        name: daps-secret
-        globalMounts:
-          - path: /config/config.yml
-            subPath: config.yaml
-            readOnly: true
+      # config-file:
+      #   type: secret
+      #   name: daps-secret
+      #   globalMounts:
+      #     - path: /config/config.yml
+      #       subPath: config.yaml
+      #       readOnly: true
 
       # sa-file:
       #   type: secret
