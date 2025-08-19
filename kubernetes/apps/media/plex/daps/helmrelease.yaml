@@ -134,13 +134,13 @@ spec:
         globalMounts:
           - path: /config/assets
 
-      # config-file:
-      #   type: secret
-      #   name: daps-secret
-      #   globalMounts:
-      #     - path: /config/config.yml
-      #       subPath: config.yaml
-      #       readOnly: true
+      config-file:
+        type: secret
+        name: daps-secret
+        globalMounts:
+          - path: /config/config.yml
+            subPath: config.yaml
+            readOnly: true
 
       # sa-file:
       #   type: secret
