@@ -51,7 +51,7 @@ spec:
               - |
                 export RCLONE_CONFIG="/config/rclone.conf"
             env:
-              TZ: *timeZone
+              TZ: ${TIMEZONE}
               PUID: 568
               PGID: 568
             resources:
