@@ -72,6 +72,21 @@ spec:
           #       cpu: 10m
           #       memory: 25Mi
 
+          mamapi:
+            dependsOn: app
+            image:
+              repository: ghcr.io/elforkhead/mamapi
+              tag: v2.0.0-beta2@sha256:decc079f112a8611d889d17d4411077cf42eeee246bdefdfded868e93560dda0
+            env:
+              TZ: ${TIMEZONE}
+            envFrom: &envFrom
+              - secretRef:
+                  name: qbittorrent-secret
+            resources:
+              requests:
+                cpu: 10m
+                memory: 10Mi
+
         initContainers:
           gluetun:
             image:
@@ -92,7 +107,7 @@ spec:
               SERVER_COUNTRIES: Sweden
             envFrom:
               - secretRef:
-                  name: airvpn-secret
+                  name: qbittorrent-secret
             probes:
               liveness:
                 enabled: true
