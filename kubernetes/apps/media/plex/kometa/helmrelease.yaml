@@ -93,13 +93,13 @@ spec:
         type: *type
         cronjob:
           <<: *cronjob
-          schedule: "25 14 * * *"
+          schedule: "55 14 * * *"
         containers:
           app:
             <<: *container_app
             args:
               - |
-                python3 kometa.py --run --read-only-config --collections-only --run-libraries "Serier"
+                python3 kometa.py --run --read-only-config --overlays-only --run-libraries "Serier"
 
       standard-movies:
         type: *type
