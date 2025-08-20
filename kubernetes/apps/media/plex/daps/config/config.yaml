@@ -275,7 +275,7 @@ upgradinatorr:
   instances_list:
     - instance: radarr_standard
       count: 10
-      tag_name: ""
+      tag_name: "upgraded"
       ignore_tag: ""
       unattended: true
 renameinatorr:
