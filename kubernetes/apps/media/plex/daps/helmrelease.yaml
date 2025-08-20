@@ -33,10 +33,14 @@ spec:
   values:
     controllers:
       daps:
-        annotations:
-          reloader.stakater.com/auto: "true"
+        type: &type cronjob
+        cronjob: &cronjob
+          schedule: "05 1,7,10,14,17 * * *"
+          timeZone: &timeZone ${TIMEZONE}
+          successfulJobsHistory: 1
+          failedJobsHistory: 1
         containers:
-          app:
+          app: &container_app
             image:
               repository: ghcr.io/drazzilb08/daps
               tag: v2.0.3@sha256:946f04c876c492c546bcd1eb7a6686e6011507f3812b3b8a18e56802f4ec9971
@@ -48,15 +52,57 @@ spec:
                 # Copy the read-only config to a writable location
                 cp /config-template/config.yaml /config/config.yml
                 export RCLONE_CONFIG="/config/rclone.conf"
-                exec python3 /app/main.py
+                exec python3 /app/main.py poster_renamerr
             env:
-              TZ: ${TIMEZONE}
+              TZ: *timeZone
               PUID: 568
               PGID: 568
             resources:
               requests:
                 cpu: 10m
                 memory: 150Mi
+
+      unmatched-assets:
+        type: *type
+        cronjob:
+          <<: *cronjob
+          schedule: "15 9 * * *"
+        containers:
+          app:
+            <<: *container_app
+            args:
+              - |
+                cp /config-template/config.yaml /config/config.yml
+                export RCLONE_CONFIG="/config/rclone.conf"
+                python3 /app/main.py unmatched_assets
+
+      upgradinatorr:
+        type: *type
+        cronjob:
+          <<: *cronjob
+          schedule: "30 */3 * * *"
+        containers:
+          app:
+            <<: *container_app
+            args:
+              - |
+                cp /config-template/config.yaml /config/config.yml
+                export RCLONE_CONFIG="/config/rclone.conf"
+                python3 /app/main.py upgradinatorr
+
+      renameinatorr:
+        type: *type
+        cronjob:
+          <<: *cronjob
+          schedule: "5 1 */7 * *"
+        containers:
+          app:
+            <<: *container_app
+            args:
+              - |
+                cp /config-template/config.yaml /config/config.yml
+                export RCLONE_CONFIG="/config/rclone.conf"
+                python3 /app/main.py renameinatorr
 
     defaultPodOptions:
       securityContext:
@@ -66,24 +112,24 @@ spec:
         fsGroup: 568
         fsGroupChangePolicy: Always
 
-    service:
-      app:
-        controller: *app
-        enabled: true
-        ports:
-          http:
-            port: 8000
+    # service:
+    #   app:
+    #     controller: *app
+    #     enabled: true
+    #     ports:
+    #       http:
+    #         port: 8000
 
-    ingress:
-      app:
-        className: external
-        hosts:
-          - host: "{{ .Release.Name }}.${SECRET_DOMAIN}"
-            paths:
-              - path: /
-                service:
-                  identifier: app
-                  port: http
+    # ingress:
+    #   app:
+    #     className: external
+    #     hosts:
+    #       - host: "{{ .Release.Name }}.${SECRET_DOMAIN}"
+    #         paths:
+    #           - path: /
+    #             service:
+    #               identifier: app
+    #               port: http
 
     persistence:
       config:

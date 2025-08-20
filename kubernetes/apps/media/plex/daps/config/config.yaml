@@ -1,14 +1,14 @@
 schedule:
   border_replacerr: null
-  health_checkarr: daily(02:00)
+  health_checkarr: null #daily(02:00)
   labelarr: null
   nohl: null
-  sync_gdrive: daily(06:00|15:00)
+  sync_gdrive: null #daily(06:00|15:00)
   poster_cleanarr: null
-  poster_renamerr: daily(07:00|16:00)
-  renameinatorr: daily(02:00)
-  unmatched_assets: daily(01:00)
-  upgradinatorr: daily(00:00|03:00|05:00)
+  poster_renamerr: null #daily(07:00|16:00)
+  renameinatorr: null #daily(02:00)
+  unmatched_assets: null #daily(01:00)
+  upgradinatorr: null #daily(00:00|03:00|05:00)
   jduparr: null
 instances:
   radarr:
@@ -303,7 +303,9 @@ nohl:
   exclude_movies: []
   exclude_series: []
   instances:
-    - radarr_1
+    - radarr_standard
+    - radarr_kids
+    - radarr_anime
     - sonarr
 labelarr:
   log_level: info
