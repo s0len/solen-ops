@@ -28,9 +28,6 @@ spec:
       map:
         default: |-
           version: v1
-          flags:
-            plugin:
-              nvidiaCTKPath: "/usr/local/bin/nvidia-ctk"
           sharing:
             timeSlicing:
               renameByDefault: false
