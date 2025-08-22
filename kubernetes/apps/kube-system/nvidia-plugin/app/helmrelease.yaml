@@ -29,6 +29,7 @@ spec:
         default: |-
           version: v1
           flags:
+            deviceDiscoveryStrategy: "devicenode"
             plugin:
               nvidiaCTKPath: "/usr/local/bin/nvidia-ctk"
           sharing:
