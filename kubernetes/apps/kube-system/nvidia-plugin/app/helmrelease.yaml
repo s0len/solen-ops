@@ -29,11 +29,11 @@ spec:
         default: |-
           version: v1
           flags:
-            plugin:
-              nvidiaCTKPath: "/usr/local/bin/nvidia-ctk"
+            migStrategy: none
           sharing:
             timeSlicing:
               renameByDefault: false
+              failRequestsGreaterThanOne: false
               resources:
                 - name: nvidia.com/gpu
                   replicas: 4
