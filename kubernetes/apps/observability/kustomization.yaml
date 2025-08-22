@@ -6,6 +6,7 @@ namespace: observability
 components:
   - ../../components/common
 resources:
+  - ./dcgm-exporter/ks.yaml
   - ./gatus/ks.yaml
   - ./grafana/ks.yaml
   - ./intel-gpu-exporter/ks.yaml

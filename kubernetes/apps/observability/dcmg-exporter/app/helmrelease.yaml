@@ -1,0 +1,38 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: dcgm-exporter
+spec:
+  dependsOn:
+    - name: nvidia-device-plugin
+      namespace: kube-system
+  interval: 15m
+  chartRef:
+    kind: OCIRepository
+    name: dcgm-exporter
+  maxHistory: 2
+  install:
+    createNamespace: true
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
+  values:
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+            - matchExpressions:
+                - key: extensions.talos.dev/nvidia-open-gpu-kernel-modules-production
+                  operator: Exists
+    resources:
+      requests:
+        memory: 128Mi
+      limits:
+        nvidia.com/gpu: 1
+    serviceMonitor:
+      interval: 15s
+      honorLabels: true
