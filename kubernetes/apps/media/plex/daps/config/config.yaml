@@ -274,7 +274,7 @@ upgradinatorr:
   dry_run: true
   instances_list:
     - instance: radarr_standard
-      count: 10
+      count: 3
       tag_name: "upgraded"
       ignore_tag: ""
       unattended: true

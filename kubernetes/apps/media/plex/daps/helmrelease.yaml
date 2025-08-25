@@ -49,10 +49,10 @@ spec:
               - -c
             args:
               - |
-                # Copy the read-only config to a writable location
-                cp /config-template/config.yaml /config/config.yml
                 export RCLONE_CONFIG="/config/rclone.conf"
-                exec python3 /app/main.py poster_renamerr
+                cp /config-template/config.yaml /config/config.yml
+                python3 /app/main.py poster_renamerr
+                python3 /app/main.py health_checkarr
             env:
               TZ: *timeZone
               PUID: 568
@@ -72,8 +72,8 @@ spec:
             <<: *container_app
             args:
               - |
-                cp /config-template/config.yaml /config/config.yml
                 export RCLONE_CONFIG="/config/rclone.conf"
+                cp /config-template/config.yaml /config/config.yml
                 python3 /app/main.py unmatched_assets
 
       upgradinatorr:
@@ -86,8 +86,8 @@ spec:
             <<: *container_app
             args:
               - |
-                cp /config-template/config.yaml /config/config.yml
                 export RCLONE_CONFIG="/config/rclone.conf"
+                cp /config-template/config.yaml /config/config.yml
                 python3 /app/main.py upgradinatorr
 
       renameinatorr:
@@ -100,8 +100,8 @@ spec:
             <<: *container_app
             args:
               - |
-                cp /config-template/config.yaml /config/config.yml
                 export RCLONE_CONFIG="/config/rclone.conf"
+                cp /config-template/config.yaml /config/config.yml
                 python3 /app/main.py renameinatorr
 
     defaultPodOptions:
