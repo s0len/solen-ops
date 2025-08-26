@@ -39,7 +39,7 @@ spec:
               tag: 2.15.3@sha256:498b1126a5bd35569609c89f932856ac111ca39efb269d84ca125877493b8156
             env:
               TZ: ${TIMEZONE}
-              TAUTULLI__PORT: &port 80
+              TAUTULLI_HTTP_PORT: &port 80
               TAUTULLI_HTTP_BASE_URL: "https://tautulli.${SECRET_DOMAIN}"
             envFrom:
               - secretRef:
