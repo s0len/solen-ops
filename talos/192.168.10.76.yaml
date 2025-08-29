@@ -143,7 +143,8 @@ cluster:
     image: "registry.k8s.io/kube-apiserver:${KUBERNETES_VERSION}"
     extraArgs:
       enable-aggregator-routing: "true"
-      feature-gates: ImageVolume=true
+      feature-gates: ImageVolume=true,MutatingAdmissionPolicy=true
+      runtime-config: admissionregistration.k8s.io/v1beta1=true
     certSANs:
       - 192.168.10.80
       - 127.0.0.1
