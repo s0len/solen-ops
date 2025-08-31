@@ -16,18 +16,13 @@ spec:
     labels:
       app.kubernetes.io/name: *app
   components:
-    - ../../../../components/volsync
     - ../../../../components/gatus/external
   prune: true
   wait: false
   retryInterval: 2m
   interval: 10m
-  dependsOn:
-    - name: volsync
-      namespace: volsync-system
+  dependsOn: []
   postBuild:
     substitute:
       APP: *app
-      VOLSYNC_CAPACITY: 10Gi
-      VOLSYNC_RECORD_SIZE: 1m
       GATUS_SUBDOMAIN: ollama
