@@ -16,7 +16,6 @@ cgroup:
 cluster:
   id: 1
   name: main
-devices: enp9s0f0
 endpointRoutes:
   enabled: true
 envoy:
@@ -42,7 +41,7 @@ operator:
 dashboards:
   enabled: true
 rollOutCiliumPods: true
-routingMode: native
+routingMode: tunnel
 securityContext:
   capabilities:
     ciliumAgent:
