@@ -294,8 +294,10 @@ radarr:
     include:
       # Use new SQP-1 templates for kids content
       - template: radarr-quality-definition-sqp-streaming
-      - template: radarr-quality-profile-sqp-1
-      - template: radarr-custom-formats-sqp-1
+      - template: radarr-quality-profile-sqp-1-1080p
+      - template: radarr-custom-formats-sqp-1-1080p
+      - template: radarr-quality-profile-sqp-1-2160p-default
+      - template: radarr-custom-formats-sqp-1-2160p
 
     quality_definition:
       type: sqp-streaming
