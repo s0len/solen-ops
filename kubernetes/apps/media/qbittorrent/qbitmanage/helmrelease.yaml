@@ -35,7 +35,7 @@ spec:
           app:
             image:
               repository: ghcr.io/stuffanthings/qbit_manage
-              tag: v4.6.0@sha256:ffb0d2b53a6fad9ad19046a11eae78b0fa0d22f90c1c7ad50b2cb866aece2a2b
+              tag: v4.6.2@sha256:628ad7ef208037d29e7c770ea93f3f50325a0d544843a57b56eba799b3ac6aca
             env:
               TZ: *timeZone
               QBT_CONFIG: "/config/config.yaml"
