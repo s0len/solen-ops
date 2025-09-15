@@ -30,8 +30,8 @@ spec:
         containers:
           api:
             image:
-              repository: docker.io/1password/connect-api
-              tag: 1.7.4@sha256:f97189814239381e6dd88577f2b0b838a64e006a460608455b3127c15b174601
+              repository: ghcr.io/1password/connect-api
+              tag: 1.8.1@sha256:ac6e9efe4f54cc351393fcb8f01b10e667b08b68ff47ebf6024ff93eae642e5c
             env:
               XDG_DATA_HOME: &configDir /config
               OP_HTTP_PORT: &apiPort 80
@@ -68,12 +68,13 @@ spec:
             resources: &resources
               requests:
                 cpu: 10m
+                memory: 128Mi
               limits:
                 memory: 256M
           sync:
             image:
-              repository: docker.io/1password/connect-sync
-              tag: 1.7.4@sha256:27e7ec47e1ad8eaa2f54764fa0736954a5119d0155dea3c923c481c89c5f964c
+              repository: ghcr.io/1password/connect-sync
+              tag: 1.8.1@sha256:565e1765aff957379acbb46fab2b2d67380a149d70ef22507d05a5316a100052
             env:
               XDG_DATA_HOME: *configDir
               OP_HTTP_PORT: &syncPort 8081
