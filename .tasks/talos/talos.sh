@@ -13,6 +13,7 @@ function show_help() {
     echo "  shutdown     Shutdown the Talos node"
     echo "  reset        Reset Talos on the node"
     echo "  kubeconfig   Generate the kubeconfig for the Talos node"
+    echo "  rotate-certs Rotate Talos client certificate (alias: rotate)"
     echo "Options:"
     echo "  -h, --help, help    Display this help message"
     exit 0
@@ -130,7 +131,7 @@ function main() {
         fi
         ;;
 
-    "Rotate Client Certs" | "rotate-certs")
+    "Rotate Client Certs" | "rotate-certs" | "rotate")
         check_env NODE_IP CONFIG_FILE
         check_cli op yq talosctl base64 gum
 
@@ -155,12 +156,25 @@ function main() {
         pushd "${tmp}" >/dev/null || return 1
         talosctl gen key --name admin                         # admin.key
         talosctl gen csr --key admin.key --ip 127.0.0.1       # admin.csr
-        talosctl gen crt --ca ca --csr admin.csr --name admin # admin.crt
+        # Generate admin client certificate with configurable validity (default 1 year)
+        talosctl gen crt --ca ca --csr admin.csr --name admin --hours "${ADMIN_CERT_HOURS:-8760}" # admin.crt
         popd >/dev/null || return 1
 
-        yq -i '
-          .contexts.main.crt = "'"$(base64 -w0 "${tmp}/admin.crt")"'" |
-          .contexts.main.key = "'"$(base64 -w0 "${tmp}/admin.key")"'"
+        local admin_crt_b64
+        local admin_key_b64
+        admin_crt_b64=$(base64 < "${tmp}/admin.crt" | tr -d '\n')
+        admin_key_b64=$(base64 < "${tmp}/admin.key" | tr -d '\n')
+
+        # Determine current talos context (fallback to "main" if unset)
+        local current_context
+        current_context=$(yq -r '.context' talosconfig)
+        if [[ -z "$current_context" || "$current_context" == "null" ]]; then
+            current_context="main"
+        fi
+
+        CURRENT_CONTEXT="$current_context" ADMIN_CRT_B64="$admin_crt_b64" ADMIN_KEY_B64="$admin_key_b64" yq -i '
+          .contexts[env(CURRENT_CONTEXT)].crt = env(ADMIN_CRT_B64) |
+          .contexts[env(CURRENT_CONTEXT)].key = env(ADMIN_KEY_B64)
         ' talosconfig
 
         gum log --structured --level info "Rotation complete – talosconfig updated"
