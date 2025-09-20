@@ -15,6 +15,7 @@ resources:
   - ./notifiarr/ks.yaml
   - ./plex/ks.yaml
   - ./qbittorrent/ks.yaml
+  - ./seasonpackarr/ks.yaml
   - ./sonarr/ks.yaml
   - ./sports-organizer/ks.yaml
   - ./radarr/ks.yaml
