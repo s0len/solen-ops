@@ -142,6 +142,7 @@ sonarr:
           enabled: true
           except:
             - Not Swedish
+            - "Personal Good Swedish Release Groups"
         qualities:
           - name: WEB 1080p
             qualities:
@@ -158,6 +159,8 @@ sonarr:
       - name: WEB-1080p
         reset_unmatched_scores:
           enabled: true
+          except:
+            - "Personal Good Swedish Release Groups"
         upgrade:
           allowed: true
           until_quality: WEB 1080p
