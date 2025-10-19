@@ -99,7 +99,7 @@ spec:
       logs:
         type: emptyDir
 
-      data-torrents:
+      data:
         type: nfs
         server: ${TRUENAS_IP}
         path: /mnt/rust/data/torrents
