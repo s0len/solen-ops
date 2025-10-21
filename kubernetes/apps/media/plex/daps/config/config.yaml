@@ -58,66 +58,39 @@ sync_gdrive:
     expiry: "{{ .GDRIVE_EXPIRY }}"
   gdrive_sa_location: ""
   gdrive_list:
-    - id: 1YEuS1pulJAfhKm4L8U9z5-EMtGl-d2s7
-      location: /posters/solen
-      name: Solen
-    - id: 1HjwMWfI6XpQVYH36VBzYiJA4UWfoqcQ9
-      location: /posters/IamSpartacus
-      name: IamSpartacus
-    - id: 1fKRkx4Yine5cqkH411FmShdd-wHRMBIF
-      location: /posters/drazz
-      name: Drazzilb
-    - id: 1qBC7p9K4zur5dOCf3F6VTyUROVvHQoSb
-      location: /posters/jpalenz77
-      name: Jpalenz77
-    - id: 1XXZL-TpqWqfbKBWCifN2-MRdGDbSzHTj
-      location: /posters/dweagle76
-      name: Dweagle76
-    - id: 1ZfvUgN0qz4lJYkC_iMRjhH-fZ0rDN_Yu
-      location: /posters/majorgiant
-      name: MajorGiant
-    - id: 1alseEnUBjH6CjXh77b5L4R-ZDGdtOMFr
-      location: /posters/lioncitygaming
-      name: Lion City Gaming
-    - id: 1TYVIGKpSwhipLyVQQn_OJHTobM6KaokB
-      location: /posters/TheOtherGuy
-      name: TheOtherGuy (#1)
-    - id: 1wOhY88zc0wdQU-QQmhm4FzHL9QiCQnpu
-      location: /posters/zarox
-      name: Zarox
-    - id: 1wrSru-46iIN1iqCl2Cjhj5ofdazPgbsz
-      location: /posters/dsaq
-      name: Dsaq
-    - id: 1oBzEOXXrTHGq6sUY_4RMtzMTt4VHyeJp
-      location: /posters/chrisdc
-      name: Chris DC
-    - id: 1Wz0S18sKOeyBURkJ1uT3RtkEmSsK1-PG
+    - id: 1jToV8ee8RhqnG9DhAPYKufEJpb8Ru_7r
+      location: /posters/BerserkeR
+      name: BerserkeR
+    - id: 1X1E8ktIoAXBwuTTImltizEH5_XwBPoz3
+      location: /posters/Darkkazul
+      name: Darkkazul
+    - id: 1l-cuRGy1JDpkmDrBWz46yr_xlT1CWNvQ
+      location: /posters/Confused
+      name: Confused
+    - id: 1Jr8oFEyLvSREHac9l1yRyaw2XCd8OXc7
       location: /posters/WenIsInMood
       name: WenIsInMood
-    - id: 1ejgRXwX6opexs8oAX8CnpSpKQt7Hrf00
-      location: /posters/darkkazul
-      name: Darkkazul
-    - id: 1Ec0PVQv_AU6S-2q6UE1Eoivfwo0DUnyS
-      location: /posters/miniMyself
-      name: MiniMyself
-    - id: 1cqDinU27cnHf5sL5rSlfO7o_T6LSxG77
-      location: /posters/Reitenth
-      name: Reitenth
-    - id: 1Kb1kFZzzKKlq5N_ob8AFxJvStvm9PdiL
-      location: /posters/kalyanrajnish
-      name: Kalyanrajnish
-    - id: 1KJlsnMz-z2RAfNxKZp7sYP_U0SD1V6lS
-      location: /posters/tokenminal
-      name: TokenMinal
-    - id: 1LIVG1RbTEd7tTJMbzZr7Zak05XznLFia
-      location: /posters/overbook874
-      name: Overbook874 (Tarantula212)
-    - id: 1KnwxzwBUQzQyKF1e24q_wlFqcER9xYHM
-      location: /posters/sahara
-      name: Sahara
-    - id: 1Xg9Huh7THDbmjeanW0KyRbEm6mGn_jm8
-      location: /posters/bz
+    - id: 1cEIuJRr8AZcthyVWfNn2skxog6R_MPrW
+      location: /posters/BZ
       name: BZ
+    - id: 1gJ_CXigGfZDJV5C3ZTaTz_yycgkROTJF
+      location: /posters/LionCityGaming
+      name: Lion City Gaming
+    - id: 1FyjcjsP5Yb0w3u6QZHbjJ51j5zTT8lA5
+      location: /posters/TokenMinal
+      name: TokenMinal
+    - id: 1kLvAjMx3jcJbRKjuMYTrUaA4hR4N8wfh
+      location: /posters/Jpalenz77
+      name: Jpalenz77
+    - id: 1MNpR2fVRJt6bW5NIBPR43f6GvINcrw_o
+      location: /posters/MiniMyself
+      name: MiniMyself
+    - id: 179QKyeP3avZvC_t4Fvk2Mm1nfRyuKvoc
+      location: /posters/IamSpartacus
+      name: IamSpartacus
+    - id: 1R4tDkZVyG7iEbQ4DNbUPiPGfslPkcWmU
+      location: /posters/Dweagle76
+      name: Dweagle76
 poster_renamerr:
   log_level: info
   dry_run: false
@@ -128,30 +101,18 @@ poster_renamerr:
   run_border_replacerr: true
   incremental_border_replacerr: false
   source_dirs:
-    - /posters/solens-collection
-    - /posters/jpalenz77
-    - /posters/Reitenth
-    - /posters/darkkazul
+    - /posters/BerserkeR
+    - /posters/Darkkazul
+    - /posters/Confused
     - /posters/WenIsInMood
-    - /posters/dweagle76
-    - /posters/TheOtherGuy
-    - /posters/miniMyself
-    - /posters/kalyanrajnish
-    - /posters/tokenminal
-    - /posters/mareau
-    - /posters/overbook874
-    - /posters/quafley
-    - /posters/chrisdc
-    - /posters/lioncitygaming
-    - /posters/sahara
-    - /posters/bz
-    - /posters/dsaq
-    - /posters/majorgiant
-    - /posters/zarox
-    - /posters/drazz
+    - /posters/BZ
+    - /posters/LionCityGaming
+    - /posters/TokenMinal
+    - /posters/Jpalenz77
+    - /posters/MiniMyself
     - /posters/IamSpartacus
-    - /posters/solen
-    - /posters/prioritize
+    - /posters/Dweagle76
+    - /posters/Solen
   destination_dir: /config/assets
   instances:
     - radarr_standard
