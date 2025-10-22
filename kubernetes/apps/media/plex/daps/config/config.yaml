@@ -91,6 +91,9 @@ sync_gdrive:
     - id: 1R4tDkZVyG7iEbQ4DNbUPiPGfslPkcWmU
       location: /posters/Dweagle76
       name: Dweagle76
+    - id: 1NnKbYnIVnDGkxgKpbgSoWl8JFdbjawOI
+      location: /posters/Solen
+      name: Solen
 poster_renamerr:
   log_level: info
   dry_run: false
