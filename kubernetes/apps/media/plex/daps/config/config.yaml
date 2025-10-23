@@ -48,7 +48,7 @@ notifications:
   jduparr: {}
   main: {}
 sync_gdrive:
-  log_level: info
+  log_level: debug
   client_id: "{{ .GDRIVE_CLIENT_ID }}"
   client_secret: "{{ .GDRIVE_CLIENT_SECRET }}"
   token:

@@ -35,7 +35,7 @@ spec:
       daps:
         type: &type cronjob
         cronjob: &cronjob
-          schedule: "05 1,7,10,14,17 * * *"
+          schedule: "15 1,7,10,14,18 * * *"
           timeZone: &timeZone ${TIMEZONE}
           successfulJobsHistory: 1
           failedJobsHistory: 1
