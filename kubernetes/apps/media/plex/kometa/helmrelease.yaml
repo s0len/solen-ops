@@ -93,7 +93,7 @@ spec:
         type: *type
         cronjob:
           <<: *cronjob
-          schedule: "56 18 * * *"
+          schedule: "35 19 * * *"
         containers:
           app:
             <<: *container_app

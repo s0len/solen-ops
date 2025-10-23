@@ -95,7 +95,7 @@ sync_gdrive:
       location: /posters/Solen
       name: Solen
 poster_renamerr:
-  log_level: debug
+  log_level: info
   dry_run: false
   sync_posters: true
   action_type: copy
