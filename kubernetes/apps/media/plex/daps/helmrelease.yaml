@@ -35,7 +35,7 @@ spec:
       daps:
         type: &type cronjob
         cronjob: &cronjob
-          schedule: "15 1,7,10,14,18 * * *"
+          schedule: "25 1,7,10,14,18 * * *"
           timeZone: &timeZone ${TIMEZONE}
           successfulJobsHistory: 1
           failedJobsHistory: 1
@@ -94,7 +94,7 @@ spec:
         type: *type
         cronjob:
           <<: *cronjob
-          schedule: "5 1 */7 * *"
+          schedule: "22 18 * * *"
         containers:
           app:
             <<: *container_app

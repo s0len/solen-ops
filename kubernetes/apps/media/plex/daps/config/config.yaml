@@ -48,7 +48,7 @@ notifications:
   jduparr: {}
   main: {}
 sync_gdrive:
-  log_level: debug
+  log_level: info
   client_id: "{{ .GDRIVE_CLIENT_ID }}"
   client_secret: "{{ .GDRIVE_CLIENT_SECRET }}"
   token:
@@ -95,7 +95,7 @@ sync_gdrive:
       location: /posters/Solen
       name: Solen
 poster_renamerr:
-  log_level: info
+  log_level: debug
   dry_run: false
   sync_posters: true
   action_type: copy
@@ -250,7 +250,7 @@ renameinatorr:
   radarr_count: 0
   sonarr_count: 0
   tag_name: checked
-  ignore_tag: ""
+  ignore_tag: checked
   enable_batching: false
   instances:
     - radarr_standard
