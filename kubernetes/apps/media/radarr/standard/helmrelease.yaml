@@ -114,6 +114,18 @@ spec:
       config:
         existingClaim: *app
 
+      scripts:
+        type: configMap
+        name: radarr-configmap
+        defaultMode: 0775
+        globalMounts:
+          - path: /scripts/tag_dvfelmel.sh
+            subPath: tag_dvfelmel.sh
+            readOnly: true
+          - path: /scripts/scripts.conf
+            subPath: scripts.conf
+            readOnly: true
+
       tmp:
         type: emptyDir
         medium: Memory
