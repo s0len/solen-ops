@@ -39,6 +39,32 @@ spec:
         annotations:
           reloader.stakater.com/auto: "true"
 
+        initContainers:
+          init-deps:
+            image:
+              repository: ghcr.io/heavybullets8/radarr
+              tag: 5.28.0.10274@sha256:b6fe556f508a4d2145b63efcfd06718c51529349ab872a9d2feb9c8deae00ebb
+
+            command:
+              - /bin/bash
+              - -c
+              - |
+                echo "Running dependency installation script..."
+                chmod +x /scripts/99-install-dependencies.sh
+                /scripts/99-install-dependencies.sh
+
+            securityContext:
+              runAsUser: 0
+              runAsNonRoot: false
+              allowPrivilegeEscalation: true
+              readOnlyRootFilesystem: false
+              capabilities:
+                add:
+                  - CHOWN
+                  - FOWNER
+                drop:
+                  - ALL
+
         containers:
           app:
             image:
@@ -85,6 +111,8 @@ spec:
     service:
       app:
         controller: *app
+        annotations:
+          lbipam.cilium.io/ips: 192.168.10.113
         ports:
           http:
             port: *port
@@ -124,6 +152,9 @@ spec:
             readOnly: true
           - path: /scripts/scripts.conf
             subPath: scripts.conf
+            readOnly: true
+          - path: /scripts/99-install-dependencies.sh
+            subPath: 99-install-dependencies.sh
             readOnly: true
 
       tmp:

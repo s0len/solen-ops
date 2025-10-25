@@ -10,6 +10,7 @@ configMapGenerator:
     files:
       - ./scripts/tag_dvfelmel.sh
       - ./scripts/scripts.conf
+      - ./scripts/99-install-dependencies.sh
 generatorOptions:
   disableNameSuffixHash: true
   annotations:
