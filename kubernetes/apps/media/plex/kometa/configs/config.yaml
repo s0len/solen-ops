@@ -15,8 +15,8 @@ libraries:
           data:
             starting: latest-5
             ending: latest
-      - url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/collection_files/dolby_vision_movies.yml
-      - url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/collection_files/better_new_and_old_movie_releases.yml
+      - url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/collection_files/dolby_vision_movies.yaml
+      - url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/collection_files/better_new_and_old_movie_releases.yaml
 
       - default: franchise
         template_variables:
