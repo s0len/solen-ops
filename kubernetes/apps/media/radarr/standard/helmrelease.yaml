@@ -42,8 +42,8 @@ spec:
         initContainers:
           init-deps:
             image:
-              repository: alpine:3.19
-              tag: latest
+              repository: alpine
+              tag: "3.19"
 
             command:
               - /bin/sh
