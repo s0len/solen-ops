@@ -42,31 +42,47 @@ spec:
         initContainers:
           init-deps:
             image:
-              repository: ghcr.io/heavybullets8/radarr
-              tag: 5.28.0.10274@sha256:b6fe556f508a4d2145b63efcfd06718c51529349ab872a9d2feb9c8deae00ebb
+              repository: alpine:3.19
+              tag: latest
 
             command:
-              - /bin/bash
+              - /bin/sh
               - -c
               - |
-                echo "Running dependency installation script..."
-                chmod +x /scripts/99-install-dependencies.sh
-                # Override install location to shared volume
-                export INSTALL_PATH=/custom-bin
-                mkdir -p $INSTALL_PATH
-                /scripts/99-install-dependencies.sh
+                echo "Downloading static binaries..."
+
+                # Install wget if not present
+                apk add --no-cache wget
+
+                # Download static jq
+                echo "Downloading jq..."
+                wget -O /deps/jq https://github.com/jqlang/jq/releases/download/jq-1.7.1/jq-linux-amd64
+                chmod +x /deps/jq
+
+                # Download static ffmpeg (from John Van Sickle's builds)
+                echo "Downloading ffmpeg..."
+                wget -O /tmp/ffmpeg.tar.xz https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz
+                tar -xf /tmp/ffmpeg.tar.xz -C /tmp
+                mv /tmp/ffmpeg-*-amd64-static/ffmpeg /deps/ffmpeg
+                mv /tmp/ffmpeg-*-amd64-static/ffprobe /deps/ffprobe
+                chmod +x /deps/ffmpeg /deps/ffprobe
+                rm -rf /tmp/ffmpeg*
+
+                # Download static dovi_tool
+                echo "Downloading dovi_tool..."
+                wget -O /tmp/dovi_tool.tar.gz https://github.com/quietvoid/dovi_tool/releases/download/2.1.2/dovi_tool-2.1.2-x86_64-unknown-linux-musl.tar.gz
+                tar -xzf /tmp/dovi_tool.tar.gz -C /deps/
+                chmod +x /deps/dovi_tool
+                rm /tmp/dovi_tool.tar.gz
+
+                echo "All static binaries downloaded successfully!"
+                ls -lh /deps/
 
             securityContext:
               runAsUser: 0
               runAsNonRoot: false
-              allowPrivilegeEscalation: true
+              allowPrivilegeEscalation: false
               readOnlyRootFilesystem: false
-              capabilities:
-                add:
-                  - CHOWN
-                  - FOWNER
-                drop:
-                  - ALL
 
         containers:
           app:
@@ -76,13 +92,13 @@ spec:
 
             env:
               RADARR__APP__INSTANCENAME: "Radarr Standard"
+              PATH: /deps:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
               RADARR__APP__THEME: dark
               RADARR__AUTH__METHOD: External
               RADARR__AUTH__REQUIRED: DisabledForLocalAddresses
               RADARR__LOG__LEVEL: info
               RADARR__SERVER__PORT: &port 80
               TZ: ${TIMEZONE}
-              PATH: /custom-bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
             envFrom:
               - secretRef:
@@ -165,10 +181,10 @@ spec:
         type: emptyDir
         medium: Memory
 
-      custom-bin:
+      deps:
         type: emptyDir
         globalMounts:
-          - path: /custom-bin
+          - path: /deps
 
       data:
         type: nfs
