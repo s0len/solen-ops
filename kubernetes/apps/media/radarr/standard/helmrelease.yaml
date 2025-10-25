@@ -51,6 +51,9 @@ spec:
               - |
                 echo "Running dependency installation script..."
                 chmod +x /scripts/99-install-dependencies.sh
+                # Override install location to shared volume
+                export INSTALL_PATH=/custom-bin
+                mkdir -p $INSTALL_PATH
                 /scripts/99-install-dependencies.sh
 
             securityContext:
@@ -79,6 +82,7 @@ spec:
               RADARR__LOG__LEVEL: info
               RADARR__SERVER__PORT: &port 80
               TZ: ${TIMEZONE}
+              PATH: /custom-bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
             envFrom:
               - secretRef:
@@ -160,6 +164,11 @@ spec:
       tmp:
         type: emptyDir
         medium: Memory
+
+      custom-bin:
+        type: emptyDir
+        globalMounts:
+          - path: /custom-bin
 
       data:
         type: nfs
