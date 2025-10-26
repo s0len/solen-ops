@@ -146,43 +146,34 @@ border_replacerr:
       schedule: range(12/30-01/02)
       color:
         - "#00bfff"
-        - "#ffd700"
     "\U0001F498 Valentine's Day":
       schedule: range(02/05-02/15)
       color:
         - "#d41f3a"
-        - "#ffc0cb"
     "\U0001F423 Easter":
       schedule: range(03/31-04/02)
       color:
-        - "#ffb6c1"
-        - "#87cefa"
-        - "#98fb98"
+        - "#F2DA54"
     "\U0001F338 Mother's Day":
       schedule: range(05/10-05/15)
       color:
         - "#ff69b4"
-        - "#ffdab9"
     "\U0001F468\u200D\U0001F467\u200D\U0001F466 Father's Day":
       schedule: range(06/15-06/20)
       color:
         - "#1e90ff"
-        - "#4682b4"
     "\U0001F383 Halloween":
       schedule: range(10/01-10/31)
       color:
         - "#ffa500"
-        - "#000000"
     "\U0001F983 Thanksgiving":
       schedule: range(11/01-11/30)
       color:
-        - "#ffa500"
         - "#8b4513"
     "\U0001F384 Christmas":
       schedule: range(12/01-12/31)
       color:
         - "#ff0000"
-        - "#00ff00"
 unmatched_assets:
   log_level: info
   source_dirs:
