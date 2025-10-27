@@ -36,10 +36,10 @@ instance:
         patch: |
           - op: add
             path: /spec/template/spec/containers/0/args/-
-            value: --concurrent=5
+            value: --concurrent=10
           - op: add
             path: /spec/template/spec/containers/0/args/-
-            value: --requeue-dependency=15s
+            value: --requeue-dependency=5s
         target:
           kind: Deployment
           name: (kustomize-controller|helm-controller|source-controller)
@@ -60,17 +60,11 @@ instance:
         target:
           kind: Deployment
           name: (kustomize-controller|helm-controller|source-controller)
-      - # Enable in-memory kustomize builds and add timeout settings
+      - # Enable in-memory kustomize builds
         patch: |
           - op: add
             path: /spec/template/spec/containers/0/args/-
-            value: --concurrent=8
-          - op: add
-            path: /spec/template/spec/containers/0/args/-
-            value: --kube-api-qps=100
-          - op: add
-            path: /spec/template/spec/containers/0/args/-
-            value: --kube-api-burst=300
+            value: --concurrent=20
           - op: replace
             path: /spec/template/spec/volumes/0
             value:
@@ -108,3 +102,27 @@ instance:
         target:
           kind: Deployment
           name: helm-controller
+      - # Disable chart digest tracking
+        patch: |
+          - op: add
+            path: /spec/template/spec/containers/0/args/-
+            value: --feature-gates=DisableChartDigestTracking=true
+        target:
+          kind: Deployment
+          name: helm-controller
+      - # Watch configmaps and secrets attached to HelmReleases and Kustomizations
+        patch: |-
+          - op: add
+            path: /spec/template/spec/containers/0/args/-
+            value: --watch-configs-label-selector=owner!=helm
+        target:
+          kind: Deployment
+          name: (helm-controller|kustomize-controller)
+      - # Cancel health checks on new Kustomizations revisions
+        patch: |-
+          - op: add
+            path: /spec/template/spec/containers/0/args/-
+            value: --feature-gates=CancelHealthCheckOnNewRevision=true
+        target:
+          kind: Deployment
+          name: kustomize-controller
