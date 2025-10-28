@@ -155,6 +155,14 @@ spec:
         globalMounts:
           - path: /config/logs
 
+      data:
+        type: nfs
+        server: ${TRUENAS_IP}
+        path: /mnt/rust/data/media
+        globalMounts:
+          - path: /data/media
+            readOnly: false
+
       custom-configs:
         type: configMap
         name: kometa-custom-configs
