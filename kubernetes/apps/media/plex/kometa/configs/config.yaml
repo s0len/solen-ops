@@ -852,6 +852,18 @@ anidb: # Not required for AniDB builders unless you want mature content
   version: 1
   cache_expiration: 60
 
+radarr:
+  url: http://radarr-standard.media.svc.cluster.local
+  token: <<RADARR_API_KEY>>
+  add_missing: false
+  add_existing: false
+  upgrade_existing: false
+  monitor_existing: false
+  root_folder_path:
+  monitor: false
+  availability: announced
+  quality_profile:
+
 trakt:
   client_id: <<TRAKT_CLIENT_ID>>
   client_secret: <<TRAKT_CLIENT_SECRET>>
