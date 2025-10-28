@@ -780,7 +780,7 @@ settings:
   missing_only_released: false
   only_filter_missing: false
   overlay_artwork_filetype: jpg
-  overlay_artwork_quality:
+  overlay_artwork_quality: 100
   playlist_exclude_users:
   playlist_report: false
   playlist_sync_to_users: all
@@ -859,7 +859,7 @@ radarr:
   add_existing: false
   upgrade_existing: false
   monitor_existing: false
-  root_folder_path:
+  root_folder_path: /data/media/filmer
   monitor: false
   availability: announced
   quality_profile:
