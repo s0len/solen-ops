@@ -96,6 +96,7 @@ libraries:
           use_watched: false
           list_days_popular: 45
           list_size_popular: 30
+          list_minimum: 0
           summary_popular: The most popular movies inside the Uniflix-verse the last 15 days.
       - default: streaming
         template_variables:
@@ -213,6 +214,7 @@ libraries:
           use_watched: false
           list_days_popular: 45
           list_size_popular: 20
+          list_minimum: 0
           visible_home_popular: true
           visible_library_popular: true
           visible_shared_popular: true
@@ -367,6 +369,7 @@ libraries:
           use_watched: false
           list_days_popular: 45
           list_size_popular: 20
+          list_minimum: 0
           visible_home_popular: true
           visible_library_popular: true
           visible_shared_popular: true
@@ -454,6 +457,7 @@ libraries:
           use_watched: false
           list_days_popular: 45
           list_size_popular: 20
+          list_minimum: 0
           visible_home_popular: true
           visible_library_popular: true
           visible_shared_popular: true
