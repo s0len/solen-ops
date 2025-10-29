@@ -30,7 +30,7 @@ spec:
       main:
         type: &type cronjob
         cronjob: &cronjob
-          schedule: "10 8 * * *"
+          schedule: "10 4 * * *"
           timeZone: &timeZone ${TIMEZONE}
           concurrencyPolicy: Forbid
           successfulJobsHistory: 1
@@ -105,13 +105,13 @@ spec:
         type: *type
         cronjob:
           <<: *cronjob
-          schedule: "54 7 * * *"
+          schedule: "54 14 * * *"
         containers:
           app:
             <<: *container_app
             args:
               - |
-                python3 kometa.py --run --read-only-config --collection-only --run-libraries "Filmer"
+                python3 kometa.py --run --read-only-config --overlays-only --run-libraries "Filmer"
 
       sport:
         type: *type
