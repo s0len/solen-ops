@@ -15,7 +15,7 @@ libraries:
           data:
             starting: latest-5
             ending: latest
-      - url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/collection_files/dolby_vision_movies.yaml
+      - file: config/tag_dv_mel_fel.yaml
       - url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/collection_files/better_new_and_old_movie_releases.yaml
 
       - default: franchise
@@ -863,7 +863,9 @@ radarr:
   add_existing: false
   upgrade_existing: false
   monitor_existing: false
+  radarr_path: /data/media/filmer
   root_folder_path: /data/media/filmer
+  plex_path: /data/media/filmer
   monitor: false
   availability: announced
   quality_profile:

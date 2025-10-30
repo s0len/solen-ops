@@ -15,5 +15,6 @@ configMapGenerator:
       - ./custom/best-of.yaml
       - ./custom/movies_collections.yaml
       - ./custom/series_collections.yaml
+      - ./custom/tag_dv_mel_fel.yaml
 generatorOptions:
   disableNameSuffixHash: true
