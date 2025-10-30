@@ -30,7 +30,7 @@ spec:
       main:
         type: &type cronjob
         cronjob: &cronjob
-          schedule: "16 8 * * *"
+          schedule: "20 8 * * *"
           timeZone: &timeZone ${TIMEZONE}
           concurrencyPolicy: Forbid
           successfulJobsHistory: 1
