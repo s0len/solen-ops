@@ -105,7 +105,7 @@ spec:
         type: *type
         cronjob:
           <<: *cronjob
-          schedule: "20 9 * * *"
+          schedule: "44 9 * * *"
         containers:
           app:
             <<: *container_app
@@ -175,4 +175,7 @@ spec:
             readOnly: true
           - path: /config/series_collections.yaml
             subPath: series_collections.yaml
+            readOnly: true
+          - path: /config/tag_dv_mel_fel.yaml
+            subPath: tag_dv_mel_fel.yaml
             readOnly: true
