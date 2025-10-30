@@ -1,7 +1,7 @@
 collections:
   Best of Sweden:
     trakt_list:
-      - https://trakt.tv/users/maxwelldeux/lists/flm-s-best-swedish-films-of-all-time?sort=rank,asc
+      - https://trakt.tv/users/mattwatkins/lists/swedish-movie-recommendations-couchmoney-tv?sort=rank,asc
       - https://trakt.tv/users/a925sw/lists/swedish-movies?sort=rank,asc
     sync_mode: sync
     limit: 50

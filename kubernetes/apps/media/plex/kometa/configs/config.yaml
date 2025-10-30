@@ -868,7 +868,7 @@ radarr:
   plex_path: /data/media/filmer
   monitor: false
   availability: announced
-  quality_profile:
+  quality_profile: SQP-3
 
 trakt:
   client_id: <<TRAKT_CLIENT_ID>>
