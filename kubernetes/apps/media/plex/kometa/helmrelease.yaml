@@ -105,13 +105,13 @@ spec:
         type: *type
         cronjob:
           <<: *cronjob
-          schedule: "21 10 * * *"
+          schedule: "21 16 * * *"
         containers:
           app:
             <<: *container_app
             args:
               - |
-                python3 kometa.py --run --read-only-config --collections-only --run-libraries "Filmer"
+                python3 kometa.py --run --read-only-config --overlays-only --run-libraries "Filmer"
 
       sport:
         type: *type
