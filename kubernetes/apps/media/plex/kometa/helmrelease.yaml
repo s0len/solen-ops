@@ -60,40 +60,12 @@ spec:
               allowPrivilegeEscalation: false
               readOnlyRootFilesystem: true
               capabilities: { drop: ["ALL"] }
-            # lifecycle:
-            #   postStart:
-            #     exec:
-            #       command: ["/bin/bash", "-c", "mkdir -p /config/assets/{anime,awards,decades,genres,holidays,networks,suggestions,posters}"]
-
-      # anime:
-      #   type: *type
-      #   cronjob:
-      #     <<: *cronjob
-      #     schedule: "0 9 * * *"
-      #   containers:
-      #     app:
-      #       <<: *container_app
-      #       args:
-      #         - |
-      #           python3 kometa.py --run --read-only-config --overlays-only --run-libraries "Animeserier|Animefilmer"
-
-      # kids:
-      #   type: *type
-      #   cronjob:
-      #     <<: *cronjob
-      #     schedule: "0 1 * * *"
-      #   containers:
-      #     app:
-      #       <<: *container_app
-      #       args:
-      #         - |
-      #           python3 kometa.py --run --read-only-config --overlays-only --run-libraries "Barnfilmer|Barnserier"
 
       standard-series:
         type: *type
         cronjob:
           <<: *cronjob
-          schedule: "35 19 * * *"
+          schedule: "0 */3 * * *" # every 3 hours
         containers:
           app:
             <<: *container_app
@@ -105,7 +77,7 @@ spec:
         type: *type
         cronjob:
           <<: *cronjob
-          schedule: "21 16 * * *"
+          schedule: "10 */3 * * *" # every 3 hours
         containers:
           app:
             <<: *container_app
@@ -113,11 +85,35 @@ spec:
               - |
                 python3 kometa.py --run --read-only-config --overlays-only --run-libraries "Filmer"
 
+      anime-series:
+        type: *type
+        cronjob:
+          <<: *cronjob
+          schedule: "20 */3 * * *" # every 3 hours
+        containers:
+          app:
+            <<: *container_app
+            args:
+              - |
+                python3 kometa.py --run --read-only-config --overlays-only --run-libraries "Animeserier"
+
+      anime-movies:
+        type: *type
+        cronjob:
+          <<: *cronjob
+          schedule: "30 */3 * * *" # every 3 hours
+        containers:
+          app:
+            <<: *container_app
+            args:
+              - |
+                python3 kometa.py --run --read-only-config --overlays-only --run-libraries "Animefilmer"
+
       sport:
         type: *type
         cronjob:
           <<: *cronjob
-          schedule: "0 7,17 * * *"
+          schedule: "40 */3 * * *" # every 3 hours
         containers:
           app:
             <<: *container_app
