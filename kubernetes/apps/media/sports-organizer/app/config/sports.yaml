@@ -1,7 +1,7 @@
 settings:
-  source_dir: ${SPORTS_ORGANIZER_SOURCE:-/data/source}
-  destination_dir: ${SPORTS_ORGANIZER_DESTINATION:-/data/destination}
-  cache_dir: ${SPORTS_ORGANIZER_CACHE:-/data/cache}
+  source_dir: /data/torrents/sport
+  destination_dir: /data/media/sport
+  cache_dir: /cache
   dry_run: false
   skip_existing: true
   poll_interval: 0
