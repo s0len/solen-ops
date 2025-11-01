@@ -41,7 +41,7 @@ spec:
             securityContext:
               privileged: false
         annotations:
-          rollme: "$(date +%s)"
+          reloader.stakater.com/auto: "true"
 
     defaultPodOptions:
       automountServiceAccountToken: false
