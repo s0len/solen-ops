@@ -35,6 +35,7 @@ spec:
               DEST_DIR: /data/media/sport
               PROCESS_INTERVAL: 60
               PUSHOVER_NOTIFICATION: true
+              SPORTS_ORGANIZER_CACHE: /cache
             envFrom:
               - secretRef:
                   name: sports-organizer-secret
@@ -64,6 +65,11 @@ spec:
       tmp:
         type: emptyDir
         medium: Memory
+
+      cache:
+        type: emptyDir
+        globalMounts:
+          - path: /cache
 
       config:
         type: configMap
