@@ -29,6 +29,8 @@ spec:
               tag: develop@sha256:1ef7936d6500675cb7a5e6ea3c7f6569a4834f02cda4f974cdee09ebae9c4411
               pullPolicy: Always
             env:
+              RUN_ONCE: true
+              VERBOSE: true
               SRC_DIR: /data/torrents/sport
               DEST_DIR: /data/media/sport
               PROCESS_INTERVAL: 60
@@ -67,6 +69,6 @@ spec:
         type: configMap
         name: sports-organizer-configmap
         globalMounts:
-          - path: /config/sports.conf
-            subPath: sports.conf
+          - path: /config/sports.yaml
+            subPath: sports.yaml
             readOnly: true

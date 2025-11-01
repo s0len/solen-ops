@@ -8,6 +8,4 @@ resources:
 configMapGenerator:
   - name: sports-organizer-configmap
     files:
-      - ./config/sports.conf
-generatorOptions:
-  disableNameSuffixHash: true
+      - ./config/sports.yaml
