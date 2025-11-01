@@ -27,7 +27,7 @@ sports:
       - "Formula.1.*"
     file_patterns:
       - description: Formula 1 MWR releases
-        regex: "(?i)^Formula\.1\.(?P<year>\d{4})\.Round(?P<round>\d{2})\.(?P<location>[^.]+)\.(?P<session>[^.]+)"
+        regex: '(?i)^Formula\.1\.(?P<year>\d{4})\.Round(?P<round>\d{2})\.(?P<location>[^.]+)\.(?P<session>[^.]+)'
         season_selector:
           mode: round
           group: round
