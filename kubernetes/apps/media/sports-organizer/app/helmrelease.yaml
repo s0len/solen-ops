@@ -62,3 +62,11 @@ spec:
       tmp:
         type: emptyDir
         medium: Memory
+
+      config:
+        type: configMap
+        name: sports-organizer-configmap
+        globalMounts:
+          - path: /config/sports.conf
+            subPath: sports.conf
+            readOnly: true
