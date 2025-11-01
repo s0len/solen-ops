@@ -9,3 +9,5 @@ configMapGenerator:
   - name: sports-organizer-configmap
     files:
       - ./config/sports.yaml
+generatorOptions:
+  disableNameSuffixHash: true
