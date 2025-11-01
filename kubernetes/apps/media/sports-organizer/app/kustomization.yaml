@@ -9,3 +9,4 @@ configMapGenerator:
   - name: sports-organizer-configmap
     files:
       - ./config/sports.conf
+    disableNameSuffixHash: true
