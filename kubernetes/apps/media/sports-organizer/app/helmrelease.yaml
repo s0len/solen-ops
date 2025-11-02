@@ -31,12 +31,12 @@ spec:
             env:
               RUN_ONCE: true
               VERBOSE: true
-              SPORTS_ORGANIZER_CONFIG: /config/sports.yaml
+              CONFIG_PATH: /config/sports.yaml
+              CACHE_DIR: /cache
               SRC_DIR: /data/torrents/sport
               DEST_DIR: /data/media/sport
               PROCESS_INTERVAL: 60
               PUSHOVER_NOTIFICATION: true
-              SPORTS_ORGANIZER_CACHE: /cache
             envFrom:
               - secretRef:
                   name: sports-organizer-secret
