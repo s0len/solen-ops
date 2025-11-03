@@ -56,7 +56,7 @@ spec:
 
     persistence:
       settings:
-        existingClaim: *app
+        existingClaim: sports-organizer-settings
 
       data:
         type: nfs
