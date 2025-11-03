@@ -26,17 +26,17 @@ spec:
           app:
             image:
               repository: ghcr.io/s0len/sports-organizer
-              tag: develop@sha256:77de0ae4d9dd6c7b35ee92861541c1057ad82df06f4f42ea13b1245d0d222de4
+              tag: develop@sha256:baed042d85e14f78fc8c8b226d0981be9f70e56537232ba82623e9f791ce2457
               pullPolicy: Always
             env:
               RUN_ONCE: true
-              VERBOSE: true
+              LOG_LEVEL: INFO
               CONFIG_PATH: /config/sports.yaml
-              CACHE_DIR: /cache
-              SRC_DIR: /data/torrents/sport
-              DEST_DIR: /data/media/sport
+              CACHE_DIR: /settings/cache
+              LOG_DIR: /settings/logs
+              SOURCE_DIR: /data/torrents/sport
+              DESTINATION_DIR: /data/media/sport
               PROCESS_INTERVAL: 60
-              PUSHOVER_NOTIFICATION: true
             envFrom:
               - secretRef:
                   name: sports-organizer-secret
@@ -55,6 +55,9 @@ spec:
         fsGroup: 568
 
     persistence:
+      settings:
+        existingClaim: *app
+
       data:
         type: nfs
         server: "${TRUENAS_IP}"
@@ -66,11 +69,6 @@ spec:
       tmp:
         type: emptyDir
         medium: Memory
-
-      cache:
-        type: emptyDir
-        globalMounts:
-          - path: /cache
 
       config:
         type: configMap
