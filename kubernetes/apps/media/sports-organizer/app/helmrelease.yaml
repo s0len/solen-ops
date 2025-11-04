@@ -29,14 +29,15 @@ spec:
               tag: develop@sha256:a0fea0bf3f65c96c42a291eddcd402bf38d4bcd6523d2494d3776ed3e63381ec
               pullPolicy: Always
             env:
-              RUN_ONCE: false
-              LOG_LEVEL: INFO
-              CONFIG_PATH: /config/sports.yaml
               CACHE_DIR: /settings/cache
-              LOG_DIR: /settings/logs
-              SOURCE_DIR: /data/torrents/sport
+              CLEAR_PROCESSED_CACHE: false
+              CONFIG_PATH: /config/sports.yaml
               DESTINATION_DIR: /data/media/sport
+              LOG_DIR: /settings/logs
+              LOG_LEVEL: INFO
               PROCESS_INTERVAL: 60
+              RUN_ONCE: false
+              SOURCE_DIR: /data/torrents/sport
             envFrom:
               - secretRef:
                   name: sports-organizer-secret
