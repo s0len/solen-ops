@@ -26,7 +26,7 @@ spec:
           app:
             image:
               repository: ghcr.io/s0len/sports-organizer
-              tag: develop@sha256:a0fea0bf3f65c96c42a291eddcd402bf38d4bcd6523d2494d3776ed3e63381ec
+              tag: develop@sha256:fdd3e140fd6a5b51f1f73e6f77a9c2fc6169cd1bb2f009aa4a6d231efc5cc9a7
               pullPolicy: Always
             env:
               RUN_ONCE: false
