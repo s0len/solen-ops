@@ -29,7 +29,7 @@ spec:
               tag: develop@sha256:586d8e06fae7d156d47130ed18b1a619a47d2c5378345e3f074ee6c282f09f02
               pullPolicy: Always
             env:
-              RUN_ONCE: true
+              RUN_ONCE: false
               LOG_LEVEL: INFO
               CONFIG_PATH: /config/sports.yaml
               CACHE_DIR: /settings/cache
@@ -68,10 +68,6 @@ spec:
         globalMounts:
           - path: /data
             readOnly: false
-
-      tmp:
-        type: emptyDir
-        medium: Memory
 
       config:
         type: configMap
