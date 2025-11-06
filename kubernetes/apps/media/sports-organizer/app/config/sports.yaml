@@ -66,6 +66,54 @@ sports:
               season_number: 0
               round: 0
 
+  - id: formula_e
+    name: Formula E
+    enabled: true
+
+    source_globs:
+      - "FormulaE.*"
+      - "FormulaE *"
+      - "Formula.E.*"
+      - "Formula E *"
+      - "formulae.*"
+      - "formulae *"
+      - "formula.e.*"
+      - "formula e *"
+
+    pattern_sets:
+      - formula_e
+
+    variants:
+      - year: 2025
+        metadata:
+          url: https://raw.githubusercontent.com/s0len/meta-manager-config/refs/heads/main/metadata-files/formulae-2025.yaml
+          show_key: Formula E 2025
+          ttl_hours: 24
+
+  - id: indycar
+    name: NTT IndyCar Series
+    enabled: true
+
+    source_globs:
+      - "IndyCar.*"
+      - "IndyCar *"
+      - "IndyCar.Series.*"
+      - "IndyCar Series *"
+      - "indycar.*"
+      - "indycar *"
+      - "indycar.series.*"
+      - "indycar series *"
+
+    pattern_sets:
+      - indycar
+
+    variants:
+      - year: 2025
+        metadata:
+          url: https://raw.githubusercontent.com/s0len/meta-manager-config/refs/heads/main/metadata-files/indycar-2025.yaml
+          show_key: NTT IndyCar Series 2025
+          ttl_hours: 24
+
   - id: motogp
     name: MotoGP
     enabled: true
@@ -139,6 +187,74 @@ sports:
           show_key: Moto3 2025
           ttl_hours: 24
 
+  - id: world_supersport
+    name: World Supersport
+    enabled: true
+
+    source_globs:
+      - "WSSP.*"
+      - "WSSP *"
+      - "World.Supersport.*"
+      - "World Supersport *"
+      - "world.supersport.*"
+      - "world supersport *"
+
+    pattern_sets:
+      - world_supersport
+
+    variants:
+      - year: 2025
+        metadata:
+          url: https://raw.githubusercontent.com/s0len/meta-manager-config/refs/heads/main/metadata-files/wssp-2025.yaml
+          show_key: World Supersport 2025
+          ttl_hours: 24
+      - year: 2024
+        metadata:
+          url: https://raw.githubusercontent.com/s0len/meta-manager-config/refs/heads/main/metadata-files/wssp-2024.yaml
+          show_key: World Supersport 2024
+          ttl_hours: 24
+      - year: 2023
+        metadata:
+          url: https://raw.githubusercontent.com/s0len/meta-manager-config/refs/heads/main/metadata-files/wssp-2023.yaml
+          show_key: World Supersport 2023
+          ttl_hours: 24
+
+  - id: world_superbike
+    name: World Superbike
+    enabled: true
+
+    source_globs:
+      - "WSBK.*"
+      - "WSBK *"
+      - "wsbk.*"
+      - "wsbk *"
+      - "World.Superbike.*"
+      - "World Superbike *"
+      - "WorldSuperbike.*"
+      - "WorldSuperbike *"
+      - "world.superbike.*"
+      - "world superbike *"
+
+    pattern_sets:
+      - world_superbike
+
+    variants:
+      - year: 2025
+        metadata:
+          url: https://raw.githubusercontent.com/s0len/meta-manager-config/refs/heads/main/metadata-files/wsbk-2025.yaml
+          show_key: World Superbike 2025
+          ttl_hours: 24
+      - year: 2024
+        metadata:
+          url: https://raw.githubusercontent.com/s0len/meta-manager-config/refs/heads/main/metadata-files/wsbk-2024.yaml
+          show_key: World Superbike 2024
+          ttl_hours: 24
+      - year: 2023
+        metadata:
+          url: https://raw.githubusercontent.com/s0len/meta-manager-config/refs/heads/main/metadata-files/wsbk-2023.yaml
+          show_key: World Superbike 2023
+          ttl_hours: 24
+
   - id: isle_of_man_tt
     name: Isle of Man TT
     enabled: true
@@ -179,14 +295,14 @@ sports:
 
     # Use the built-in NFL template (pattern set name `football`).
     pattern_sets:
-      - nfl
+      - football
 
   - id: premier_league
     name: Premier League
     enabled: true
 
     metadata:
-      url: https://raw.githubusercontent.com/s0len/meta-manager-config/refs/heads/main/metadata-files/premier-league-2025-2026.yaml
+      url: https://raw.githubusercontent.com/s0len/meta-manager-config/refs/heads/main/metadata-files/premier-league-2025-26.yaml
       show_key: Premier League 2025-2026
       ttl_hours: 24
 
