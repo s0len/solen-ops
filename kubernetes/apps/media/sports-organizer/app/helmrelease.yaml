@@ -30,11 +30,11 @@ spec:
               pullPolicy: Always
             env:
               CACHE_DIR: /settings/cache
-              CLEAR_PROCESSED_CACHE: true
+              CLEAR_PROCESSED_CACHE: false
               CONFIG_PATH: /config/sports.yaml
               DRY_RUN: false
               DESTINATION_DIR: /data/media/sport
-              LOG_DIR: /settings/logs
+              LOG_DIR: /tmp
               LOG_LEVEL: INFO
               PROCESS_INTERVAL: 60
               RUN_ONCE: false
@@ -62,6 +62,12 @@ spec:
         globalMounts:
           - path: /settings
             readOnly: false
+
+      tmp:
+        type: emptyDir
+        medium: Memory
+        globalMounts:
+          - path: /tmp
 
       data:
         type: nfs
