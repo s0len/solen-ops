@@ -32,7 +32,7 @@ spec:
               CACHE_DIR: /settings/cache
               CLEAR_PROCESSED_CACHE: true
               CONFIG_PATH: /config/sports.yaml
-              DRY_RUN: true
+              DRY_RUN: false
               DESTINATION_DIR: /data/media/sport
               LOG_DIR: /settings/logs
               LOG_LEVEL: INFO
