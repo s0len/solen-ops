@@ -293,9 +293,30 @@ sports:
       - "nfl.*"
       - "nfl *"
 
-    # Use the built-in NFL template (pattern set name `football`).
+    # Use the built-in NFL template (pattern set name `nfl`).
     pattern_sets:
       - nfl
+
+  - id: uefa_champions_league
+    name: UEFA Champions League
+    enabled: true
+
+    metadata:
+      url: https://raw.githubusercontent.com/s0len/meta-manager-config/refs/heads/main/metadata-files/uefa-champions-league-2025-26.yaml
+      show_key: UEFA Champions League 2025-26
+      ttl_hours: 24
+
+    source_globs:
+      - "UEFA Champions League *"
+      - "UEFA Champions League*"
+      - "UEFA.Champions.League.*"
+      - "UEFA.Champions.League*"
+      - "UEFA-Champions-League-*"
+      - "UCL.*"
+      - "UCL *"
+
+    pattern_sets:
+      - uefa_champions_league
 
   - id: premier_league
     name: Premier League
