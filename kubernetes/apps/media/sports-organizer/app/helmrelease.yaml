@@ -30,7 +30,7 @@ spec:
               pullPolicy: Always
             env:
               CACHE_DIR: /settings/cache
-              CLEAR_PROCESSED_CACHE: false
+              CLEAR_PROCESSED_CACHE: true
               CONFIG_PATH: /config/sports.yaml
               DRY_RUN: false
               DESTINATION_DIR: /data/media/sport
