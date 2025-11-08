@@ -113,7 +113,7 @@ spec:
         type: *type
         cronjob:
           <<: *cronjob
-          schedule: "0 */1 * * *" # every 3 hours
+          schedule: "7 */1 * * *" # every 3 hours
         containers:
           app:
             <<: *container_app
