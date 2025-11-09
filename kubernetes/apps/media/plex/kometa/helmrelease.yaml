@@ -119,6 +119,7 @@ spec:
             <<: *container_app
             args:
               - |
+                rm -rf "/config/assets/*"
                 python3 kometa.py --run --read-only-config --run-libraries "Sport"
 
     defaultPodOptions:
