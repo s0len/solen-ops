@@ -113,14 +113,13 @@ spec:
         type: *type
         cronjob:
           <<: *cronjob
-          schedule: "59 */1 * * *"
+          schedule: "0 */1 * * *"
         containers:
           app:
             <<: *container_app
             args:
               - |
                 python3 kometa.py --run --read-only-config --run-libraries "Sport"
-                rm -rf "/config/assets/*"
 
     defaultPodOptions:
       securityContext:
