@@ -113,7 +113,7 @@ spec:
         type: *type
         cronjob:
           <<: *cronjob
-          schedule: "50 */1 * * *"
+          schedule: "54 */1 * * *"
         containers:
           app:
             <<: *container_app

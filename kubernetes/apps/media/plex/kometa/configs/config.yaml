@@ -780,7 +780,7 @@ settings:
   delete_below_minimum: true
   delete_not_scheduled: false
   dimensional_asset_rename: true
-  download_url_assets: false
+  download_url_assets: true
   item_refresh_delay: 0
   ignore_ids:
   ignore_imdb_ids:
