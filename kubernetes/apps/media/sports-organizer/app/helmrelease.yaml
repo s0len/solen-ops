@@ -26,7 +26,7 @@ spec:
           app:
             image:
               repository: ghcr.io/s0len/sports-organizer
-              tag: develop@sha256:de321b60d1becbee49f6286b49891054e359ce174a9fbf0cc0856e366028ba4e
+              tag: develop@sha256:0b196e06a8321cb3724c6bcebf0be987e6abe5e27ede45709f5deac635f42e21
               pullPolicy: Always
             env:
               CACHE_DIR: /settings/cache
