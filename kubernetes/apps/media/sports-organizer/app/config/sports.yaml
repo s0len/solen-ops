@@ -6,6 +6,9 @@ settings:
   skip_existing: true
   poll_interval: 60
   link_mode: hardlink
+  notifications:
+    batch_daily: true
+    flush_time: "00:00"
   destination:
     root_template: "{show_title}"
     season_dir_template: "{season_number:02d} {season_title}"
