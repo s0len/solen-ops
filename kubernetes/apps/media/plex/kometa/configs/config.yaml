@@ -734,6 +734,7 @@ libraries:
       assets_for_all: true
   Sport:
     metadata_files:
+      - url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/metadata-files/figure-skating-grand-prix-2025.yaml
       - url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/metadata-files/formula1-2025.yaml
       - url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/metadata-files/formulae-2025.yaml
       - url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/metadata-files/indycar-2025.yaml

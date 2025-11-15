@@ -93,6 +93,25 @@ sports:
           show_key: Formula E 2025
           ttl_hours: 24
 
+  - id: figure_skating_grand_prix
+    name: Figure Skating Grand Prix
+    enabled: true
+
+    metadata:
+      url: https://raw.githubusercontent.com/s0len/meta-manager-config/refs/heads/main/metadata-files/figure-skating-grand-prix-2025.yaml
+      show_key: Figure Skating Grand Prix 2025
+      ttl_hours: 24
+
+    source_globs:
+      - "Figure Skating Grand Prix *"
+      - "Figure Skating Grand Prix*"
+      - "Figure.Skating.Grand.Prix.*"
+      - "Figure.Skating.Grand.Prix*"
+      - "Figure Skating * Grand Prix *"
+
+    pattern_sets:
+      - figure_skating_grand_prix
+
   - id: indycar
     name: NTT IndyCar Series
     enabled: true
