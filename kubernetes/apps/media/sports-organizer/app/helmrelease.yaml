@@ -25,8 +25,8 @@ spec:
         containers:
           app:
             image:
-              repository: ghcr.io/s0len/sports-organizer
-              tag: develop@sha256:1be98e5d92917e67453d40305b245d43913f6b262f27d678a4296534773e2124
+              repository: ghcr.io/s0len/playbook
+              tag: develop@sha256:b23cf40ae9a94f977bb728f5d01615b5ddce98c236efb51ee120c84d3047c5f2
               pullPolicy: Always
             env:
               CACHE_DIR: /tmp/cache
