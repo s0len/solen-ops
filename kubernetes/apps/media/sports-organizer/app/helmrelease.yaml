@@ -29,7 +29,7 @@ spec:
               tag: develop@sha256:a572cd44a46cae5f823d3cef5fd68c946d468142e4f04d43bd8d4b33f85df617
               pullPolicy: Always
             env:
-              CACHE_DIR: /settings/cache
+              CACHE_DIR: /tmp/cache
               CLEAR_PROCESSED_CACHE: false
               CONFIG_PATH: /config/sports.yaml
               DRY_RUN: false
