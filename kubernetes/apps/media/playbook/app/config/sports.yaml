@@ -7,7 +7,7 @@ settings:
   poll_interval: 60
   link_mode: hardlink
   file_watcher:
-    enabled: false
+    enabled: true
     paths: []
     include: [] # Optional glob filters (e.g. "*.mkv") to limit which files trigger a run.
     ignore:
