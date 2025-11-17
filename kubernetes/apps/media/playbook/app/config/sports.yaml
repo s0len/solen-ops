@@ -6,6 +6,15 @@ settings:
   skip_existing: true
   poll_interval: 60
   link_mode: hardlink
+  file_watcher:
+    enabled: false
+    paths: []
+    include: [] # Optional glob filters (e.g. "*.mkv") to limit which files trigger a run.
+    ignore:
+      - "*.part"
+      - "*.tmp"
+    debounce_seconds: 5
+    reconcile_interval: 900
   notifications:
     batch_daily: true
     flush_time: "00:00"
