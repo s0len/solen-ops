@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: sports-organizer-settings
+  name: playbook-settings
 spec:
   accessModes: ["ReadWriteOnce"]
   resources:

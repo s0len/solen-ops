@@ -17,7 +17,7 @@ resources:
   - ./qbittorrent/ks.yaml
   - ./seasonpackarr/ks.yaml
   - ./sonarr/ks.yaml
-  - ./sports-organizer/ks.yaml
+  - ./playbook/ks.yaml
   - ./radarr/ks.yaml
   # - ./readarr/ks.yaml
   - ./recyclarr/ks.yaml

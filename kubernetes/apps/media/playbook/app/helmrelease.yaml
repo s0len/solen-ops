@@ -3,7 +3,7 @@
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: &app sports-organizer
+  name: &app playbook
 spec:
   interval: 30m
   chartRef:
@@ -41,7 +41,7 @@ spec:
               SOURCE_DIR: /data/torrents/sport
             envFrom:
               - secretRef:
-                  name: sports-organizer-secret
+                  name: playbook-secret
             securityContext:
               privileged: false
         annotations:
@@ -58,7 +58,7 @@ spec:
 
     persistence:
       settings:
-        existingClaim: sports-organizer-settings
+        existingClaim: playbook-settings
         globalMounts:
           - path: /settings
             readOnly: false
@@ -79,7 +79,7 @@ spec:
 
       config:
         type: configMap
-        name: sports-organizer-configmap
+        name: playbook-configmap
         globalMounts:
           - path: /config/sports.yaml
             subPath: sports.yaml
