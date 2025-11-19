@@ -102,25 +102,6 @@ sports:
           show_key: Formula E 2025
           ttl_hours: 24
 
-  - id: figure_skating_grand_prix
-    name: Figure Skating Grand Prix
-    enabled: true
-
-    metadata:
-      url: https://raw.githubusercontent.com/s0len/meta-manager-config/refs/heads/main/metadata-files/figure-skating-grand-prix-2025.yaml
-      show_key: Figure Skating Grand Prix 2025
-      ttl_hours: 24
-
-    source_globs:
-      - "Figure Skating Grand Prix *"
-      - "Figure Skating Grand Prix*"
-      - "Figure.Skating.Grand.Prix.*"
-      - "Figure.Skating.Grand.Prix*"
-      - "Figure Skating * Grand Prix *"
-
-    pattern_sets:
-      - figure_skating_grand_prix
-
   - id: indycar
     name: NTT IndyCar Series
     enabled: true
@@ -162,17 +143,17 @@ sports:
     variants:
       - year: 2025
         metadata:
-          url: https://raw.githubusercontent.com/s0len/meta-manager-config/refs/heads/main/metadata-files/motogp-2025.yaml
+          url: https://raw.githubusercontent.com/s0len/meta-manager-config/refs/heads/main/metadata-files/motogp/2025.yaml
           show_key: MotoGP 2025
           ttl_hours: 24
       - year: 2024
         metadata:
-          url: https://raw.githubusercontent.com/s0len/meta-manager-config/refs/heads/main/metadata-files/motogp-2024.yaml
+          url: https://raw.githubusercontent.com/s0len/meta-manager-config/refs/heads/main/metadata-files/motogp/2024.yaml
           show_key: MotoGP 2024
           ttl_hours: 24
       - year: 2023
         metadata:
-          url: https://raw.githubusercontent.com/s0len/meta-manager-config/refs/heads/main/metadata-files/motogp-2023.yaml
+          url: https://raw.githubusercontent.com/s0len/meta-manager-config/refs/heads/main/metadata-files/motogp/2023.yaml
           show_key: MotoGP 2023
           ttl_hours: 24
 
@@ -193,7 +174,7 @@ sports:
     variants:
       - year: 2025
         metadata:
-          url: https://raw.githubusercontent.com/s0len/meta-manager-config/refs/heads/main/metadata-files/moto2-2025.yaml
+          url: https://raw.githubusercontent.com/s0len/meta-manager-config/refs/heads/main/metadata-files/moto2/2025.yaml
           show_key: Moto2 2025
           ttl_hours: 24
 
@@ -214,7 +195,7 @@ sports:
     variants:
       - year: 2025
         metadata:
-          url: https://raw.githubusercontent.com/s0len/meta-manager-config/refs/heads/main/metadata-files/moto3-2025.yaml
+          url: https://raw.githubusercontent.com/s0len/meta-manager-config/refs/heads/main/metadata-files/moto3/2025.yaml
           show_key: Moto3 2025
           ttl_hours: 24
 
@@ -314,8 +295,8 @@ sports:
     enabled: true
 
     metadata:
-      url: https://raw.githubusercontent.com/s0len/meta-manager-config/refs/heads/main/metadata-files/nfl/2025-2026.yaml
-      show_key: NFL 2025-26
+      url: https://raw.githubusercontent.com/s0len/meta-manager-config/refs/heads/main/metadata-files/nfl/2025.yaml
+      show_key: NFL 2025
       ttl_hours: 24
 
     source_globs:
@@ -334,7 +315,7 @@ sports:
 
     metadata:
       url: https://raw.githubusercontent.com/s0len/meta-manager-config/refs/heads/main/metadata-files/nba/2025-2026.yaml
-      show_key: NBA 2025-26
+      show_key: NBA 2025-2026
       ttl_hours: 24
 
     source_globs:
@@ -353,7 +334,7 @@ sports:
 
     metadata:
       url: https://raw.githubusercontent.com/s0len/meta-manager-config/refs/heads/main/metadata-files/uefa-champions-league/2025-2026.yaml
-      show_key: UEFA Champions League 2025-26
+      show_key: UEFA Champions League 2025-2026
       ttl_hours: 24
 
     source_globs:
@@ -368,13 +349,32 @@ sports:
     pattern_sets:
       - uefa_champions_league
 
+  - id: figure_skating_grand_prix
+    name: Figure Skating Grand Prix
+    enabled: true
+
+    metadata:
+      url: https://raw.githubusercontent.com/s0len/meta-manager-config/refs/heads/main/metadata-files/figure-skating-grand-prix-2025.yaml
+      show_key: Figure Skating Grand Prix 2025
+      ttl_hours: 24
+
+    source_globs:
+      - "Figure Skating Grand Prix *"
+      - "Figure Skating Grand Prix*"
+      - "Figure.Skating.Grand.Prix.*"
+      - "Figure.Skating.Grand.Prix*"
+      - "Figure Skating * Grand Prix *"
+
+    pattern_sets:
+      - figure_skating_grand_prix
+
   - id: premier_league
     name: Premier League
     enabled: true
 
     metadata:
       url: https://raw.githubusercontent.com/s0len/meta-manager-config/refs/heads/main/metadata-files/premier-league/2025-2026.yaml
-      show_key: Premier League 2025-26
+      show_key: Premier League 2025-2026
       ttl_hours: 24
 
     source_globs:
