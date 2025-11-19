@@ -314,7 +314,7 @@ sports:
     enabled: true
 
     metadata:
-      url: https://raw.githubusercontent.com/s0len/meta-manager-config/refs/heads/main/metadata-files/nfl-2025-26.yaml
+      url: https://raw.githubusercontent.com/s0len/meta-manager-config/refs/heads/main/metadata-files/nfl/2025-2026.yaml
       show_key: NFL 2025-26
       ttl_hours: 24
 
@@ -333,7 +333,7 @@ sports:
     enabled: true
 
     metadata:
-      url: https://raw.githubusercontent.com/s0len/meta-manager-config/refs/heads/main/metadata-files/nba-2025-26.yaml
+      url: https://raw.githubusercontent.com/s0len/meta-manager-config/refs/heads/main/metadata-files/nba/2025-2026.yaml
       show_key: NBA 2025-26
       ttl_hours: 24
 
@@ -352,7 +352,7 @@ sports:
     enabled: true
 
     metadata:
-      url: https://raw.githubusercontent.com/s0len/meta-manager-config/refs/heads/main/metadata-files/uefa-champions-league-2025-26.yaml
+      url: https://raw.githubusercontent.com/s0len/meta-manager-config/refs/heads/main/metadata-files/uefa-champions-league/2025-2026.yaml
       show_key: UEFA Champions League 2025-26
       ttl_hours: 24
 
