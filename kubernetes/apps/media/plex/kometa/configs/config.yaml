@@ -736,8 +736,9 @@ libraries:
     metadata_files:
       - url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/metadata/figure-skating-grand-prix-2025.yaml
       - url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/metadata/formula1/2025.yaml
-      - url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/metadata/formulae/2025.yaml
-      - url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/metadata/indycar/2025.yaml
+      - url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/metadata/formula-e/2025.yaml
+      - url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/metadata/formula-e/2026.yaml
+      - url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/metadata/indycar-series/2025.yaml
       - url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/metadata/isle-of-man-tt.yaml
       # - url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/metadata/moto2/2025.yaml
       # - url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/metadata/moto3/2025.yaml
