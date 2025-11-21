@@ -16,12 +16,16 @@ settings:
     debounce_seconds: 5
     reconcile_interval: 900
   notifications:
-    batch_daily: true
+    batch_daily: false
     flush_time: "00:00"
   destination:
     root_template: "{show_title}"
     season_dir_template: "{season_number:02d} {season_title}"
     episode_template: "{show_title} - S{season_number:02d}E{episode_number:02d} - {episode_title}.{extension}"
+  kometa_trigger:
+    enabled: true
+    namespace: media
+    cronjob_name: kometa-sport
 
 pattern_sets:
   # Built-in pattern templates load automatically from `pattern_templates.yaml`.
