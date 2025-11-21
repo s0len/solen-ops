@@ -48,8 +48,9 @@ spec:
           reloader.stakater.com/auto: "true"
 
     defaultPodOptions:
-      automountServiceAccountToken: false
+      automountServiceAccountToken: true
       enableServiceLinks: false
+      serviceAccountName: playbook
       securityContext:
         runAsUser: 568
         runAsGroup: 568

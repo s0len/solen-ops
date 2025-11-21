@@ -121,17 +121,16 @@ spec:
               - |
                 python3 kometa.py --run --read-only-config --run-libraries "Sport"
 
-      sleep:
-        type: *type
-        cronjob:
-          <<: *cronjob
-          schedule: "24 7 * * *"
+      asset-shell:
+        type: deployment
+        replicas: 1
         containers:
           app:
             <<: *container_app
+            command:
+              - sleep
             args:
-              - |
-                sleep infinity
+              - infinity
 
     defaultPodOptions:
       securityContext:
