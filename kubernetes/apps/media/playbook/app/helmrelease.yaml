@@ -20,12 +20,14 @@ spec:
 
   values:
     serviceAccount:
-      main:
+      playbook:
         create: false
         name: playbook
 
     controllers:
       main:
+        serviceAccount:
+          identifier: playbook
         type: deployment
         containers:
           app:
