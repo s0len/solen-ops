@@ -20,9 +20,7 @@ spec:
 
   values:
     serviceAccount:
-      playbook:
-        create: false
-        name: playbook
+      playbook: {}
 
     controllers:
       main:
