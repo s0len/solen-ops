@@ -34,9 +34,9 @@ spec:
               tag: develop@sha256:fbe2dbb0aa6cd0541fc97e413a58799b5c4e5698a4db18a5896fae4b81e01979
               pullPolicy: Always
             env:
-              CACHE_DIR: /tmp/cache
+              CACHE_DIR: /settings/cache
               CLEAR_PROCESSED_CACHE: false
-              CONFIG_PATH: /config/sports.yaml
+              CONFIG_PATH: /config/settings.conf
               DRY_RUN: false
               DESTINATION_DIR: /data/media/sport
               LOG_DIR: /tmp
@@ -86,6 +86,6 @@ spec:
         type: configMap
         name: playbook-configmap
         globalMounts:
-          - path: /config/sports.yaml
-            subPath: sports.yaml
+          - path: /config/settings.conf
+            subPath: settings.conf
             readOnly: true
