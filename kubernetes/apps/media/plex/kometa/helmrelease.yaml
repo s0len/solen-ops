@@ -114,7 +114,7 @@ spec:
         cronjob:
           <<: *cronjob
           ttlSecondsAfterFinished: 7200
-          schedule: "31 10 * * *"
+          schedule: "41 10 * * *"
         containers:
           app:
             <<: *container_app
