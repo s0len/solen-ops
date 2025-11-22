@@ -123,7 +123,7 @@ spec:
 
       asset-shell:
         type: deployment
-        replicas: 0
+        replicas: 1
         containers:
           app:
             <<: *container_app
