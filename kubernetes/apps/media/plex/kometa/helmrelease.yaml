@@ -114,7 +114,7 @@ spec:
         cronjob:
           <<: *cronjob
           ttlSecondsAfterFinished: 7200
-          schedule: "41 10 * * *"
+          schedule: "0 1 * * *"
         containers:
           app:
             <<: *container_app
@@ -124,7 +124,7 @@ spec:
 
       asset-shell:
         type: deployment
-        replicas: 0
+        replicas: 1
         containers:
           app:
             <<: *container_app
