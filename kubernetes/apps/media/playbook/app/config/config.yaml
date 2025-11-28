@@ -18,8 +18,8 @@ settings:
   notifications:
     batch_daily: false
     flush_time: "00:00"
-    mentions:             # Optional: ping specific Discord roles/users per sport (or use 'default' as a fallback).
-      premier_league: "<@&1442927538623221932>" # Replace with your role ID (Discord -> Enable Developer Mode -> copy role ID).
+    mentions:
+      premier_league: "<@&1442927538623221932>"
       formula1: "<@&1442927474961809570>"
       nfl: "<@&1442954547629785271>"
       nba: "<@&1442954744053235712>"

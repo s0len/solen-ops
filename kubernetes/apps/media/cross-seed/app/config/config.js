@@ -50,7 +50,9 @@ module.exports = {
   ),
 
   // ======== TORRENT CLIENT =========
-  qbittorrentUrl: "http://qbittorrent.media.svc.cluster.local",
+  torrentClients: [
+    "qbittorrent:http://{{ .QBIT_USER }}:{{ .QBIT_PASS }}@qbittorrent.media.svc.cluster.local:80",
+  ],
   torrentDir: null,
   useClientTorrents: true,
 

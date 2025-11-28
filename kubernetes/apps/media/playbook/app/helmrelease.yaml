@@ -86,6 +86,6 @@ spec:
         type: configMap
         name: playbook-configmap
         globalMounts:
-          - path: /config/settings.conf
-            subPath: settings.conf
+          - path: /config/config.yaml
+            subPath: config.yaml
             readOnly: true

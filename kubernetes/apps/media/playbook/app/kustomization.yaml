@@ -10,6 +10,6 @@ resources:
 configMapGenerator:
   - name: playbook-configmap
     files:
-      - ./config/settings.conf
+      - ./config/config.yaml
 generatorOptions:
   disableNameSuffixHash: true
