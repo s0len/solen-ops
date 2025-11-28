@@ -36,7 +36,7 @@ spec:
             env:
               CACHE_DIR: /settings/cache
               CLEAR_PROCESSED_CACHE: false
-              CONFIG_PATH: /config/settings.conf
+              CONFIG_PATH: /config/config.yaml
               DRY_RUN: false
               DESTINATION_DIR: /data/media/sport
               LOG_DIR: /tmp
