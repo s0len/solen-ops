@@ -12,7 +12,6 @@ settings:
     ignore:
       - "*.part"
       - "*.tmp"
-      - "*sample*"
     debounce_seconds: 5
     reconcile_interval: 900
   notifications:
