@@ -4,7 +4,6 @@ settings:
   cache_dir: /settings/cache
   dry_run: false
   skip_existing: true
-  poll_interval: 60
   link_mode: hardlink
   file_watcher:
     enabled: true
@@ -13,6 +12,7 @@ settings:
     ignore:
       - "*.part"
       - "*.tmp"
+      - "*sample*"
     debounce_seconds: 5
     reconcile_interval: 900
   notifications:
@@ -29,16 +29,17 @@ settings:
       world_supersport: "<@&1442954941047242977>"
       world_superbike: "<@&1442954941047242977>"
       motogp: "<@&1442954941047242977>"
-
-      # default: "@here"   # Uncomment for a fallback mention when a sport ID isn’t listed.
+  kometa_trigger:
+    enabled: true
+    mode: kubernetes
+    per_batch: false
+    namespace: media
+    cronjob_name: kometa-sport
+    job_name_prefix: kometa-sport-triggered-by-playbook
   destination:
     root_template: "{show_title}"
     season_dir_template: "{season_number:02d} {season_title}"
     episode_template: "{show_title} - S{season_number:02d}E{episode_number:02d} - {episode_title}.{extension}"
-  kometa_trigger:
-    enabled: true
-    namespace: media
-    cronjob_name: kometa-sport
 
 pattern_sets:
   # Built-in pattern templates load automatically from `pattern_templates.yaml`.
@@ -144,12 +145,12 @@ sports:
     variants:
       - year: 2025
         metadata:
-          url: https://raw.githubusercontent.com/s0len/meta-manager-config/refs/heads/main/metadata/indycar/2025.yaml
+          url: https://raw.githubusercontent.com/s0len/meta-manager-config/refs/heads/main/metadata/indycar-series/2025.yaml
           show_key: NTT IndyCar Series 2025
           ttl_hours: 24
       - year: 2026
         metadata:
-          url: https://raw.githubusercontent.com/s0len/meta-manager-config/refs/heads/main/metadata/indycar/2026.yaml
+          url: https://raw.githubusercontent.com/s0len/meta-manager-config/refs/heads/main/metadata/indycar-series/2026.yaml
           show_key: NTT IndyCar Series 2026
           ttl_hours: 24
 
