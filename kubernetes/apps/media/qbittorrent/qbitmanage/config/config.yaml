@@ -44,7 +44,7 @@ cat:
   sportseries: /data/torrents/sportseries
   usedforseeding: /data/torrents/usedforseeding
 
-tracker: {{ .QBITMANAGE_TRACKERS | nindent 2 }}
+tracker: { { .QBITMANAGE_TRACKERS | nindent 2 } }
 
 nohardlinks:
   - movies:
@@ -87,6 +87,7 @@ orphaned:
     - /data/torrents/usedforseeding/**
     - /data/torrents/links/**
   max_orphaned_files_to_delete: 300
+  min_file_age_minutes: 500
 
 notifiarr:
   apikey: "{{ .NOTIFIARR_QBITMANAGE_API_KEY }}"
