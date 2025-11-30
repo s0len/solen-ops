@@ -26,3 +26,5 @@ wiki
 /config.yaml
 # Useful commands
 /useful-commands.sh
+
+.prettierignore

@@ -45,8 +45,7 @@ cat:
   sportseries: /data/torrents/sportseries
   usedforseeding: /data/torrents/usedforseeding
 
-{{- $trackers := default "{}" .QBITMANAGE_TRACKERS -}}
-tracker: {{ $trackers | nindent 2 }}
+tracker: {{ .QBITMANAGE_TRACKERS | nindent 2 }}
 
 nohardlinks:
   - movies:
