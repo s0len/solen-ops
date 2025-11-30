@@ -28,6 +28,9 @@ settings:
       world_supersport: "<@&1442954941047242977>"
       world_superbike: "<@&1442954941047242977>"
       motogp: "<@&1442954941047242977>"
+    targets:
+      - type: discord
+        webhook_url: { { .DISCORD_WEBHOOK_URL } }
   kometa_trigger:
     enabled: true
     mode: kubernetes
