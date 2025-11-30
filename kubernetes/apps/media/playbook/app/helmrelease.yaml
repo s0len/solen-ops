@@ -40,9 +40,7 @@ spec:
               DRY_RUN: false
               DESTINATION_DIR: /data/media/sport
               LOG_DIR: /tmp
-              LOG_LEVEL: INFO
-              PROCESS_INTERVAL: 0
-              RUN_ONCE: false
+              LOG_LEVEL: DEBUG
               SOURCE_DIR: /data/torrents/sport
             envFrom:
               - secretRef:
