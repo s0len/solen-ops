@@ -1,3 +1,4 @@
+# yamllint disable
 qbt:
   host: qbittorrent.media.svc.cluster.local
   user:
@@ -44,8 +45,8 @@ cat:
   sportseries: /data/torrents/sportseries
   usedforseeding: /data/torrents/usedforseeding
 
-#{{- $trackers := default "{}" .QBITMANAGE_TRACKERS }}
-tracker: { { $trackers | nindent 2 } }
+{{- $trackers := default "{}" .QBITMANAGE_TRACKERS -}}
+tracker: {{ $trackers | nindent 2 }}
 
 nohardlinks:
   - movies:
