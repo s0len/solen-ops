@@ -21,6 +21,7 @@ settings:
       premier_league: "<@&1442927538623221932>"
       formula1: "<@&1442927474961809570>"
       nfl: "<@&1442954547629785271>"
+      nhl: "<@&1446196333689045163>"
       nba: "<@&1442954744053235712>"
       uefa_champions_league: "<@&1442927538623221932>"
       figure_skating_grand_prix: "<@&1442954661387571240>"
@@ -68,6 +69,23 @@ pattern_sets:
 ######################################################################
 
 sports:
+  - id: nhl
+    name: NHL
+    enabled: true
+
+    metadata:
+      url: https://raw.githubusercontent.com/s0len/meta-manager-config/refs/heads/main/metadata/nhl/2025-2026.yaml
+      show_key: NHL 2025-2026
+      ttl_hours: 24
+
+    source_globs:
+      - "NHL.*"
+      - "NHL *"
+      - "nhl.*"
+      - "nhl *"
+
+    pattern_sets:
+      - nhl
   - id: formula1
     name: Formula 1
     enabled: true
