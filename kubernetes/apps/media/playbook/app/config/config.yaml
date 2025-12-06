@@ -33,7 +33,7 @@ settings:
       - type: discord
         webhook_env: DISCORD_WEBHOOK_URL
   kometa_trigger:
-    enabled: true
+    enabled: false
     mode: kubernetes
     per_batch: false
     namespace: media
