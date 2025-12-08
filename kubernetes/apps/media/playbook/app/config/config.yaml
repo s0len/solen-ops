@@ -39,6 +39,8 @@ settings:
     namespace: media
     cronjob_name: kometa-sport
     job_name_prefix: kometa-sport-triggered-by-playbook
+  plex_metadata_sync:
+    scan_wait: 5
   destination:
     root_template: "{show_title}"
     season_dir_template: "{season_number:02d} {season_title}"
