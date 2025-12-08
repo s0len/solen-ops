@@ -6,7 +6,7 @@ settings:
   skip_existing: true
   link_mode: hardlink
   file_watcher:
-    enabled: true
+    enabled: false
     paths: []
     include: [] # Optional glob filters (e.g. "*.mkv") to limit which files trigger a run.
     ignore:
