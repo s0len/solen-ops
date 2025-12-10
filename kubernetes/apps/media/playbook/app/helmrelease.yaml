@@ -40,8 +40,9 @@ spec:
               DRY_RUN: false
               DESTINATION_DIR: /data/media/sport
               LOG_DIR: /tmp
-              LOG_LEVEL: DEBUG
+              LOG_LEVEL: INFO
               SOURCE_DIR: /data/torrents/sport
+              PLEX_FORCE: false
               PLEX_SYNC_ENABLED: true
               PLEX_LIBRARY_NAME: Sport
               PLEX_URL: http://${PLEX_IP}:32400

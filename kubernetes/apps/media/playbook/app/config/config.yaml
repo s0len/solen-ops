@@ -13,7 +13,7 @@ settings:
       - "*.part"
       - "*.tmp"
     debounce_seconds: 5
-    reconcile_interval: 300
+    reconcile_interval: 33300
   notifications:
     batch_daily: false
     flush_time: "00:00"
@@ -41,7 +41,6 @@ settings:
     job_name_prefix: kometa-sport-triggered-by-playbook
   plex_metadata_sync:
     scan_wait: 5
-    force: true
   destination:
     root_template: "{show_title}"
     season_dir_template: "{season_number:02d} {season_title}"
