@@ -5,15 +5,16 @@ nodes:
   solen-control:
     ip: 192.168.10.76
     schematic: schematic.yaml
-  control-0:
-    ip: 192.168.10.40
-    schematic: schematic-minimal.yaml
-  control-1:
-    ip: 192.168.10.41
-    schematic: schematic-minimal.yaml
-  control-2:
-    ip: 192.168.10.42
-    schematic: schematic-minimal.yaml
+  # Temporarily disabled - add back after solen-control is fully working
+  # control-0:
+  #   ip: 192.168.10.40
+  #   schematic: schematic-minimal.yaml
+  # control-1:
+  #   ip: 192.168.10.41
+  #   schematic: schematic-minimal.yaml
+  # control-2:
+  #   ip: 192.168.10.42
+  #   schematic: schematic-minimal.yaml
 
 # Control plane VIP
 vip: 192.168.10.80
