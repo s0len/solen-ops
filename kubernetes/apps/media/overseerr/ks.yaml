@@ -31,3 +31,4 @@ spec:
       VOLSYNC_CAPACITY: 500Mi
       VOLSYNC_STORAGECLASS: ceph-block
       VOLSYNC_SNAPSHOTCLASS: csi-ceph-blockpool
+      VOLSYNC_COPYMETHOD: Direct

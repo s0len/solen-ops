@@ -31,3 +31,4 @@ spec:
       VOLSYNC_CAPACITY: 1Gi
       VOLSYNC_STORAGECLASS: ceph-block
       VOLSYNC_SNAPSHOTCLASS: csi-ceph-blockpool
+      VOLSYNC_COPYMETHOD: Direct
