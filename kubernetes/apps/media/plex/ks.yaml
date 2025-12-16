@@ -28,8 +28,9 @@ spec:
       APP: *app
       GATUS_PATH: /web/index.html
       VOLSYNC_CAPACITY: 600Gi
-      VOLSYNC_RECORD_SIZE: 64k
       VOLSYNC_CACHE_CAPACITY: 50Gi
+      VOLSYNC_STORAGECLASS: ceph-block
+      VOLSYNC_SNAPSHOTCLASS: csi-ceph-blockpool
 ---
 # yaml-language-server: $schema=https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/kustomization-kustomize-v1.json
 apiVersion: kustomize.toolkit.fluxcd.io/v1
@@ -87,6 +88,8 @@ spec:
     substitute:
       APP: *app
       VOLSYNC_CAPACITY: 10Gi
+      VOLSYNC_STORAGECLASS: ceph-block
+      VOLSYNC_SNAPSHOTCLASS: csi-ceph-blockpool
 ---
 # yaml-language-server: $schema=https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/kustomization-kustomize-v1.json
 apiVersion: kustomize.toolkit.fluxcd.io/v1
