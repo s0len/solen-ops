@@ -70,11 +70,14 @@ spec:
           osdsPerDevice: "1"
         nodes:
           - name: control-0
-            devicePathFilter: /dev/disk/by-id/nvme-Samsung_SSD_990_PRO.*
+            devices:
+              - name: /dev/disk/by-id/nvme-Samsung_SSD_990_PRO_2TB_S7HENJ0Y238912Z
           - name: control-1
-            devicePathFilter: /dev/disk/by-id/nvme-2400A_NVMe_Micron.*
+            devices:
+              - name: /dev/disk/by-id/nvme-2400A_NVMe_Micron_512GB_232345213B1F
           - name: control-2
-            devicePathFilter: /dev/disk/by-id/nvme-Fanxiang.*
+            devices:
+              - name: /dev/disk/by-id/nvme-Fanxiang_S500PRO_2TB_FXS500PRO232230497
     cephBlockPools:
       - name: ceph-blockpool
         spec:
