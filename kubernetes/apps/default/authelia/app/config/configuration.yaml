@@ -6,19 +6,19 @@ log:
 authentication_backend:
   ldap:
     address: ldap://glauth.default.svc.cluster.local:389
-    implementation: glauth
+    implementation: custom
     timeout: 5s
     start_tls: false
     permit_feature_detection_failure: true
     base_dn: "{{ .GLAUTH_BASE_DN }}"
     additional_users_dn: ou=people,ou=users
-    users_filter: (&(|({username_attribute}={input})({mail_attribute}={input}))(objectClass=posixAccount)(!(accountStatus=inactive)))
+    users_filter: (&(|({username_attribute}={input})({mail_attribute}={input}))(objectClass=posixAccount))
     additional_groups_dn: ou=users
     groups_filter: (&(uniqueMember={dn})(objectClass=posixGroup))
     user: "{{ .GLAUTH_SEARCH_USER }}"
     password: "{{ .GLAUTH_SEARCH_PASSWORD_PLAIN }}"
     attributes:
-      username: uid
+      username: cn
       display_name: givenName
       group_name: ou
       mail: mail
