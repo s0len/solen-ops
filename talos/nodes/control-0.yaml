@@ -17,10 +17,20 @@ machine:
   network:
     hostname: control-0
     interfaces:
-      - deviceSelector:
-          hardwareAddr: cc:96:e5:0e:8d:31
+      # Bond - LACP (802.3ad) - requires UniFi LAG on switch!
+      - interface: bond0
         mtu: 1500
         dhcp: true
+        bond:
+          mode: 802.3ad
+          lacpRate: fast
+          xmitHashPolicy: layer3+4
+          miimon: 100
+          updelay: 200
+          downdelay: 200
+          deviceSelectors:
+            - hardwareAddr: cc:96:e5:0e:8d:31 # Intel onboard
+            - hardwareAddr: "00:10:18:00:04:76" # Broadcom PCIe
         vip:
           ip: 192.168.10.80
   install:

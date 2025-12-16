@@ -11,7 +11,7 @@ resources:
   - ./echo-server/ks.yaml
   - ./external-dns/ks.yaml
   - ./external-service/ks.yaml
-  # - ./fio/ks.yaml
+  - ./fio/ks.yaml
   # - ./iperf/ks.yaml
   - ./k8s-gateway/ks.yaml
   - ./nginx/ks.yaml
