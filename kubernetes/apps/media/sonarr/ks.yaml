@@ -32,4 +32,5 @@ spec:
     substitute:
       APP: *app
       VOLSYNC_CAPACITY: 6Gi
-      VOLSYNC_RECORD_SIZE: 256k
+      VOLSYNC_STORAGECLASS: ceph-block
+      VOLSYNC_SNAPSHOTCLASS: csi-ceph-blockpool
