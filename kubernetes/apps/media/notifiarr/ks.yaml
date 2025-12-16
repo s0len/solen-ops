@@ -30,3 +30,5 @@ spec:
     substitute:
       APP: *app
       VOLSYNC_CAPACITY: 3Gi
+      VOLSYNC_STORAGECLASS: ceph-block
+      VOLSYNC_SNAPSHOTCLASS: csi-ceph-blockpool
