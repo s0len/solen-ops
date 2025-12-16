@@ -25,7 +25,7 @@ machine:
           ip: 192.168.10.80
   install:
     diskSelector:
-      type: ssd
+      model: "*SSD 870*"
     image: "factory.talos.dev/metal-installer/${TALOS_SCHEMATIC}:${TALOS_VERSION}"
     wipe: false
   sysfs:
