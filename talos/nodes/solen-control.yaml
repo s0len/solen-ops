@@ -1,0 +1,51 @@
+# Node: solen-control (original control plane)
+# IP: 192.168.10.76
+# Hardware: NVIDIA GPU, ZFS storage
+---
+machine:
+  type: controlplane
+  kernel:
+    modules:
+      - name: nvidia
+      - name: nvidia_uvm
+      - name: nvidia_drm
+      - name: nvidia_modeset
+      - name: zfs
+  network:
+    hostname: solen-control
+    interfaces:
+      - deviceSelector:
+          hardwareAddr: ac:1f:6b:2d:f2:94
+        mtu: 9000
+        dhcp: true
+        vip:
+          ip: 192.168.10.80
+  install:
+    diskSelector:
+      serial: "S7HENJ0Y238820E"
+    image: "factory.talos.dev/metal-installer/${TALOS_SCHEMATIC}:${TALOS_VERSION}"
+    wipe: false
+  files:
+    - op: create
+      path: /etc/cri/conf.d/20-customization.part
+      permissions: 0o644
+      content: |
+        [plugins."io.containerd.cri.v1.images"]
+        discard_unpacked_layers = false
+        [plugins."io.containerd.cri.v1.runtime"]
+          [plugins."io.containerd.cri.v1.runtime".containerd]
+            default_runtime_name = "nvidia"
+  sysfs:
+    module.zfs.parameters.zfs_arc_max: 85899345920
+    module.zfs.parameters.zfs_arc_sys_free: 21474836480
+    devices.system.cpu.intel_pstate.hwp_dynamic_boost: 1
+  sysctls:
+    vm.nr_hugepages: "8192"
+  udev:
+    rules:
+      - SUBSYSTEM=="drm", KERNEL=="renderD*", GROUP="44", MODE="0660"
+  nodeLabels:
+    intel.feature.node.kubernetes.io/gpu: "true"
+    topology.kubernetes.io/zone: zone-a
+    node.kubernetes.io/storage: zfs
+

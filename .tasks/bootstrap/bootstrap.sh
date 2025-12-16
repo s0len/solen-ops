@@ -1,45 +1,140 @@
 #!/usr/bin/env bash
 
-function apply_talos_config() {
-    local config_file="${TALOS_DIR}/${NODE_IP}.yaml.j2"
-    local machine_config
-    gum log --structured --level info "Applying Talos configuration"
-    machine_config=$(render_template "$config_file")
-    gum log --structured --level info "Talos config rendered successfully"
-    local output
-    if ! output=$(echo "$machine_config" | talosctl --nodes "$NODE_IP" apply-config --insecure --file /dev/stdin --config-patch "@${TALOS_DIR}/patches/patches.yaml" 2>&1); then
-        if [[ "$output" == *"certificate required"* ]]; then
-            gum log --structured --level warn "Talos already has an applied configuration..."
-        else
-            gum log --structured --level error "Failed to apply Talos config" "output" "$output"
-            exit 1
-        fi
-    else
-        gum log --structured --level info "Talos config applied successfully"
+# Bootstrap a multi-node Talos cluster
+# For a 3-node control plane:
+# 1. Apply config to all nodes
+# 2. Bootstrap etcd on the first control plane
+# 3. Wait for cluster to be ready
+# 4. Fetch kubeconfig
+# 5. Apply resources
+
+function apply_node_config_bootstrap() {
+    local node_name="$1"
+    local node_ip
+    local schematic_file
+    local node_config
+    local base_config
+
+    node_ip=$(get_node_ip "$node_name")
+    schematic_file=$(get_node_schematic "$node_name")
+    node_config="${TALOS_DIR}/nodes/${node_name}.yaml"
+    base_config="${TALOS_DIR}/machineconfig.yaml"
+
+    if [[ ! -f "$node_config" ]]; then
+        gum log --structured --level error "Node config not found" "node" "$node_name" "file" "$node_config"
+        return 1
     fi
+
+    gum log --structured --level info "Applying config" "node" "$node_name" "ip" "$node_ip"
+
+    # Generate schematic ID for this node
+    local schematic_id
+    schematic_id=$(generate_schematic "$schematic_file")
+    gum log --structured --level debug "Schematic ID" "id" "$schematic_id"
+
+    export TALOS_SCHEMATIC="$schematic_id"
+
+    # Create temp file for processed node config
+    local tmp_node_config
+    tmp_node_config=$(mktemp)
+    trap 'rm -f "${tmp_node_config}"' RETURN
+
+    # Process node config through envsubst
+    envsubst < "${node_config}" > "${tmp_node_config}"
+
+    # Render base config, merge with node config, and apply (insecure for initial bootstrap)
+    if ! op inject -i "${base_config}" | envsubst | \
+         talosctl machineconfig patch /dev/stdin --patch "@${tmp_node_config}" | \
+         talosctl --nodes "${node_ip}" apply-config --insecure --file /dev/stdin --config-patch "@${TALOS_DIR}/patches/patches.yaml" 2>&1; then
+        gum log --structured --level error "Failed to apply config" "node" "$node_name"
+        return 1
+    fi
+
+    gum log --structured --level info "Config applied" "node" "$node_name"
+    return 0
+}
+
+function apply_talos_configs() {
+    gum log --structured --level info "Applying Talos configuration to all nodes"
+
+    local nodes
+    nodes=$(get_node_names)
+    local failed=0
+
+    for node in $nodes; do
+        if ! apply_node_config_bootstrap "$node"; then
+            ((failed++))
+        fi
+    done
+
+    if [[ $failed -gt 0 ]]; then
+        gum log --structured --level error "Some nodes failed" "failed" "$failed"
+        exit 1
+    fi
+
+    gum log --structured --level info "All node configs applied successfully"
 }
 
 function bootstrap_talos() {
+    local first_node
+    first_node=$(get_node_names | head -1)
+    local node_ip
+    node_ip=$(get_node_ip "$first_node")
+
+    gum log --structured --level info "Bootstrapping etcd" "node" "$first_node" "ip" "$node_ip"
+
     local output
-    gum log --structured --level info "Bootstrapping Talos"
-    until output=$(talosctl --nodes "$NODE_IP" bootstrap 2>&1 || true) && [[ "${output}" == *"AlreadyExists"* ]]; do
-        gum log --structured --level info "Talos bootstrap in progress, waiting 10 seconds..."
-        sleep 10
+    local retries=0
+    local max_retries=30
+
+    while [[ $retries -lt $max_retries ]]; do
+        output=$(talosctl --nodes "$node_ip" bootstrap 2>&1 || true)
+
+        if [[ "${output}" == *"AlreadyExists"* ]]; then
+            gum log --structured --level info "Cluster already bootstrapped"
+            return 0
+        fi
+
+        if [[ "${output}" == *"connection refused"* ]] || [[ "${output}" == *"deadline exceeded"* ]]; then
+            ((retries++))
+            gum log --structured --level info "Waiting for node to be ready" "attempt" "$retries/$max_retries"
+            sleep 10
+            continue
+        fi
+
+        # Bootstrap succeeded
+        gum log --structured --level info "Etcd bootstrapped successfully"
+        return 0
     done
-    gum log --structured --level info "Talos is bootstrapped"
+
+    gum log --structured --level error "Failed to bootstrap after $max_retries attempts"
+    exit 1
 }
 
 function wait_for_nodes() {
-    gum log --structured --level info "Waiting for node to be available"
-    if kubectl wait nodes --for=condition=Ready=True --all --timeout=10s &>/dev/null; then
-        gum log --structured --level info "Node is ready, skipping wait"
-        return
-    fi
-    # HACK: hmmm
-    until kubectl wait nodes --for=condition=Ready=False --all --timeout=10s &>/dev/null; do
-        gum log --structured --level info "Node not ready, retrying in 10s"
+    gum log --structured --level info "Waiting for all nodes to be ready"
+
+    local expected_nodes
+    expected_nodes=$(get_node_names | wc -l | tr -d ' ')
+
+    local retries=0
+    local max_retries=60
+
+    while [[ $retries -lt $max_retries ]]; do
+        local ready_nodes
+        ready_nodes=$(kubectl get nodes --no-headers 2>/dev/null | grep -c " Ready" || echo "0")
+
+        if [[ "$ready_nodes" -ge "$expected_nodes" ]]; then
+            gum log --structured --level info "All nodes ready" "count" "$ready_nodes"
+            return 0
+        fi
+
+        ((retries++))
+        gum log --structured --level info "Waiting for nodes" "ready" "$ready_nodes/$expected_nodes" "attempt" "$retries/$max_retries"
         sleep 10
     done
+
+    gum log --structured --level warn "Timeout waiting for all nodes, continuing anyway"
 }
 
 function apply_configs() {
@@ -119,21 +214,50 @@ function apply_helm_releases() {
     gum log --structured --level info "Helm releases applied successfully"
 }
 
+function show_cluster_info() {
+    echo ""
+    gum style --bold "Cluster Information"
+    echo ""
+
+    local nodes
+    nodes=$(get_node_names)
+
+    echo "Nodes:"
+    for node in $nodes; do
+        local ip
+        ip=$(get_node_ip "$node")
+        printf "  - %-20s %s\n" "$node" "$ip"
+    done
+
+    echo ""
+    echo "Control Plane VIP: $(get_cluster_vip)"
+    echo ""
+}
+
 function main() {
-    check_env KUBECONFIG KUBERNETES_VERSION TALOS_VERSION NODE_IP COMPONENTS_DIR
-    check_cli helmfile jq kubectl kustomize minijinja-cli op talosctl yq
-    gum confirm "Bootstrap the Talos node ${NODE_IP} ... continue?" || exit 0
+    check_env KUBECONFIG KUBERNETES_VERSION TALOS_VERSION COMPONENTS_DIR NODES_FILE
+    check_cli helmfile jq kubectl kustomize minijinja-cli op talosctl yq envsubst
+
+    show_cluster_info
+
+    gum confirm "Bootstrap the Talos cluster with the above nodes ... continue?" || exit 0
+
     op_signin
-    generate_schematic
-    apply_talos_config
+    apply_talos_configs
     bootstrap_talos
-    fetch_kubeconfig
+    fetch_kubeconfig "$(get_first_node_ip)"
     wait_for_nodes
-  apply_resources
-  apply_configs
+    apply_resources
+    apply_configs
     apply_crds
     apply_helm_releases
+
     gum log --structured --level info "Cluster bootstrapped successfully!"
+
+    echo ""
+    gum style --bold --foreground 2 "✓ Cluster is ready!"
+    echo ""
+    kubectl get nodes -o wide
 }
 
 main

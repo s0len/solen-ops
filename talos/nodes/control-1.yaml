@@ -1,0 +1,41 @@
+# Node: control-1
+# IP: 192.168.10.41
+# Hardware: Intel 12th gen, Intel GPU, SSD storage
+---
+machine:
+  type: controlplane
+  files:
+    - op: create
+      path: /etc/cri/conf.d/20-customization.part
+      permissions: 0o644
+      content: |
+        [plugins."io.containerd.cri.v1.images"]
+          discard_unpacked_layers = false
+        [plugins."io.containerd.cri.v1.runtime"]
+          cdi_spec_dirs = ["/var/cdi/static", "/var/cdi/dynamic"]
+          device_ownership_from_security_context = true
+  network:
+    hostname: control-1
+    interfaces:
+      - deviceSelector:
+          hardwareAddr: 20:88:10:8a:8f:4b
+        mtu: 1500
+        dhcp: true
+        vip:
+          ip: 192.168.10.80
+  install:
+    diskSelector:
+      type: ssd
+    image: "factory.talos.dev/metal-installer/${TALOS_SCHEMATIC}:${TALOS_VERSION}"
+    wipe: false
+  sysfs:
+    devices.system.cpu.intel_pstate.hwp_dynamic_boost: 1
+  sysctls:
+    vm.nr_hugepages: "1024"
+  udev:
+    rules:
+      - SUBSYSTEM=="drm", KERNEL=="renderD*", GROUP="44", MODE="0660"
+  nodeLabels:
+    intel.feature.node.kubernetes.io/gpu: "true"
+    topology.kubernetes.io/zone: zone-b
+    node.kubernetes.io/storage: ceph

@@ -56,8 +56,9 @@ function render_template() {
 }
 
 function fetch_kubeconfig() {
-    gum log --structured --level info "Fetching kubeconfig"
-    if ! output=$(talosctl kubeconfig --nodes "$NODE_IP" --force --force-context-name main "$(basename "${KUBECONFIG}")" 2>&1); then
+    local node_ip="${1:-$(get_first_node_ip)}"
+    gum log --structured --level info "Fetching kubeconfig from node ${node_ip}"
+    if ! output=$(talosctl kubeconfig --nodes "$node_ip" --force --force-context-name main "$(basename "${KUBECONFIG}")" 2>&1); then
         gum log --structured --level error "Failed to fetch kubeconfig" "output" "$output"
         exit 1
     fi
@@ -65,19 +66,131 @@ function fetch_kubeconfig() {
 }
 
 function generate_schematic() {
-    gum log --structured --level info "Generating Talos schematic"
+    local schematic_file="${1:-$SCHEMATIC_FILE}"
+    gum log --structured --level info "Generating Talos schematic" "file" "$schematic_file"
 
-    if [[ ! -f "$SCHEMATIC_FILE" ]]; then
-        gum log --structured --level error "Schematic file not found" "file" "$SCHEMATIC_FILE"
+    if [[ ! -f "$schematic_file" ]]; then
+        gum log --structured --level error "Schematic file not found" "file" "$schematic_file"
         exit 1
     fi
 
     local schematic_id
-    if ! schematic_id=$(curl --silent -X POST --data-binary @"$SCHEMATIC_FILE" https://factory.talos.dev/schematics | jq --raw-output '.id'); then
+    if ! schematic_id=$(curl --silent -X POST --data-binary @"$schematic_file" https://factory.talos.dev/schematics | jq --raw-output '.id'); then
         gum log --structured --level error "Failed to generate schematic ID"
         exit 1
     fi
 
-    export TALOS_SCHEMATIC="$schematic_id"
-    gum log --structured --level info "Schematic ID generated" "id" "$schematic_id"
+    echo "$schematic_id"
+}
+
+# ===== Multi-node helper functions =====
+
+# Get list of all node names from nodes.yaml
+function get_node_names() {
+    check_cli yq
+    if [[ ! -f "$NODES_FILE" ]]; then
+        gum log --structured --level error "Nodes file not found" "file" "$NODES_FILE"
+        exit 1
+    fi
+    yq -r '.nodes | keys | .[]' "$NODES_FILE"
+}
+
+# Get IP address for a specific node
+function get_node_ip() {
+    local node_name="$1"
+    check_cli yq
+    if [[ ! -f "$NODES_FILE" ]]; then
+        gum log --structured --level error "Nodes file not found" "file" "$NODES_FILE"
+        exit 1
+    fi
+    yq -r ".nodes.\"${node_name}\".ip" "$NODES_FILE"
+}
+
+# Get schematic file for a specific node
+function get_node_schematic() {
+    local node_name="$1"
+    check_cli yq
+    if [[ ! -f "$NODES_FILE" ]]; then
+        gum log --structured --level error "Nodes file not found" "file" "$NODES_FILE"
+        exit 1
+    fi
+    local schematic
+    schematic=$(yq -r ".nodes.\"${node_name}\".schematic" "$NODES_FILE")
+    echo "${TALOS_DIR}/${schematic}"
+}
+
+# Get the first node IP (for operations that need any node)
+function get_first_node_ip() {
+    local first_node
+    first_node=$(get_node_names | head -1)
+    get_node_ip "$first_node"
+}
+
+# Get the VIP address
+function get_cluster_vip() {
+    check_cli yq
+    if [[ ! -f "$NODES_FILE" ]]; then
+        gum log --structured --level error "Nodes file not found" "file" "$NODES_FILE"
+        exit 1
+    fi
+    yq -r '.vip' "$NODES_FILE"
+}
+
+# Interactive node selection
+function select_node() {
+    local prompt="${1:-Select a node}"
+    local nodes
+    nodes=$(get_node_names)
+
+    local selected
+    selected=$(echo "$nodes" | gum choose --header "$prompt")
+
+    if [[ -z "$selected" ]]; then
+        gum log --structured --level error "No node selected"
+        exit 1
+    fi
+
+    echo "$selected"
+}
+
+# Interactive multi-node selection (returns space-separated list)
+function select_nodes() {
+    local prompt="${1:-Select nodes}"
+    local nodes
+    nodes=$(get_node_names)
+
+    local selected
+    selected=$(echo "$nodes" | gum choose --no-limit --header "$prompt")
+
+    if [[ -z "$selected" ]]; then
+        gum log --structured --level error "No nodes selected"
+        exit 1
+    fi
+
+    echo "$selected"
+}
+
+# Get all node IPs as comma-separated list (for talosctl endpoints)
+function get_all_node_ips() {
+    local nodes
+    nodes=$(get_node_names)
+    local ips=""
+
+    for node in $nodes; do
+        local ip
+        ip=$(get_node_ip "$node")
+        if [[ -n "$ips" ]]; then
+            ips="${ips},${ip}"
+        else
+            ips="$ip"
+        fi
+    done
+
+    echo "$ips"
+}
+
+# Check if a node config file exists
+function node_config_exists() {
+    local node_name="$1"
+    [[ -f "${TALOS_DIR}/nodes/${node_name}.yaml" ]]
 }
