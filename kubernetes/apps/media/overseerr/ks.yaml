@@ -30,3 +30,4 @@ spec:
       GATUS_PATH: /api/v1/status
       VOLSYNC_CAPACITY: 500Mi
       VOLSYNC_STORAGECLASS: ceph-block
+      VOLSYNC_SNAPSHOTCLASS: csi-ceph-blockpool
