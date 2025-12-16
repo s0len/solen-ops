@@ -31,7 +31,8 @@ spec:
       APP: *app
       GATUS_SUBDOMAIN: radarr-standard
       VOLSYNC_CAPACITY: 6Gi
-      VOLSYNC_RECORD_SIZE: 256k
+      VOLSYNC_STORAGECLASS: ceph-block
+      VOLSYNC_SNAPSHOTCLASS: csi-ceph-blockpool
 ---
 # yaml-language-server: $schema=https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/kustomization-kustomize-v1.json
 apiVersion: kustomize.toolkit.fluxcd.io/v1
@@ -65,7 +66,8 @@ spec:
       APP: *app
       GATUS_SUBDOMAIN: radarr-kids
       VOLSYNC_CAPACITY: 6Gi
-      VOLSYNC_RECORD_SIZE: 256k
+      VOLSYNC_STORAGECLASS: ceph-block
+      VOLSYNC_SNAPSHOTCLASS: csi-ceph-blockpool
 ---
 # yaml-language-server: $schema=https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/kustomization-kustomize-v1.json
 apiVersion: kustomize.toolkit.fluxcd.io/v1
@@ -99,4 +101,5 @@ spec:
       APP: *app
       GATUS_SUBDOMAIN: radarr-anime
       VOLSYNC_CAPACITY: 6Gi
-      VOLSYNC_RECORD_SIZE: 256k
+      VOLSYNC_STORAGECLASS: ceph-block
+      VOLSYNC_SNAPSHOTCLASS: csi-ceph-blockpool
