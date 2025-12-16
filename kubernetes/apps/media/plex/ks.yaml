@@ -120,6 +120,8 @@ spec:
       APP_UID: "568"
       APP_GID: "568"
       VOLSYNC_CAPACITY: 2Gi
+      VOLSYNC_STORAGECLASS: ceph-block
+      VOLSYNC_SNAPSHOTCLASS: csi-ceph-blockpool
 ---
 # yaml-language-server: $schema=https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/kustomization-kustomize-v1.json
 apiVersion: kustomize.toolkit.fluxcd.io/v1
@@ -203,4 +205,5 @@ spec:
     substitute:
       APP: *app
       VOLSYNC_CAPACITY: 2Gi
-      VOLSYNC_RECORD_SIZE: 64k
+      VOLSYNC_STORAGECLASS: ceph-block
+      VOLSYNC_SNAPSHOTCLASS: csi-ceph-blockpool
