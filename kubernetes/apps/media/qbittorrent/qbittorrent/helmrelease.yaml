@@ -42,9 +42,9 @@ spec:
                   httpGet:
                     path: /api/v2/app/version
                     port: *port
-                  initialDelaySeconds: 0
+                  initialDelaySeconds: 60
                   timeoutSeconds: 10
-                  periodSeconds: 5
+                  periodSeconds: 10
                   failureThreshold: 5
               readiness: *probes
             securityContext:
