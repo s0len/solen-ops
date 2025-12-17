@@ -13,7 +13,7 @@ resources:
   - ./flaresolverr/ks.yaml
   - ./maintainerr/ks.yaml
   - ./notifiarr/ks.yaml
-  # - ./plex/ks.yaml
+  - ./plex/ks.yaml
   - ./qbittorrent/ks.yaml
   - ./seasonpackarr/ks.yaml
   - ./sonarr/ks.yaml
