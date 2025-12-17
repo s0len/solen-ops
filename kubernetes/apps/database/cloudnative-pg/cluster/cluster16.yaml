@@ -5,7 +5,7 @@ kind: Cluster
 metadata:
   name: postgres16
 spec:
-  instances: 2
+  instances: 3
   imageName: ghcr.io/cloudnative-pg/postgresql:16.9@sha256:4418a66c2232ba0bd63dd6c7a98ee401bcac340efbb5f380f8879d004654a7d3
   primaryUpdateStrategy: unsupervised
   affinity:
@@ -21,7 +21,7 @@ spec:
     parameters:
       max_connections: "400"
       shared_buffers: "512MB"
-      huge_pages: "try"
+      huge_pages: "off"
   nodeMaintenanceWindow:
     inProgress: false
     reusePVC: true
