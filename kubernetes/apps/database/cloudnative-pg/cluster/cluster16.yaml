@@ -8,6 +8,9 @@ spec:
   instances: 3
   imageName: ghcr.io/cloudnative-pg/postgresql:16.9@sha256:4418a66c2232ba0bd63dd6c7a98ee401bcac340efbb5f380f8879d004654a7d3
   primaryUpdateStrategy: unsupervised
+  affinity:
+    nodeSelector:
+      node.kubernetes.io/storage: ceph
   storage:
     size: 20Gi
     storageClass: openebs-hostpath
@@ -42,7 +45,7 @@ spec:
       endpointURL: "${SECRET_R2_HOST}"
       # Note: serverName version needs to be incremented
       # when recovering from an existing cnpg cluster
-      serverName: &currentCluster postgres16-06
+      serverName: &currentCluster postgres16-07
       s3Credentials:
         accessKeyId:
           name: cloudnative-pg-secret
@@ -54,7 +57,7 @@ spec:
   # cluster when recovering from an existing cnpg cluster
   bootstrap:
     recovery:
-      source: &previousCluster postgres16-05
+      source: &previousCluster postgres16-06
   # Note: externalClusters is needed when recovering from an existing cnpg cluster
   externalClusters:
     - name: *previousCluster
