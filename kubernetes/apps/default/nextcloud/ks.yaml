@@ -37,4 +37,5 @@ spec:
       VOLSYNC_CACHE_CAPACITY: 32Gi
       VOLSYNC_STORAGECLASS: ceph-block
       VOLSYNC_SNAPSHOTCLASS: csi-ceph-blockpool
+      VOLSYNC_COPYMETHOD: Direct
       GATUS_SUBDOMAIN: cloud
