@@ -20,6 +20,14 @@ machine:
       serializeImagePulls: false
       featureGates:
         DynamicResourceAllocation: true
+    extraMounts:
+      - destination: /var/mnt/local-hostpath
+        type: bind
+        source: /var/mnt/local-hostpath
+        options:
+          - bind
+          - rshared
+          - rw
     defaultRuntimeSeccompProfileEnabled: true
     nodeIP:
       validSubnets:
@@ -39,6 +47,10 @@ machine:
         hard=True
         nconnect=16
         noatime=True
+    - op: create
+      permissions: 493
+      path: /var/mnt/local-hostpath/.gitkeep
+      content: ""
   sysctls:
     fs.inotify.max_queued_events: "65536"
     fs.inotify.max_user_instances: "8192"
