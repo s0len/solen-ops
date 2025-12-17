@@ -22,7 +22,7 @@ spec:
       namespace: openebs-system
     - name: volsync
       namespace: volsync-system
-    - name: nvidia-device-plugin
+    - name: intel-gpu-resource-driver
       namespace: kube-system
 
   values:
@@ -64,13 +64,18 @@ spec:
               readOnlyRootFilesystem: true
               capabilities: { drop: ["ALL"] }
             resources:
+              claims:
+                - name: gpu
               requests:
                 cpu: 200m
                 memory: 2Gi
               limits:
-                nvidia.com/gpu: 1
+                memory: 20Gi
 
     defaultPodOptions:
+      resourceClaims:
+        - name: gpu
+          resourceClaimTemplateName: plex
       terminationGracePeriodSeconds: 300
       securityContext:
         runAsNonRoot: true
@@ -78,9 +83,6 @@ spec:
         runAsGroup: 568
         fsGroup: 568
         fsGroupChangePolicy: OnRootMismatch
-        supplementalGroups: [44]
-      nodeSelector:
-        intel.feature.node.kubernetes.io/gpu: "true"
 
     service:
       app:
