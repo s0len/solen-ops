@@ -35,8 +35,6 @@ spec:
       APP: *app
       VOLSYNC_CAPACITY: 400Gi
       VOLSYNC_CACHE_CAPACITY: 32Gi
-      # TEMP: Using ZFS while ceph OSD2 is full
-      VOLSYNC_STORAGECLASS: openebs-zfs-1m
-      VOLSYNC_SNAPSHOTCLASS: openebs-zfs
-      VOLSYNC_COPYMETHOD: Direct
+      VOLSYNC_STORAGECLASS: ceph-block
+      VOLSYNC_SNAPSHOTCLASS: csi-ceph-blockpool
       GATUS_SUBDOMAIN: cloud
