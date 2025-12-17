@@ -13,9 +13,13 @@ machine:
     - 127.0.0.1
   kubelet:
     image: "ghcr.io/siderolabs/kubelet:${KUBERNETES_VERSION}"
+    extraArgs:
+      feature-gates: DynamicResourceAllocation=true
     extraConfig:
       maxPods: 150
       serializeImagePulls: false
+      featureGates:
+        DynamicResourceAllocation: true
     defaultRuntimeSeccompProfileEnabled: true
     nodeIP:
       validSubnets:
