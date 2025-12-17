@@ -21,16 +21,16 @@ spec:
     parameters:
       max_connections: "400"
       shared_buffers: "512MB"
-      huge_pages: "on"
+      huge_pages: "off"
   nodeMaintenanceWindow:
     inProgress: false
     reusePVC: true
   resources:
     requests:
       cpu: 500m
+      memory: 1Gi
     limits:
       memory: 4Gi
-      hugepages-2Mi: 2Gi
   monitoring:
     enablePodMonitor: true
   backup:
