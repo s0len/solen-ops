@@ -170,25 +170,92 @@ function main() {
         ;;
 
     "Apply All" | "apply-all")
-        check_cli op talosctl yq envsubst
+        check_cli op talosctl yq envsubst kubectl
         op_signin
 
         local nodes
         nodes=$(get_node_names)
+        local total
+        total=$(echo "$nodes" | wc -w | tr -d ' ')
+        local current=0
         local failed=0
 
+        gum style --bold --foreground 212 "⚠️  Applying config to ALL $total nodes sequentially"
+        echo ""
+        gum log --structured --level warn "This will apply config to each node and wait for it to be healthy before proceeding"
+
+        if ! gum confirm "Are you sure you want to apply config to ALL nodes?"; then
+            gum log --structured --level info "Apply cancelled"
+            exit 0
+        fi
+
         for node in $nodes; do
+            ((current++))
+            local node_ip
+            node_ip=$(get_node_ip "$node")
+
+            gum style --bold "[$current/$total] Processing node: $node ($node_ip)"
+
             if ! apply_node_config "$node"; then
                 ((failed++))
+                gum log --structured --level error "Failed to apply config" "node" "$node"
+                if ! gum confirm "Continue with remaining nodes?"; then
+                    gum log --structured --level error "Apply-all aborted by user"
+                    exit 1
+                fi
+                continue
             fi
+
+            # Wait for node to be ready
+            gum log --structured --level info "Waiting for node to be healthy..." "node" "$node"
+            local max_attempts=30
+            local attempt=0
+            local healthy=false
+
+            while [[ $attempt -lt $max_attempts ]]; do
+                ((attempt++))
+                
+                # Check if node is Ready in Kubernetes
+                local node_status
+                node_status=$(kubectl get node "$node" -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}' 2>/dev/null || echo "Unknown")
+                
+                # Check talosctl health
+                if talosctl health --nodes "$node_ip" --wait-timeout 10s &>/dev/null; then
+                    if [[ "$node_status" == "True" ]]; then
+                        healthy=true
+                        break
+                    fi
+                fi
+
+                gum log --structured --level debug "Node not ready yet, waiting..." "attempt" "$attempt/$max_attempts" "k8s_status" "$node_status"
+                sleep 10
+            done
+
+            if [[ "$healthy" == "true" ]]; then
+                gum log --structured --level info "Node is healthy" "node" "$node"
+            else
+                gum log --structured --level warn "Node health check timed out, but continuing..." "node" "$node"
+                if ! gum confirm "Node $node may not be fully healthy. Continue anyway?"; then
+                    gum log --structured --level error "Apply-all aborted by user"
+                    exit 1
+                fi
+            fi
+
+            # If not the last node, add a small delay
+            if [[ $current -lt $total ]]; then
+                gum log --structured --level info "Pausing before next node..." 
+                sleep 5
+            fi
+
+            echo ""
         done
 
         if [[ $failed -gt 0 ]]; then
-            gum log --structured --level error "Some nodes failed" "failed" "$failed"
+            gum log --structured --level error "Completed with errors" "failed" "$failed" "total" "$total"
             exit 1
         fi
 
-        gum log --structured --level info "All nodes configured successfully"
+        gum style --bold --foreground 82 "✅ All $total nodes configured successfully"
         ;;
 
     "Upgrade Talos" | "upgrade")
