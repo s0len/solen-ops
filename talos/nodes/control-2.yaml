@@ -38,4 +38,4 @@ machine:
   nodeLabels:
     intel.feature.node.kubernetes.io/gpu: "true"
     topology.kubernetes.io/zone: zone-c
-    node.kubernetes.io/storage: ceph
+    node-role.kubernetes.io/low-memory: "true"
