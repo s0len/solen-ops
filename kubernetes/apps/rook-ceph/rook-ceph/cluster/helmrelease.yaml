@@ -22,6 +22,18 @@ spec:
           name: rook.${SECRET_DOMAIN}
           path: /
     cephClusterSpec:
+      placement:
+        all:
+          nodeAffinity:
+            requiredDuringSchedulingIgnoredDuringExecution:
+              nodeSelectorTerms:
+                - matchExpressions:
+                    - key: node-role.kubernetes.io/low-memory
+                      operator: DoesNotExist
+          tolerations:
+            - effect: NoSchedule
+              key: node-role.kubernetes.io/control-plane
+              operator: Exists
       cephConfig:
         global:
           bdev_enable_discard: "true"
@@ -40,7 +52,10 @@ spec:
         urlPrefix: /
         ssl: false
         prometheusEndpoint: http://prometheus-operated.observability.svc.cluster.local:9090
+      mon:
+        count: 2
       mgr:
+        count: 2
         modules:
           - name: diskprediction_local
             enabled: true
@@ -75,9 +90,6 @@ spec:
           - name: control-1
             devices:
               - name: /dev/disk/by-id/nvme-Samsung_SSD_990_PRO_2TB_S7HENJ0Y238839X
-          - name: control-2
-            devices:
-              - name: /dev/disk/by-id/nvme-Fanxiang_S500PRO_2TB_FXS500PRO232230497
     cephBlockPools:
       - name: ceph-blockpool
         spec:
