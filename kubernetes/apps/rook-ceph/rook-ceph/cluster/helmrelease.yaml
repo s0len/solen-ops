@@ -75,9 +75,30 @@ spec:
         connections:
           requireMsgr2: true
       resources:
-        osd:
+        mon:
+          requests:
+            cpu: 100m
+            memory: 128Mi
           limits:
-            memory: 8Gi
+            memory: 512Mi
+        mgr:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            memory: 1Gi
+        osd:
+          requests:
+            cpu: 500m
+            memory: 1Gi
+          limits:
+            memory: 2Gi
+        prepareosd:
+          requests:
+            cpu: 100m
+            memory: 50Mi
+          limits:
+            memory: 512Mi
       storage:
         useAllNodes: false
         useAllDevices: false
