@@ -20,5 +20,7 @@ customization:
     officialExtensions:
       - siderolabs/i915
       - siderolabs/intel-ucode
+      - siderolabs/mei
       - siderolabs/nvme-cli
       - siderolabs/util-linux-tools
+      - siderolabs/realtek-firmware

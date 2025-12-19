@@ -6,8 +6,8 @@ metadata:
   labels:
     kustomize.toolkit.fluxcd.io/ssa: IfNotPresent
 spec:
-  accessModes: ["ReadWriteOnce"]
+  accessModes: ["ReadWriteMany"]
   resources:
     requests:
       storage: 75Gi
-  storageClassName: ceph-block
+  storageClassName: ceph-filesystem
