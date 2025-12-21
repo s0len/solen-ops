@@ -26,6 +26,13 @@ spec:
           effect: "NoExecute"
         - operator: "Exists"
           effect: "NoSchedule"
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: node-role.kubernetes.io/low-memory
+                    operator: DoesNotExist
     controllers:
       generic-device-plugin:
         serviceAccount:
