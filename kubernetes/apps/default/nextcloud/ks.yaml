@@ -38,3 +38,4 @@ spec:
       VOLSYNC_STORAGECLASS: ceph-block
       VOLSYNC_SNAPSHOTCLASS: csi-ceph-blockpool
       GATUS_SUBDOMAIN: cloud
+      GATUS_PATH: /status.php
