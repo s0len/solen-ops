@@ -21,6 +21,7 @@ spec:
       enabled: "true"
       allow_sign_up: "true"
       auto_login: "false"
+      auto_assign_org_id: "1"
       icon: signin
       scopes: openid profile email groups
       name: Authelia
