@@ -13,7 +13,7 @@ spec:
   dependsOn:
     - name: onepassword
       namespace: external-secrets
-    - name: envoy-gateway
+    - name: envoy-gateway-config
       namespace: network
   path: ./kubernetes/apps/network/unifi-dns/app
   prune: true
