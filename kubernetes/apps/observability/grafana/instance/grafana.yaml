@@ -26,6 +26,7 @@ spec:
       name: Authelia
       empty_scopes: "false"
       login_attribute_path: preferred_username
+      email_attribute_path: email
       groups_attribute_path: groups
       name_attribute_path: name
       api_url: https://auth.${SECRET_DOMAIN}/api/oidc/userinfo
