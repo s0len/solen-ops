@@ -111,7 +111,6 @@ metadata:
   name: envoy-external
 spec:
   compression:
-    - type: Zstd
     - type: Brotli
     - type: Gzip
   connection:
@@ -132,7 +131,6 @@ metadata:
   name: envoy-internal
 spec:
   compression:
-    - type: Zstd
     - type: Brotli
     - type: Gzip
   connection:
