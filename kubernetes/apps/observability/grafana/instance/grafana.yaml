@@ -26,7 +26,7 @@ spec:
       scopes: openid profile email groups
       name: Authelia
       empty_scopes: "false"
-      login_attribute_path: preferred_username
+      login_attribute_path: email
       email_attribute_path: email
       groups_attribute_path: groups
       name_attribute_path: name
