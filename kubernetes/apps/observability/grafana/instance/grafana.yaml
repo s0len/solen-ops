@@ -19,7 +19,7 @@ spec:
       enabled: "false"
     auth.generic_oauth:
       enabled: "true"
-      auto_login: "true"
+      auto_login: "false"
       icon: signin
       scopes: openid profile email groups
       name: Authelia
