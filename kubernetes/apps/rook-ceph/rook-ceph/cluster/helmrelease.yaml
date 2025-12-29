@@ -17,10 +17,7 @@ spec:
       enabled: true
     ingress:
       dashboard:
-        ingressClassName: internal
-        host:
-          name: rook.${SECRET_DOMAIN}
-          path: /
+        ingressClassName: ""
     cephClusterSpec:
       placement:
         all:

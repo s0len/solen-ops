@@ -93,22 +93,17 @@ spec:
             interval: 1m
             scrapeTimeout: 10s
 
-    ingress:
+    route:
       app:
-        annotations:
-          nginx.org/proxy-set-headers: >
-            X-Frame-Options: SAMEORIGIN,
-            X-XSS-Protection: 1; mode=block,
-            Cache-Control: no-store,
-            Pragma: no-cache
-        className: external
-        hosts:
-          - host: "auth.${SECRET_DOMAIN}"
-            paths:
-              - path: /
-                service:
-                  identifier: app
-                  port: http
+        hostnames:
+          - "auth.${SECRET_DOMAIN}"
+        parentRefs:
+          - name: envoy-external
+            namespace: network
+        rules:
+          - backendRefs:
+              - identifier: app
+                port: http
 
     persistence:
       config:

@@ -3,12 +3,13 @@
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: OCIRepository
 metadata:
-  name: ingress-nginx
+  name: envoy-gateway
 spec:
-  interval: 5m
+  interval: 15m
   layerSelector:
     mediaType: application/vnd.cncf.helm.chart.content.v1.tar+gzip
     operation: copy
   ref:
-    tag: 4.14.1
-  url: oci://us-central1-docker.pkg.dev/k8s-staging-images/ingress-nginx/charts/ingress-nginx
+    tag: v1.3.0
+  url: oci://docker.io/envoyproxy/gateway-helm
+

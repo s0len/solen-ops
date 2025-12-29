@@ -94,16 +94,17 @@ spec:
         serviceName: *app
         endpoints:
           - port: http
-    ingress:
+    route:
       app:
-        className: external
-        hosts:
-          - host: "status.${SECRET_DOMAIN}"
-            paths:
-              - path: /
-                service:
-                  identifier: app
-                  port: http
+        hostnames:
+          - "status.${SECRET_DOMAIN}"
+        parentRefs:
+          - name: envoy-external
+            namespace: network
+        rules:
+          - backendRefs:
+              - identifier: app
+                port: http
     rbac:
       roles:
         gatus:

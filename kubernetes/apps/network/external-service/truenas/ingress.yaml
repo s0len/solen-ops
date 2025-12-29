@@ -21,27 +21,20 @@ spec:
   clusterIP: None
   type: ClusterIP
 ---
-apiVersion: networking.k8s.io/v1
-kind: Ingress
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/gateway.networking.k8s.io/httproute_v1.json
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
 metadata:
-  name: external-truenas-ingress
-  annotations:
-    nginx.ingress.kubernetes.io/auth-method: GET
-    nginx.ingress.kubernetes.io/auth-url: "https://auth.${SECRET_DOMAIN}/api/verify"
-    nginx.ingress.kubernetes.io/auth-signin: "https://auth.${SECRET_DOMAIN}/?rm=$request_method"
-    nginx.ingress.kubernetes.io/auth-response-headers: Remote-User,Remote-Name,Remote-Groups,Remote-Email
-    nginx.ingress.kubernetes.io/auth-snippet: proxy_set_header X-Forwarded-Method $request_method;
-    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+  name: external-truenas
+  labels:
+    auth.home.arpa/enabled: "true"
 spec:
-  ingressClassName: external
+  hostnames:
+    - "scale.${SECRET_DOMAIN}"
+  parentRefs:
+    - name: envoy-external
+      namespace: network
   rules:
-    - host: scale.${SECRET_DOMAIN}
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: external-truenas
-                port:
-                  number: 80
+    - backendRefs:
+        - name: external-truenas
+          port: 80

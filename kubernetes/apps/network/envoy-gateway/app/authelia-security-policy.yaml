@@ -1,0 +1,30 @@
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/gateway.envoyproxy.io/securitypolicy_v1alpha1.json
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: SecurityPolicy
+metadata:
+  name: authelia-auth
+spec:
+  targetSelectors:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      matchLabels:
+        auth.home.arpa/enabled: "true"
+  extAuth:
+    http:
+      backendRef:
+        name: authelia
+        namespace: default
+        port: 80
+      path: /api/authz/ext-authz
+      headersToBackend:
+        - Authorization
+        - Proxy-Authorization
+        - Cookie
+        - Accept
+        - X-Forwarded-Method
+        - X-Forwarded-Proto
+        - X-Forwarded-Host
+        - X-Forwarded-Uri
+        - X-Forwarded-For
+

@@ -12,10 +12,11 @@ rules:
       - namespaces
     verbs: ["get", "list", "watch"]
 
-  # Ingress resources (your main use case)
-  - apiGroups: ["networking.k8s.io"]
+  # Gateway API resources (HTTPRoute)
+  - apiGroups: ["gateway.networking.k8s.io"]
     resources:
-      - ingresses
+      - httproutes
+      - gateways
     verbs: ["get", "list", "watch"]
 
   # Events for troubleshooting
