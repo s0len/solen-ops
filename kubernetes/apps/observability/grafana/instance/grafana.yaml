@@ -19,6 +19,7 @@ spec:
       enabled: "false"
     auth.generic_oauth:
       enabled: "true"
+      allow_sign_up: "true"
       auto_login: "false"
       icon: signin
       scopes: openid profile email groups
