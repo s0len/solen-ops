@@ -110,9 +110,6 @@ kind: BackendTrafficPolicy
 metadata:
   name: envoy-external
 spec:
-  compression:
-    - type: Brotli
-    - type: Gzip
   connection:
     bufferLimit: 8Mi
   targetRefs:
@@ -130,9 +127,6 @@ kind: BackendTrafficPolicy
 metadata:
   name: envoy-internal
 spec:
-  compression:
-    - type: Brotli
-    - type: Gzip
   connection:
     bufferLimit: 8Mi
   targetRefs:
