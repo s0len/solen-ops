@@ -65,14 +65,6 @@ spec:
                     name: grafana-secret
           containers:
             - name: grafana
-              env:
-                - name: GF_SECURITY_ADMIN_PASSWORD
-                  valueFrom:
-                    secretKeyRef:
-                      name: grafana-admin-password-secret
-                      key: GF_SECURITY_ADMIN_PASSWORD
-                - name: GF_SECURITY_ADMIN_USER
-                  value: admin
               envFrom:
                 - secretRef:
                     name: grafana-secret
