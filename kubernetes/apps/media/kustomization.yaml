@@ -23,4 +23,5 @@ resources:
   - ./recyclarr/ks.yaml
   - ./prowlarr/ks.yaml
   - ./overseerr/ks.yaml
+  - ./seerr/ks.yaml
   - ./unpackerr/ks.yaml
