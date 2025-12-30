@@ -22,10 +22,12 @@ spec:
       envoyService:
         externalTrafficPolicy: Local
   shutdown:
-    drainTimeout: 120s
+    drainTimeout: 180s
   telemetry:
     metrics:
-      prometheus: {}
+      prometheus:
+        compression:
+          type: Gzip
 ---
 # yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/gateway.networking.k8s.io/gatewayclass_v1.json
 apiVersion: gateway.networking.k8s.io/v1
@@ -106,31 +108,15 @@ spec:
 apiVersion: gateway.envoyproxy.io/v1alpha1
 kind: BackendTrafficPolicy
 metadata:
-  name: envoy-external
+  name: envoy
 spec:
-  connection:
-    bufferLimit: 8Mi
-  targetRefs:
+  compression:
+    - type: Zstd
+    - type: Brotli
+    - type: Gzip
+  targetSelectors:
     - group: gateway.networking.k8s.io
       kind: Gateway
-      name: envoy-external
-  tcpKeepalive: {}
-  timeout:
-    http:
-      requestTimeout: 0s
----
-# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/gateway.envoyproxy.io/backendtrafficpolicy_v1alpha1.json
-apiVersion: gateway.envoyproxy.io/v1alpha1
-kind: BackendTrafficPolicy
-metadata:
-  name: envoy-internal
-spec:
-  connection:
-    bufferLimit: 8Mi
-  targetRefs:
-    - group: gateway.networking.k8s.io
-      kind: Gateway
-      name: envoy-internal
   tcpKeepalive: {}
   timeout:
     http:
@@ -140,58 +126,19 @@ spec:
 apiVersion: gateway.envoyproxy.io/v1alpha1
 kind: ClientTrafficPolicy
 metadata:
-  name: envoy-external
+  name: envoy
 spec:
   clientIPDetection:
     xForwardedFor:
       trustedCIDRs:
-        - ${CLUSTER_CIDR}
-  connection:
-    bufferLimit: 8Mi
+        - "${CLUSTER_CIDR}"
   http2:
-    initialStreamWindowSize: 2Mi
-    initialConnectionWindowSize: 32Mi
     onInvalidMessage: TerminateStream
   http3: {}
-  targetRefs:
+  targetSelectors:
     - group: gateway.networking.k8s.io
       kind: Gateway
-      name: envoy-external
   tcpKeepalive: {}
-  timeout:
-    http:
-      requestReceivedTimeout: 0s
-  tls:
-    minVersion: "1.2"
-    alpnProtocols:
-      - h2
-      - http/1.1
----
-# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/gateway.envoyproxy.io/clienttrafficpolicy_v1alpha1.json
-apiVersion: gateway.envoyproxy.io/v1alpha1
-kind: ClientTrafficPolicy
-metadata:
-  name: envoy-internal
-spec:
-  clientIPDetection:
-    xForwardedFor:
-      trustedCIDRs:
-        - ${CLUSTER_CIDR}
-  connection:
-    bufferLimit: 8Mi
-  http2:
-    initialStreamWindowSize: 2Mi
-    initialConnectionWindowSize: 32Mi
-    onInvalidMessage: TerminateStream
-  http3: {}
-  targetRefs:
-    - group: gateway.networking.k8s.io
-      kind: Gateway
-      name: envoy-internal
-  tcpKeepalive: {}
-  timeout:
-    http:
-      requestReceivedTimeout: 0s
   tls:
     minVersion: "1.2"
     alpnProtocols:
@@ -219,4 +166,3 @@ spec:
           requestRedirect:
             scheme: https
             statusCode: 301
-
