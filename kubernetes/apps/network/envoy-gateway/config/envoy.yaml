@@ -117,6 +117,8 @@ spec:
   targetSelectors:
     - group: gateway.networking.k8s.io
       kind: Gateway
+      matchLabels:
+        app.kubernetes.io/name: envoy-gateway-config
   tcpKeepalive: {}
   timeout:
     http:
@@ -138,6 +140,8 @@ spec:
   targetSelectors:
     - group: gateway.networking.k8s.io
       kind: Gateway
+      matchLabels:
+        app.kubernetes.io/name: envoy-gateway-config
   tcpKeepalive: {}
   tls:
     minVersion: "1.2"
