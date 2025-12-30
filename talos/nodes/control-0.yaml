@@ -17,7 +17,6 @@ machine:
   network:
     hostname: control-0
     interfaces:
-      # Intel onboard NIC (single interface for now)
       - deviceSelector:
           hardwareAddr: cc:96:e5:0e:8d:31
         mtu: 1500

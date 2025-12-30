@@ -1,6 +1,6 @@
 # Node: control-2
 # IP: 192.168.10.42
-# Hardware: Intel 10th gen, Intel GPU, NVMe storage
+# Hardware: Intel 13400, Intel GPU, 2.5G NIC, 64GB RAM, NVMe storage
 ---
 machine:
   type: controlplane
@@ -18,7 +18,7 @@ machine:
     hostname: control-2
     interfaces:
       - deviceSelector:
-          hardwareAddr: 90:8d:6e:8a:d3:86
+          hardwareAddr: 78:20:51:38:a8:5d
         mtu: 1500
         dhcp: true
         vip:
@@ -27,7 +27,7 @@ machine:
     diskSelector:
       model: "*CT1000P3*"
     image: "factory.talos.dev/metal-installer/${TALOS_SCHEMATIC}:${TALOS_VERSION}"
-    wipe: false
+    wipe: true # Clean install on new hardware
   sysfs:
     devices.system.cpu.intel_pstate.hwp_dynamic_boost: 1
   sysctls:
@@ -38,4 +38,4 @@ machine:
   nodeLabels:
     intel.feature.node.kubernetes.io/gpu: "true"
     topology.kubernetes.io/zone: zone-c
-    node-role.kubernetes.io/low-memory: "true"
+    node.kubernetes.io/storage: ceph

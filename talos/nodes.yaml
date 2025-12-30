@@ -2,9 +2,6 @@
 # This file maps node names to their IPs and schematics
 ---
 nodes:
-  # solen-control:
-  #   ip: 192.168.10.76
-  #   schematic: schematic.yaml
   control-0:
     ip: 192.168.10.40
     schematic: schematic-minimal.yaml
