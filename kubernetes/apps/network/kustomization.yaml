@@ -14,6 +14,6 @@ resources:
   - ./external-service/ks.yaml
   # - ./fio/ks.yaml
   # - ./iperf/ks.yaml
-  - ./k8s-gateway/ks.yaml
+  # - ./k8s-gateway/ks.yaml  # Removed: using unifi-dns instead
   - ./unifi-controller/ks.yaml
   - ./unifi-dns/ks.yaml

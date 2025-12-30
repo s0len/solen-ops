@@ -11,18 +11,6 @@ service:
   clusterIP: "10.96.0.10"
 servers:
   - zones:
-      - zone: ${SECRET_DOMAIN}
-        scheme: dns://
-    port: 53
-    plugins:
-      - name: errors
-      - name: cache
-        parameters: 30
-      - name: forward
-        parameters: . ${K8S_GATEWAY_IP}
-        configBlock: |-
-          policy sequential
-  - zones:
       - zone: .
         scheme: dns://
         use_tcp: true
