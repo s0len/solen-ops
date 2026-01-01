@@ -12,7 +12,7 @@ session:
   web-query-fallback: false
 
   # Fallback to config values if all other server query methods fail
-  config-fallback: false
+  config-fallback: true
 
   # The data to broadcast over xbox live, this is the default if querying is enabled
   session-info:
@@ -22,6 +22,10 @@ session:
     max-players: 20
     ip: static.${SECRET_DOMAIN}
     port: 19132
+
+  # Internal IP for pinging the server from within the cluster
+  # This is used for query-server, while session-info.ip is broadcast to Xbox Live
+  server-ip: minecraft.game.svc.cluster.local
 
 # Friend/follower list sync settings
 friend-sync:
