@@ -31,7 +31,7 @@ spec:
               MAX_PLAYERS: "20"
               ONLINE_MODE: "true"
               WHITE_LIST: "true"
-              WHITE_LIST_USERS: "PutKitty1874682"
+              WHITE_LIST_USERS: "Papmau1069"
               OPS: "2535421636443049,2535410585100219"
               SERVER_NAME: "Svensson"
               SERVER_PORT: &port "19132"
