@@ -67,7 +67,7 @@ slack-webhook:
     %s (%s) has restrictions in place that prevent them from be friend with our account.
 
 # Enable debug logs
-debug-log: false
+debug-log: true
 
 # Suppresses "Updated session!" log into debug
 suppress-session-update-info: false
