@@ -9,7 +9,7 @@ session:
 
   # This uses checker.geysermc.org for querying if the native ping fails
   # This can be useful in the case of docker networks or routing problems causing the native ping to fail
-  web-query-fallback: false
+  web-query-fallback: true
 
   # Fallback to config values if all other server query methods fail
   config-fallback: false
