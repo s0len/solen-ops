@@ -39,8 +39,12 @@ spec:
         kind: PersistentVolumeClaim
         name: minecraft
       patch: |
-        - op: remove
-          path: /spec/dataSourceRef
+        apiVersion: v1
+        kind: PersistentVolumeClaim
+        metadata:
+          name: minecraft
+        spec:
+          dataSourceRef: null
 ---
 # yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/kustomize.toolkit.fluxcd.io/kustomization_v1.json
 apiVersion: kustomize.toolkit.fluxcd.io/v1
