@@ -145,6 +145,26 @@ spec:
       forceDeployDashboards: true
 
     additionalPrometheusRulesMap:
+      node-filesystem-rules:
+        groups:
+          - name: node-filesystem-custom
+            rules:
+              # Override default with longer prediction window (12h lookback instead of 6h)
+              - alert: NodeFilesystemSpaceFillingUp
+                annotations:
+                  description: Filesystem on {{ $labels.device }}, mounted on {{ $labels.mountpoint }}, at {{ $labels.instance }} has only {{ printf "%.2f" $value }}% available space left and is filling up.
+                  summary: Filesystem is predicted to run out of space within the next 24 hours.
+                expr: |-
+                  (
+                    node_filesystem_avail_bytes{job="node-exporter",fstype!="",mountpoint!=""} / node_filesystem_size_bytes{job="node-exporter",fstype!="",mountpoint!=""} * 100 < 15
+                  and
+                    predict_linear(node_filesystem_avail_bytes{job="node-exporter",fstype!="",mountpoint!=""}[12h], 24*60*60) < 0
+                  and
+                    node_filesystem_readonly{job="node-exporter",fstype!="",mountpoint!=""} == 0
+                  )
+                for: 1h
+                labels:
+                  severity: warning
       dockerhub-rules:
         groups:
           - name: dockerhub
