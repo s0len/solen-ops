@@ -16,8 +16,8 @@ session:
 
   # The data to broadcast over xbox live, this is the default if querying is enabled
   session-info:
-    host-name: "Svensson"
-    world-name: "\u00A7aSvensson \u00A7fWorld!"
+    host-name: "FrenZone"
+    world-name: "\u00A7aFrenZone \u00A7fServer"
     players: 0
     max-players: 20
     ip: static.${SECRET_DOMAIN}

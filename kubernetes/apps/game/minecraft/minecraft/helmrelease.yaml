@@ -33,7 +33,7 @@ spec:
               WHITE_LIST: "true"
               WHITE_LIST_USERS: "Papmau1069"
               OPS: "2535421636443049,2535410585100219"
-              SERVER_NAME: "Svensson"
+              SERVER_NAME: "FrenZone"
               SERVER_PORT: &port "19132"
               VIEW_DISTANCE: "20"
               TICK_DISTANCE: "6"
