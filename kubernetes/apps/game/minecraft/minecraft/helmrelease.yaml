@@ -40,6 +40,7 @@ spec:
               PLAYER_IDLE_TIMEOUT: "30"
               MAX_THREADS: "0"
               TEXTUREPACK_REQUIRED: "true"
+              LEVEL_NAME: "level"
               # renovate: datasource=custom.bedrock depName=MinecraftBedrockServer versioning=loose
               VERSION: "1.21.131.1"
             probes:
@@ -96,7 +97,7 @@ spec:
         runAsUser: 1000
         runAsGroup: 3000
         runAsNonRoot: true
-        fsGroup: 2000
+        fsGroup: 3000
         seccompProfile:
           type: RuntimeDefault
 
