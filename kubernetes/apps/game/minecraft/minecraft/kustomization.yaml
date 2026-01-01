@@ -11,3 +11,11 @@ configMapGenerator:
       - ./addons/world_behavior_packs.json
 generatorOptions:
   disableNameSuffixHash: true
+patches:
+  # Remove dataSourceRef for fresh install (no backup to restore from yet)
+  - target:
+      kind: PersistentVolumeClaim
+      name: minecraft
+    patch: |
+      - op: remove
+        path: /spec/dataSourceRef

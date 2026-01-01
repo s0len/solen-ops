@@ -11,7 +11,6 @@ spec:
     labels:
       app.kubernetes.io/name: *app
   components:
-    - ../../../../components/gatus/guarded
     - ../../../../components/volsync
   dependsOn:
     - name: onepassword
@@ -30,7 +29,7 @@ spec:
     substitute:
       APP: *app
       VOLSYNC_CAPACITY: 30Gi
-      VOLSYNC_RECORD_SIZE: 16k
+      VOLSYNC_STORAGECLASS: ceph-block
 ---
 # yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/kustomize.toolkit.fluxcd.io/kustomization_v1.json
 apiVersion: kustomize.toolkit.fluxcd.io/v1
