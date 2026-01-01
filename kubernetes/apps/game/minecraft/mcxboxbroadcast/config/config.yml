@@ -12,7 +12,7 @@ session:
   web-query-fallback: false
 
   # Fallback to config values if all other server query methods fail
-  config-fallback: false
+  config-fallback: true
 
   # The data to broadcast over xbox live, this is the default if querying is enabled
   session-info:
