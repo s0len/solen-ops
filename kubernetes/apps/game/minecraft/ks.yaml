@@ -32,6 +32,15 @@ spec:
       VOLSYNC_CAPACITY: 30Gi
       VOLSYNC_STORAGECLASS: ceph-block
       VOLSYNC_SNAPSHOTCLASS: csi-ceph-blockpool
+  patches:
+    # Remove dataSourceRef for fresh install (no backup to restore from yet)
+    # Delete this patch once backups exist and you want to restore
+    - target:
+        kind: PersistentVolumeClaim
+        name: minecraft
+      patch: |
+        - op: remove
+          path: /spec/dataSourceRef
 ---
 # yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/kustomize.toolkit.fluxcd.io/kustomization_v1.json
 apiVersion: kustomize.toolkit.fluxcd.io/v1
