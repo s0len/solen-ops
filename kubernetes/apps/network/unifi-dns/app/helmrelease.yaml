@@ -46,7 +46,6 @@ spec:
           initialDelaySeconds: 10
           timeoutSeconds: 5
     logLevel: debug
-    extraArgs: []
     triggerLoopOnEvent: true
     policy: sync
     sources:

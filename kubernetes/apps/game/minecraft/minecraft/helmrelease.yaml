@@ -107,7 +107,7 @@ spec:
         type: LoadBalancer
         annotations:
           lbipam.cilium.io/ips: "${MINECRAFT_IP}"
-          external-dns.alpha.kubernetes.io/hostname: "static.${SECRET_DOMAIN}"
+          external-dns.alpha.kubernetes.io/hostname: "mc-test.${SECRET_DOMAIN}"
         ports:
           minecraft:
             port: *port
