@@ -11,7 +11,7 @@ function show_help() {
     echo "  apply-all          Apply Talos config to all nodes"
     echo "  upgrade [node]     Upgrade Talos on a specific node"
     echo "  upgrade-all        Upgrade Talos on all nodes (sequential)"
-    echo "  upgrade-k8s        Upgrade Kubernetes on the cluster"
+    echo "  upgrade-k8s [node] Upgrade Kubernetes on a specific node or all nodes"
     echo "  reboot [node]      Reboot a specific node"
     echo "  shutdown [node]    Shutdown a specific node"
     echo "  reset [node]       Reset a specific node"
@@ -137,6 +137,24 @@ function upgrade_node() {
     return 0
 }
 
+# Upgrade Kubernetes on a single node
+function upgrade_k8s_node() {
+    local node_name="$1"
+    local node_ip
+
+    node_ip=$(get_node_ip "$node_name")
+
+    gum log --structured --level info "Upgrading Kubernetes" "node" "$node_name" "ip" "$node_ip" "version" "${KUBERNETES_VERSION}"
+
+    if ! talosctl --nodes "${node_ip}" upgrade-k8s --to "${KUBERNETES_VERSION}"; then
+        gum log --structured --level error "Failed to upgrade Kubernetes" "node" "$node_name"
+        return 1
+    fi
+
+    gum log --structured --level info "Successfully upgraded Kubernetes" "node" "$node_name"
+    return 0
+}
+
 function main() {
     local args=("$@")
 
@@ -214,11 +232,11 @@ function main() {
 
             while [[ $attempt -lt $max_attempts ]]; do
                 ((attempt++))
-                
+
                 # Check if node is Ready in Kubernetes
                 local node_status
                 node_status=$(kubectl get node "$node" -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}' 2>/dev/null || echo "Unknown")
-                
+
                 # Check talosctl health
                 if talosctl health --nodes "$node_ip" --wait-timeout 10s &>/dev/null; then
                     if [[ "$node_status" == "True" ]]; then
@@ -243,7 +261,7 @@ function main() {
 
             # If not the last node, add a small delay
             if [[ $current -lt $total ]]; then
-                gum log --structured --level info "Pausing before next node..." 
+                gum log --structured --level info "Pausing before next node..."
                 sleep 5
             fi
 
@@ -293,17 +311,99 @@ function main() {
 
     "Upgrade Kubernetes" | "upgrade-k8s")
         check_env KUBERNETES_VERSION
-        check_cli talosctl
+        check_cli talosctl kubectl
 
-        local node_ip
-        node_ip=$(get_first_node_ip)
+        local node="${args[1]}"
 
-        gum log --structured --level info "Upgrading Kubernetes to ${KUBERNETES_VERSION}"
-        if ! talosctl --nodes "${node_ip}" upgrade-k8s --to "${KUBERNETES_VERSION}"; then
-            gum log --structured --level error "Failed to upgrade Kubernetes"
-            exit 1
+        # If no node specified, upgrade all nodes sequentially
+        if [[ -z "$node" ]]; then
+            local nodes
+            nodes=$(get_node_names)
+            local total
+            total=$(echo "$nodes" | wc -w | tr -d ' ')
+            local current=0
+            local failed=0
+
+            gum style --bold --foreground 212 "⚠️  Upgrading Kubernetes to ${KUBERNETES_VERSION} on ALL $total nodes sequentially"
+            echo ""
+            gum log --structured --level warn "This will upgrade Kubernetes on each node and wait for it to be ready before proceeding"
+
+            if ! gum confirm "Are you sure you want to upgrade Kubernetes on ALL nodes?"; then
+                gum log --structured --level info "Upgrade cancelled"
+                exit 0
+            fi
+
+            for node in $nodes; do
+                ((current++))
+                local node_ip
+                node_ip=$(get_node_ip "$node")
+
+                gum style --bold "[$current/$total] Upgrading Kubernetes on: $node ($node_ip)"
+
+                if ! upgrade_k8s_node "$node"; then
+                    ((failed++))
+                    gum log --structured --level error "Failed to upgrade Kubernetes" "node" "$node"
+                    if ! gum confirm "Continue with remaining nodes?"; then
+                        gum log --structured --level error "Upgrade aborted by user"
+                        exit 1
+                    fi
+                    continue
+                fi
+
+                # Wait for node to be ready
+                gum log --structured --level info "Waiting for node to be healthy..." "node" "$node"
+                local max_attempts=30
+                local attempt=0
+                local healthy=false
+
+                while [[ $attempt -lt $max_attempts ]]; do
+                    ((attempt++))
+
+                    # Check if node is Ready in Kubernetes
+                    local node_status
+                    node_status=$(kubectl get node "$node" -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}' 2>/dev/null || echo "Unknown")
+
+                    # Check talosctl health
+                    if talosctl health --nodes "$node_ip" --wait-timeout 10s &>/dev/null; then
+                        if [[ "$node_status" == "True" ]]; then
+                            healthy=true
+                            break
+                        fi
+                    fi
+
+                    gum log --structured --level debug "Node not ready yet, waiting..." "attempt" "$attempt/$max_attempts" "k8s_status" "$node_status"
+                    sleep 10
+                done
+
+                if [[ "$healthy" == "true" ]]; then
+                    gum log --structured --level info "Node is healthy" "node" "$node"
+                else
+                    gum log --structured --level warn "Node health check timed out, but continuing..." "node" "$node"
+                    if ! gum confirm "Node $node may not be fully healthy. Continue anyway?"; then
+                        gum log --structured --level error "Upgrade aborted by user"
+                        exit 1
+                    fi
+                fi
+
+                # If not the last node, add a small delay
+                if [[ $current -lt $total ]]; then
+                    gum log --structured --level info "Pausing before next node..."
+                    sleep 5
+                fi
+
+                echo ""
+            done
+
+            if [[ $failed -gt 0 ]]; then
+                gum log --structured --level error "Completed with errors" "failed" "$failed" "total" "$total"
+                exit 1
+            fi
+
+            gum style --bold --foreground 82 "✅ All $total nodes upgraded successfully to ${KUBERNETES_VERSION}"
+        else
+            # Upgrade specific node
+            upgrade_k8s_node "$node"
         fi
-        gum log --structured --level info "Successfully upgraded Kubernetes"
         ;;
 
     "Reboot" | "reboot")
