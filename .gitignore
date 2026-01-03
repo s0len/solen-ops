@@ -28,3 +28,6 @@ wiki
 /useful-commands.sh
 
 .prettierignore
+
+debug.log
+playbook.log
