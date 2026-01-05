@@ -45,7 +45,6 @@ spec:
             port: http-webhook
           initialDelaySeconds: 10
           timeoutSeconds: 5
-    logLevel: debug
     triggerLoopOnEvent: true
     policy: sync
     sources:
