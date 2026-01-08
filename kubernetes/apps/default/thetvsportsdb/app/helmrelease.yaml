@@ -1,0 +1,191 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s-labs/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: &app thetvsportsdb
+spec:
+  interval: 15m
+  chartRef:
+    kind: OCIRepository
+    name: app-template
+  maxHistory: 3
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      strategy: rollback
+      retries: 3
+
+  values:
+    controllers:
+      backend:
+        annotations:
+          reloader.stakater.com/auto: "true"
+
+        initContainers:
+          init-db:
+            image:
+              repository: ghcr.io/home-operations/postgres-init
+              tag: 18
+            envFrom: &envFrom
+              - secretRef:
+                  name: thetvsportsdb-secret
+
+        containers:
+          app:
+            image:
+              repository: ghcr.io/s0len/thetvsportsdb-backend
+              tag: latest
+            env:
+              TZ: ${TIMEZONE}
+              DEBUG: "false"
+              API_V1_PREFIX: /api/v1
+              # Database
+              DATABASE_URL:
+                valueFrom:
+                  secretKeyRef:
+                    name: thetvsportsdb-secret
+                    key: DATABASE_URL
+              # Security
+              SECRET_KEY:
+                valueFrom:
+                  secretKeyRef:
+                    name: thetvsportsdb-secret
+                    key: SECRET_KEY
+              # S3/R2 Storage
+              S3_ENDPOINT_URL:
+                valueFrom:
+                  secretKeyRef:
+                    name: thetvsportsdb-secret
+                    key: S3_ENDPOINT_URL
+              S3_ACCESS_KEY:
+                valueFrom:
+                  secretKeyRef:
+                    name: thetvsportsdb-secret
+                    key: S3_ACCESS_KEY
+              S3_SECRET_KEY:
+                valueFrom:
+                  secretKeyRef:
+                    name: thetvsportsdb-secret
+                    key: S3_SECRET_KEY
+              S3_BUCKET_NAME:
+                valueFrom:
+                  secretKeyRef:
+                    name: thetvsportsdb-secret
+                    key: S3_BUCKET_NAME
+              S3_REGION: auto
+              # CORS
+              CORS_ORIGINS: "https://thetvsportsdb.${SECRET_DOMAIN}"
+            envFrom: *envFrom
+            probes:
+              liveness: &probes
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /health
+                    port: &backendPort 8000
+                  initialDelaySeconds: 10
+                  periodSeconds: 10
+                  timeoutSeconds: 5
+                  failureThreshold: 3
+              readiness: *probes
+            resources:
+              requests:
+                cpu: 10m
+                memory: 128Mi
+              limits:
+                memory: 512Mi
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities: { drop: ["ALL"] }
+
+      frontend:
+        containers:
+          app:
+            image:
+              repository: ghcr.io/s0len/thetvsportsdb-frontend
+              tag: latest
+            env:
+              TZ: ${TIMEZONE}
+              PORT: &frontendPort 3000
+              HOSTNAME: "0.0.0.0"
+            probes:
+              liveness: &frontendProbes
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /
+                    port: *frontendPort
+                  initialDelaySeconds: 10
+                  periodSeconds: 10
+                  timeoutSeconds: 5
+                  failureThreshold: 3
+              readiness: *frontendProbes
+            resources:
+              requests:
+                cpu: 10m
+                memory: 64Mi
+              limits:
+                memory: 256Mi
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: false
+              capabilities: { drop: ["ALL"] }
+
+    defaultPodOptions:
+      automountServiceAccountToken: false
+      enableServiceLinks: false
+      securityContext:
+        runAsUser: 1001
+        runAsGroup: 1001
+        runAsNonRoot: true
+        fsGroup: 1001
+        fsGroupChangePolicy: OnRootMismatch
+
+    service:
+      backend:
+        controller: backend
+        ports:
+          http:
+            port: *backendPort
+      frontend:
+        controller: frontend
+        ports:
+          http:
+            port: *frontendPort
+
+    route:
+      backend:
+        hostnames:
+          - "thetvsportsdb-api.${SECRET_DOMAIN}"
+        parentRefs:
+          - name: envoy-external
+            namespace: network
+            sectionName: https
+        rules:
+          - backendRefs:
+              - name: thetvsportsdb-backend
+                port: *backendPort
+      frontend:
+        hostnames:
+          - "thetvsportsdb.${SECRET_DOMAIN}"
+        parentRefs:
+          - name: envoy-external
+            namespace: network
+            sectionName: https
+        rules:
+          - backendRefs:
+              - name: thetvsportsdb-frontend
+                port: *frontendPort
+
+    persistence:
+      tmp:
+        type: emptyDir
+        globalMounts:
+          - path: /tmp
