@@ -78,7 +78,7 @@ spec:
                     key: S3_BUCKET_NAME
               S3_REGION: auto
               # CORS
-              CORS_ORIGINS: "https://thetvsportsdb.${SECRET_DOMAIN}"
+              CORS_ORIGINS: '["https://thetvsportsdb.${SECRET_DOMAIN}"]'
             envFrom: *envFrom
             probes:
               liveness: &probes
