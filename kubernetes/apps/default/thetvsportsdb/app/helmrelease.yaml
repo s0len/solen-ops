@@ -34,6 +34,18 @@ spec:
               - secretRef:
                   name: thetvsportsdb-secret
 
+          init-migrations:
+            image:
+              repository: ghcr.io/s0len/thetvsportsdb-backend
+              tag: latest
+            command: ["alembic", "upgrade", "head"]
+            env:
+              DATABASE_URL:
+                valueFrom:
+                  secretKeyRef:
+                    name: thetvsportsdb-secret
+                    key: DATABASE_URL
+
         containers:
           app:
             image:
