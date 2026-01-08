@@ -89,6 +89,7 @@ spec:
                     name: thetvsportsdb-secret
                     key: S3_BUCKET_NAME
               S3_REGION: auto
+              S3_PUBLIC_URL: "https://pub-fd61494d840c4273af7d86d7a8a10e0f.r2.dev"
               # CORS
               CORS_ORIGINS: '["https://thetvsportsdb.${SECRET_DOMAIN}"]'
             envFrom: *envFrom
