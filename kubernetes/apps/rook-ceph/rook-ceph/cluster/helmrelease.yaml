@@ -15,9 +15,6 @@ spec:
       createPrometheusRules: true
     toolbox:
       enabled: true
-    ingress:
-      dashboard:
-        ingressClassName: ""
     cephClusterSpec:
       placement:
         all:
@@ -87,9 +84,9 @@ spec:
         osd:
           requests:
             cpu: 500m
-            memory: 1Gi
-          limits:
             memory: 2Gi
+          limits:
+            memory: 6Gi
         prepareosd:
           requests:
             cpu: 100m
@@ -116,8 +113,7 @@ spec:
         spec:
           failureDomain: host
           replicated:
-            size: 2
-            requireSafeReplicaSize: false
+            size: 3
         storageClass:
           enabled: true
           name: ceph-block
@@ -149,13 +145,11 @@ spec:
         spec:
           metadataPool:
             replicated:
-              size: 2
-              requireSafeReplicaSize: false
+              size: 3
           dataPools:
             - failureDomain: host
               replicated:
-                size: 2
-                requireSafeReplicaSize: false
+                size: 3
               name: data0
           metadataServer:
             activeCount: 1
