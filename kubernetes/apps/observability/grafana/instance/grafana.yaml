@@ -68,24 +68,24 @@ spec:
               envFrom:
                 - secretRef:
                     name: grafana-secret
-            - name: 02-reset-admin-password
-              image: docker.io/grafana/grafana:12.3.0
+            - name: 02-reset-admin-user
+              image: docker.io/postgres:16
               command:
                 - /bin/sh
                 - -c
-                - >
-                  grafana-cli --homepath /usr/share/grafana
-                  --config /etc/grafana/grafana.ini
-                  admin reset-admin-password "$GF_SECURITY_ADMIN_PASSWORD"
+                - |
+                  set -euo pipefail
+                  export PGHOST="${GF_DATABASE_HOST%%:*}"
+                  export PGPORT="${GF_DATABASE_HOST##*:}"
+                  export PGDATABASE="${GF_DATABASE_NAME}"
+                  export PGUSER="${GF_DATABASE_USER}"
+                  export PGPASSWORD="${GF_DATABASE_PASSWORD}"
+                  psql -v ON_ERROR_STOP=1 -c "DELETE FROM org_user WHERE user_id IN (SELECT id FROM \"user\" WHERE login='admin');"
+                  psql -v ON_ERROR_STOP=1 -c "DELETE FROM user_auth WHERE user_id IN (SELECT id FROM \"user\" WHERE login='admin');"
+                  psql -v ON_ERROR_STOP=1 -c "DELETE FROM \"user\" WHERE login='admin';"
               envFrom:
                 - secretRef:
                     name: grafana-secret
-                - secretRef:
-                    name: grafana-admin-credentials
-              volumeMounts:
-                - name: grafana-ini
-                  mountPath: /etc/grafana/grafana.ini
-                  subPath: grafana.ini
           containers:
             - name: grafana
               envFrom:
