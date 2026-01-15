@@ -50,6 +50,8 @@ spec:
     plugins:
       plugin_admin_enabled: "false"
     security:
+      admin_user: admin
+      admin_password: $__env{GF_SECURITY_ADMIN_PASSWORD}
       angular_support_enabled: "true"
     server:
       enable_gzip: "true"
@@ -71,6 +73,8 @@ spec:
               envFrom:
                 - secretRef:
                     name: grafana-secret
+                - secretRef:
+                    name: grafana-admin-password-secret
               securityContext:
                 allowPrivilegeEscalation: false
                 readOnlyRootFilesystem: true
