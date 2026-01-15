@@ -82,9 +82,10 @@ spec:
                   PGUSER="$GF_DATABASE_USER"
                   PGPASSWORD="$GF_DATABASE_PASSWORD"
                   export PGHOST PGPORT PGDATABASE PGUSER PGPASSWORD
-                  psql -v ON_ERROR_STOP=1 -c "DELETE FROM org_user WHERE user_id IN (SELECT id FROM \"user\" WHERE login='admin');"
-                  psql -v ON_ERROR_STOP=1 -c "DELETE FROM user_auth WHERE user_id IN (SELECT id FROM \"user\" WHERE login='admin');"
-                  psql -v ON_ERROR_STOP=1 -c "DELETE FROM \"user\" WHERE login='admin';"
+                  # Remove all users so Grafana bootstraps admin creds from env vars.
+                  psql -v ON_ERROR_STOP=1 -c "DELETE FROM org_user;"
+                  psql -v ON_ERROR_STOP=1 -c "DELETE FROM user_auth;"
+                  psql -v ON_ERROR_STOP=1 -c "DELETE FROM \"user\";"
               envFrom:
                 - secretRef:
                     name: grafana-secret
