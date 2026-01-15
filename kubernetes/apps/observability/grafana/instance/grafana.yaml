@@ -74,12 +74,14 @@ spec:
                 - /bin/sh
                 - -c
                 - |
-                  set -euo pipefail
-                  export PGHOST="${GF_DATABASE_HOST%%:*}"
-                  export PGPORT="${GF_DATABASE_HOST##*:}"
-                  export PGDATABASE="${GF_DATABASE_NAME}"
-                  export PGUSER="${GF_DATABASE_USER}"
-                  export PGPASSWORD="${GF_DATABASE_PASSWORD}"
+                  set -e
+                  PGHOST="$(printf %s "$GF_DATABASE_HOST" | cut -d: -f1)"
+                  PGPORT="$(printf %s "$GF_DATABASE_HOST" | cut -d: -f2)"
+                  if [ -z "$PGPORT" ]; then PGPORT="5432"; fi
+                  PGDATABASE="$GF_DATABASE_NAME"
+                  PGUSER="$GF_DATABASE_USER"
+                  PGPASSWORD="$GF_DATABASE_PASSWORD"
+                  export PGHOST PGPORT PGDATABASE PGUSER PGPASSWORD
                   psql -v ON_ERROR_STOP=1 -c "DELETE FROM org_user WHERE user_id IN (SELECT id FROM \"user\" WHERE login='admin');"
                   psql -v ON_ERROR_STOP=1 -c "DELETE FROM user_auth WHERE user_id IN (SELECT id FROM \"user\" WHERE login='admin');"
                   psql -v ON_ERROR_STOP=1 -c "DELETE FROM \"user\" WHERE login='admin';"
