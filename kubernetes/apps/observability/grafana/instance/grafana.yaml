@@ -50,8 +50,9 @@ spec:
     plugins:
       plugin_admin_enabled: "false"
     security:
-      admin_user: admin
+      admin_user: $__env{GF_SECURITY_ADMIN_USER}
       admin_password: $__env{GF_SECURITY_ADMIN_PASSWORD}
+      disable_initial_admin_creation: "false"
       angular_support_enabled: "true"
     server:
       enable_gzip: "true"
@@ -65,27 +66,6 @@ spec:
           initContainers:
             - name: 01-init-db
               image: ghcr.io/home-operations/postgres-init:18
-              envFrom:
-                - secretRef:
-                    name: grafana-secret
-            - name: 02-reset-admin-user
-              image: docker.io/postgres:16
-              command:
-                - /bin/sh
-                - -c
-                - |
-                  set -e
-                  PGHOST="$(printf %s "$GF_DATABASE_HOST" | cut -d: -f1)"
-                  PGPORT="$(printf %s "$GF_DATABASE_HOST" | cut -d: -f2)"
-                  if [ -z "$PGPORT" ]; then PGPORT="5432"; fi
-                  PGDATABASE="$GF_DATABASE_NAME"
-                  PGUSER="$GF_DATABASE_USER"
-                  PGPASSWORD="$GF_DATABASE_PASSWORD"
-                  export PGHOST PGPORT PGDATABASE PGUSER PGPASSWORD
-                  # Remove all users so Grafana bootstraps admin creds from env vars.
-                  psql -v ON_ERROR_STOP=1 -c "DELETE FROM org_user;"
-                  psql -v ON_ERROR_STOP=1 -c "DELETE FROM user_auth;"
-                  psql -v ON_ERROR_STOP=1 -c "DELETE FROM \"user\";"
               envFrom:
                 - secretRef:
                     name: grafana-secret
