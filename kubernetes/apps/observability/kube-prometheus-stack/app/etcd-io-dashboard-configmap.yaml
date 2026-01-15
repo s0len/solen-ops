@@ -136,6 +136,34 @@ data:
             "x": 12,
             "y": 8
           }
+        },
+        {
+          "id": 5,
+          "type": "timeseries",
+          "title": "Top IO pods per node (read+write B/s)",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "targets": [
+            {
+              "expr": "topk(12, sum by (node, namespace, pod) (rate(container_fs_reads_bytes_total[$__rate_interval]) + rate(container_fs_writes_bytes_total[$__rate_interval])))",
+              "legendFormat": "{{node}} {{namespace}}/{{pod}}"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "Bps",
+              "decimals": 1
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 24,
+            "x": 0,
+            "y": 16
+          }
         }
       ]
     }
