@@ -32,4 +32,3 @@ spec:
       value: CephNodeDiskspaceWarning
     - name: mountpoint
       value: /etc/cri/conf.d/hosts
-      isRegex: false
