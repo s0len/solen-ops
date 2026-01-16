@@ -1,0 +1,37 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fluent-bit-grafana-dashboard
+data:
+  dashboard.json: |-
+    {
+      "id": null,
+      "uid": "fluent-bit",
+      "title": "Fluent Bit",
+      "tags": [
+        "fluent-bit",
+        "logs"
+      ],
+      "timezone": "browser",
+      "schemaVersion": 38,
+      "version": 1,
+      "refresh": "30s",
+      "panels": [
+        {
+          "id": 1,
+          "type": "text",
+          "title": "Fluent Bit",
+          "gridPos": {
+            "h": 6,
+            "w": 24,
+            "x": 0,
+            "y": 0
+          },
+          "options": {
+            "mode": "markdown",
+            "content": "Placeholder dashboard to satisfy GrafanaDashboard reference. Replace with a full Fluent Bit dashboard when available."
+          }
+        }
+      ]
+    }
