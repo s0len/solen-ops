@@ -8,3 +8,28 @@ spec:
   matchers:
     - name: alertname
       value: NodeMemoryHighUtilization
+---
+# Silence CephNodeDiskspaceWarning for bogus mountpoints (Talos config files)
+apiVersion: observability.giantswarm.io/v1alpha2
+kind: Silence
+metadata:
+  name: ceph-nfsmount-conf-false-positive
+spec:
+  matchers:
+    - name: alertname
+      value: CephNodeDiskspaceWarning
+    - name: mountpoint
+      value: /etc/nfsmount.conf
+---
+# Silence CephNodeDiskspaceWarning for /etc/cri paths (Talos config dirs)
+apiVersion: observability.giantswarm.io/v1alpha2
+kind: Silence
+metadata:
+  name: ceph-cri-conf-false-positive
+spec:
+  matchers:
+    - name: alertname
+      value: CephNodeDiskspaceWarning
+    - name: mountpoint
+      value: /etc/cri/conf.d/hosts
+      isRegex: false
