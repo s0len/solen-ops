@@ -53,8 +53,8 @@ spec:
     plugins:
       plugin_admin_enabled: "false"
     security:
-      admin_user: $__env{GF_SECURITY_ADMIN_USER}
-      admin_password: $__env{GF_SECURITY_ADMIN_PASSWORD}
+      admin_user: admin
+      admin_password: ${GF_SECURITY_ADMIN_PASSWORD}
       disable_initial_admin_creation: "false"
       angular_support_enabled: "true"
     server:

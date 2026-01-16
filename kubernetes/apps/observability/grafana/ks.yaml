@@ -44,6 +44,9 @@ spec:
         name: cluster-secrets
         optional: false
       - kind: Secret
+        name: grafana-admin-password-secret
+        optional: false
+      - kind: Secret
         name: grafana-secret
   sourceRef:
     kind: GitRepository
