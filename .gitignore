@@ -31,3 +31,6 @@ wiki
 
 debug.log
 playbook.log
+
+# Auto Claude data directory
+.auto-claude/
