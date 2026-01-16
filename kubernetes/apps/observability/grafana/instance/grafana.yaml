@@ -7,6 +7,7 @@ metadata:
   labels:
     grafana.internal/instance: grafana
 spec:
+  disableDefaultAdminSecret: true
   client:
     headers:
       Authorization: "Bearer ${OPERATOR_TOKEN}"
@@ -53,9 +54,7 @@ spec:
     plugins:
       plugin_admin_enabled: "false"
     security:
-      admin_user: $__env{GF_SECURITY_ADMIN_USER}
-      admin_password: $__env{GF_SECURITY_ADMIN_PASSWORD}
-      disable_initial_admin_creation: "false"
+      disable_initial_admin_creation: "true"
       angular_support_enabled: "true"
     server:
       enable_gzip: "true"
