@@ -164,6 +164,98 @@ data:
             "x": 0,
             "y": 16
           }
+        },
+        {
+          "id": 6,
+          "type": "timeseries",
+          "title": "etcd p99 vs disk busy vs iowait",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "targets": [
+            {
+              "expr": "histogram_quantile(0.99, sum by (instance, le) (rate(etcd_disk_wal_fsync_duration_seconds_bucket[$__rate_interval])))",
+              "legendFormat": "etcd wal p99 {{instance}}",
+              "refId": "A"
+            },
+            {
+              "expr": "histogram_quantile(0.99, sum by (instance, le) (rate(etcd_disk_backend_commit_duration_seconds_bucket[$__rate_interval])))",
+              "legendFormat": "etcd commit p99 {{instance}}",
+              "refId": "B"
+            },
+            {
+              "expr": "100 * rate(node_disk_io_time_seconds_total{device=~\"sda|nvme0n1\"}[$__rate_interval])",
+              "legendFormat": "disk busy {{instance}} {{device}}",
+              "refId": "C"
+            },
+            {
+              "expr": "100 * avg by (instance) (rate(node_cpu_seconds_total{mode=\"iowait\"}[$__rate_interval]))",
+              "legendFormat": "iowait {{instance}}",
+              "refId": "D"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "decimals": 2
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byQuery",
+                  "options": "A"
+                },
+                "properties": [
+                  {
+                    "id": "unit",
+                    "value": "s"
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byQuery",
+                  "options": "B"
+                },
+                "properties": [
+                  {
+                    "id": "unit",
+                    "value": "s"
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byQuery",
+                  "options": "C"
+                },
+                "properties": [
+                  {
+                    "id": "unit",
+                    "value": "percent"
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byQuery",
+                  "options": "D"
+                },
+                "properties": [
+                  {
+                    "id": "unit",
+                    "value": "percent"
+                  }
+                ]
+              }
+            ]
+          },
+          "gridPos": {
+            "h": 10,
+            "w": 24,
+            "x": 0,
+            "y": 24
+          }
         }
       ]
     }
