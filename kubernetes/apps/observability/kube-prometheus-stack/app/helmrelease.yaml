@@ -122,6 +122,10 @@ spec:
 
     prometheus-node-exporter:
       fullnameOverride: node-exporter
+      extraArgs:
+        # Exclude bogus mountpoints (Talos config files that look like mounts)
+        - --collector.filesystem.mount-points-exclude=^/(dev|proc|sys|var/lib/kubelet/.+/kubernetes.io~(secret|projected|configmap)|run/containerd/.+|etc/(nfsmount\.conf|cri/conf\.d/hosts))($|/)
+        - --collector.filesystem.fs-types-exclude=^(autofs|binfmt_misc|bpf|cgroup2?|configfs|debugfs|devpts|devtmpfs|fusectl|hugetlbfs|iso9660|mqueue|nsfs|overlay|proc|procfs|pstore|rpc_pipefs|securityfs|selinuxfs|squashfs|sysfs|tracefs|tmpfs)$
       prometheus:
         monitor:
           enabled: true
@@ -203,3 +207,42 @@ spec:
                 expr: node_zfs_zpool_state{state!="online"} > 0
                 labels:
                   severity: critical
+      nfs-rules:
+        groups:
+          - name: nfs
+            rules:
+              - alert: NfsServerSpaceLow
+                annotations:
+                  summary: "NFS server {{ $labels.device }} is {{ printf \"%.1f\" $value }}% full"
+                  description: "NFS mount {{ $labels.mountpoint }} on {{ $labels.kubernetes_node }} (server: {{ $labels.device }}) has only {{ printf \"%.1f\" (100 - $value) }}% space remaining."
+                expr: |-
+                  (
+                    100 - (node_filesystem_avail_bytes{fstype="nfs4"} / node_filesystem_size_bytes{fstype="nfs4"} * 100)
+                  ) > 85
+                for: 15m
+                labels:
+                  severity: warning
+              - alert: NfsServerSpaceCritical
+                annotations:
+                  summary: "NFS server {{ $labels.device }} is {{ printf \"%.1f\" $value }}% full - CRITICAL"
+                  description: "NFS mount {{ $labels.mountpoint }} on {{ $labels.kubernetes_node }} (server: {{ $labels.device }}) has only {{ printf \"%.1f\" (100 - $value) }}% space remaining. Immediate action required."
+                expr: |-
+                  (
+                    100 - (node_filesystem_avail_bytes{fstype="nfs4"} / node_filesystem_size_bytes{fstype="nfs4"} * 100)
+                  ) > 95
+                for: 5m
+                labels:
+                  severity: critical
+              - alert: NfsServerSpaceFillingUp
+                annotations:
+                  summary: "NFS server {{ $labels.device }} is filling up"
+                  description: "NFS mount {{ $labels.mountpoint }} on {{ $labels.kubernetes_node }} (server: {{ $labels.device }}) is predicted to run out of space within 4 days based on current fill rate."
+                expr: |-
+                  (
+                    node_filesystem_avail_bytes{fstype="nfs4"} / node_filesystem_size_bytes{fstype="nfs4"} * 100 < 20
+                  and
+                    predict_linear(node_filesystem_avail_bytes{fstype="nfs4"}[24h], 4*24*60*60) < 0
+                  )
+                for: 1h
+                labels:
+                  severity: warning
