@@ -71,8 +71,6 @@ spec:
                 memory: 2Gi
 
     defaultPodOptions:
-      nodeSelector:
-        kubernetes.io/hostname: control-0
       resourceClaims:
         - name: gpu
           resourceClaimTemplateName: plex
