@@ -13,6 +13,15 @@ spec:
   affinity:
     nodeSelector:
       node.kubernetes.io/storage: ceph
+    nodeAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          preference:
+            matchExpressions:
+              - key: kubernetes.io/hostname
+                operator: NotIn
+                values:
+                  - control-1
   storage:
     size: 20Gi
     storageClass: openebs-hostpath
