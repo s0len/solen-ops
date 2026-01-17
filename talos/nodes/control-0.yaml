@@ -4,6 +4,11 @@
 ---
 machine:
   type: controlplane
+  # Dedicated SSD for etcd to reduce I/O contention
+  disks:
+    - device: /dev/disk/by-id/ata-KINGSTON_SV300S37A240G_50026B786500A926
+      partitions:
+        - mountpoint: /var/lib/etcd
   files:
     - op: create
       path: /etc/cri/conf.d/20-customization.part
