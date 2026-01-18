@@ -8,5 +8,6 @@ components:
 resources:
   - ./authelia/ks.yaml
   - ./glauth/ks.yaml
+  - ./hortusfox-web/ks.yaml
   - ./nextcloud/ks.yaml
   - ./thetvsportsdb/ks.yaml
