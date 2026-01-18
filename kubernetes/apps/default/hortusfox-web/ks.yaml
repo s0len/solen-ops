@@ -12,12 +12,11 @@ spec:
       app.kubernetes.io/name: *app
   components:
     - ../../../../components/gatus/external
-    - ../../../../components/volsync
+    # TODO: Add volsync back after initial data is created
+    # - ../../../../components/volsync
   dependsOn:
     - name: onepassword
       namespace: external-secrets
-    - name: volsync
-      namespace: volsync-system
     - name: openebs
       namespace: openebs-system
   path: ./kubernetes/apps/default/hortusfox-web/app
