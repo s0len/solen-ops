@@ -8,7 +8,7 @@ spec:
   interval: 30m
   chartRef:
     kind: OCIRepository
-    name: app-template
+    name: qui
   install:
     remediation:
       retries: 3
@@ -60,9 +60,9 @@ spec:
     defaultPodOptions:
       securityContext:
         runAsNonRoot: true
-        runAsUser: 1000
-        runAsGroup: 1000
-        fsGroup: 1000
+        runAsUser: 568
+        runAsGroup: 568
+        fsGroup: 568
         fsGroupChangePolicy: OnRootMismatch
     service:
       app:
@@ -83,5 +83,12 @@ spec:
     persistence:
       config:
         existingClaim: *app
+      data:
+        type: nfs
+        server: ${TRUENAS_IP}
+        path: /mnt/rust/data
+        globalMounts:
+          - path: /data
+            readOnly: false
       tmp:
         type: emptyDir
