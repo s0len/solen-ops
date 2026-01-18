@@ -1,9 +1,14 @@
 # Node: control-1
 # IP: 192.168.10.41
-# Hardware: Intel 12th gen, Intel GPU, SSD storage
+# Hardware: Intel 10th gen 10500T, 64GB RAM, Micron NVMe (etcd), Samsung 990 PRO (Ceph)
 ---
 machine:
   type: controlplane
+  # Dedicated NVMe for etcd to ensure low latency
+  disks:
+    - device: /dev/disk/by-id/nvme-2400A_NVMe_Micron_512GB_232345213B1F
+      partitions:
+        - mountpoint: /var/lib/etcd
   files:
     - op: create
       path: /etc/cri/conf.d/20-customization.part
