@@ -11,6 +11,8 @@ spec:
   imageName: ghcr.io/cloudnative-pg/postgresql:16.9@sha256:4418a66c2232ba0bd63dd6c7a98ee401bcac340efbb5f380f8879d004654a7d3
   primaryUpdateStrategy: unsupervised
   affinity:
+    enablePodAntiAffinity: true
+    topologyKey: kubernetes.io/hostname
     nodeSelector:
       node.kubernetes.io/storage: ceph
   storage:
