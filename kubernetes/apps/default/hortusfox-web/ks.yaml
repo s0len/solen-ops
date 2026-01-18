@@ -14,10 +14,12 @@ spec:
     - ../../../../components/gatus/external
     - ../../../../components/volsync
   dependsOn:
-    - name: cloudnative-pg-cluster
-      namespace: database
-    - name: dragonfly-cluster
-      namespace: database
+    - name: onepassword
+      namespace: external-secrets
+    - name: volsync
+      namespace: volsync-system
+    - name: openebs
+      namespace: openebs-system
   path: ./kubernetes/apps/default/hortusfox-web/app
   prune: true
   retryInterval: 2m
@@ -32,4 +34,5 @@ spec:
     substitute:
       APP: *app
       VOLSYNC_CAPACITY: 5Gi
+      VOLSYNC_STORAGECLASS: openebs-hostpath
       GATUS_SUBDOMAIN: hortusfox
