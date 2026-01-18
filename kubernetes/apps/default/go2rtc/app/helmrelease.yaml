@@ -1,0 +1,111 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s-labs/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: &app go2rtc
+spec:
+  interval: 30m
+  chartRef:
+    kind: OCIRepository
+    name: go2rtc
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      strategy: rollback
+      retries: 3
+  values:
+    controllers:
+      go2rtc:
+        strategy: RollingUpdate
+        containers:
+          app:
+            image:
+              repository: ghcr.io/alexxit/go2rtc
+              tag: 1.9.13@sha256:f394f6329f5389a4c9a7fc54b09fdec9621bbb78bf7a672b973440bbdfb02241
+            env:
+              TZ: ${TIMEZONE}
+            probes:
+              liveness: &probes
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /
+                    port: &port 80
+                  initialDelaySeconds: 0
+                  periodSeconds: 10
+                  timeoutSeconds: 1
+                  failureThreshold: 3
+              readiness: *probes
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities: { drop: ["ALL"] }
+            resources:
+              requests:
+                cpu: 10m
+              limits:
+                memory: 512Mi
+    defaultPodOptions:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 568
+        runAsGroup: 568
+    service:
+      app:
+        controller: *app
+        ports:
+          http:
+            port: *port
+      streams:
+        controller: *app
+        type: LoadBalancer
+        annotations:
+          lbipam.cilium.io/ips: ${GO2RTC_LB_IP}
+        externalTrafficPolicy: Local
+        ports:
+          rtsp:
+            port: 554
+          webrtc-tcp:
+            port: 8555
+            protocol: TCP
+          webrtc-udp:
+            port: 8555
+            protocol: UDP
+    route:
+      app:
+        hostnames:
+          - "{{ .Release.Name }}.${SECRET_DOMAIN}"
+        parentRefs:
+          - name: envoy-internal
+            namespace: network
+            sectionName: https
+    configMaps:
+      config:
+        data:
+          go2rtc.yaml: |
+            api:
+              listen: :80
+              origin: "*"
+            rtsp:
+              listen: :554
+            webrtc:
+              listen: :8555
+              candidates:
+                - ${GO2RTC_LB_IP}:8555
+                - stun:8555
+              ice_servers:
+                - urls:
+                    - stun:stun.cloudflare.com:3478
+            streams: {}
+    persistence:
+      config-file:
+        type: configMap
+        identifier: config
+        globalMounts:
+          - path: /config/go2rtc.yaml
+            subPath: go2rtc.yaml

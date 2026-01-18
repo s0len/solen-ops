@@ -2,11 +2,11 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: hortusfox-web
+  name: home-assistant-cache
 spec:
   accessModes:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 5Gi
-  storageClassName: openebs-hostpath
+      storage: 1Gi
+  storageClassName: ceph-block

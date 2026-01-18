@@ -8,6 +8,10 @@ components:
 resources:
   - ./authelia/ks.yaml
   - ./glauth/ks.yaml
+  - ./go2rtc/ks.yaml
+  - ./home-assistant/ks.yaml
   - ./hortusfox-web/ks.yaml
+  - ./mosquitto/ks.yaml
   - ./nextcloud/ks.yaml
   - ./thetvsportsdb/ks.yaml
+  - ./zigbee/ks.yaml
