@@ -67,9 +67,8 @@ spec:
                   failureThreshold: 30
                   periodSeconds: 10
             securityContext:
-              allowPrivilegeEscalation: false
+              privileged: true
               readOnlyRootFilesystem: true
-              capabilities: { drop: ["ALL"] }
             resources:
               requests:
                 cpu: 10m
@@ -79,13 +78,8 @@ spec:
       nodeSelector:
         kubernetes.io/hostname: control-1
       securityContext:
-        runAsNonRoot: true
-        runAsUser: 568
-        runAsGroup: 568
         fsGroup: 568
         fsGroupChangePolicy: OnRootMismatch
-        supplementalGroups:
-          - 20  # dialout for USB serial access
     service:
       app:
         controller: *app
