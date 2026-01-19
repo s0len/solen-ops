@@ -25,3 +25,6 @@ data:
   CLUSTER_CIDR: 10.69.0.0/16
   NODE_CIDR: 10.96.0.0/16
   WL_SOURCE_RANGE: 192.168.0.0/16,10.0.0.0/8
+
+  ZIGBEE_SERIAL_PORT: /dev/serial/by-id/usb-Silicon_Labs_slae.sh_cc2652rb_stick_-_slaesh_s_iot_stuff_00_12_4B_00_23_90_D3_5F-if00-port0
+  ZIGBEE_SERIAL_ADAPTER: zstack

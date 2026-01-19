@@ -74,12 +74,16 @@ spec:
               limits:
                 memory: 1Gi
     defaultPodOptions:
+      nodeSelector:
+        kubernetes.io/hostname: control-1
       securityContext:
         runAsNonRoot: true
         runAsUser: 568
         runAsGroup: 568
         fsGroup: 568
         fsGroupChangePolicy: OnRootMismatch
+        supplementalGroups:
+          - 20  # dialout for USB serial access
     service:
       app:
         controller: *app
@@ -97,3 +101,10 @@ spec:
     persistence:
       config:
         existingClaim: *app
+      usb:
+        type: hostPath
+        hostPath: /dev/serial/by-id
+        hostPathType: Directory
+        globalMounts:
+          - path: /dev/serial/by-id
+            readOnly: false
