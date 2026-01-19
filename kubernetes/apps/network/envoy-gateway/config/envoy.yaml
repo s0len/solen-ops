@@ -133,8 +133,11 @@ spec:
     xForwardedFor:
       trustedCIDRs:
         - "${CLUSTER_CIDR}"
+  http1:
+    maxRequestBytes: 500000000
   http2:
     onInvalidMessage: TerminateStream
+    maxRequestBytes: 500000000
   http3: {}
   targetSelectors:
     - group: gateway.networking.k8s.io
