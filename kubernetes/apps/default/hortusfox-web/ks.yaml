@@ -16,8 +16,8 @@ spec:
   dependsOn:
     - name: onepassword
       namespace: external-secrets
-    - name: openebs
-      namespace: openebs-system
+    - name: rook-ceph-cluster
+      namespace: rook-ceph
     - name: volsync
       namespace: volsync-system
   path: ./kubernetes/apps/default/hortusfox-web/app
@@ -34,5 +34,6 @@ spec:
     substitute:
       APP: *app
       VOLSYNC_CAPACITY: 5Gi
-      VOLSYNC_STORAGECLASS: openebs-hostpath
+      VOLSYNC_STORAGECLASS: ceph-block
+      VOLSYNC_SNAPSHOTCLASS: csi-ceph-blockpool
       GATUS_SUBDOMAIN: hortusfox
