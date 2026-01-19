@@ -110,3 +110,10 @@ spec:
         globalMounts:
           - path: /dev/serial/by-id
             readOnly: false
+      ttyusb:
+        type: hostPath
+        hostPath: /dev/ttyUSB0
+        hostPathType: CharDevice
+        globalMounts:
+          - path: /dev/ttyUSB0
+            readOnly: false
