@@ -28,6 +28,7 @@ spec:
     substitute:
       APP: *app
       GATUS_PATH: /web/index.html
+      GPU_SELECTOR: "device.attributes['gpu.intel.com'].pciId == '0x56a6'"
       VOLSYNC_CAPACITY: 600Gi
       VOLSYNC_CACHE_CAPACITY: 50Gi
       VOLSYNC_STORAGECLASS: ceph-block
