@@ -34,7 +34,7 @@ spec:
           app:
             image:
               repository: ghcr.io/dispatcharr/dispatcharr
-              tag: latest
+              tag: v0.16.0
             env:
               TZ: ${TIMEZONE}
               REDIS_HOST: dragonfly.database.svc.cluster.local
