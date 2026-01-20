@@ -1,6 +1,6 @@
 # Node: control-2
 # IP: 192.168.10.42
-# Hardware: Intel 13400, Intel GPU, 2.5G NIC, 64GB RAM, NVMe storage
+# Hardware: Intel 13400, Intel A310 GPU, 2.5G NIC, 64GB RAM, Samsung 870 EVO SATA SSD
 ---
 machine:
   type: controlplane
@@ -25,7 +25,7 @@ machine:
           ip: 192.168.10.80
   install:
     diskSelector:
-      model: "*CT1000P3*"
+      model: "*SSD 870*"
     image: "factory.talos.dev/metal-installer/${TALOS_SCHEMATIC}:${TALOS_VERSION}"
     wipe: true # Clean install on new hardware
   sysfs:
@@ -37,5 +37,6 @@ machine:
       - SUBSYSTEM=="drm", KERNEL=="renderD*", GROUP="44", MODE="0660"
   nodeLabels:
     intel.feature.node.kubernetes.io/gpu: "true"
+    plex.node/preferred: "true"
     topology.kubernetes.io/zone: zone-c
     node.kubernetes.io/storage: ceph

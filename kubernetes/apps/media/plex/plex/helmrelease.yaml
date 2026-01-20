@@ -71,6 +71,16 @@ spec:
                 memory: 2Gi
 
     defaultPodOptions:
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              preference:
+                matchExpressions:
+                  - key: plex.node/preferred
+                    operator: In
+                    values:
+                      - "true"
       resourceClaims:
         - name: gpu
           resourceClaimTemplateName: plex
