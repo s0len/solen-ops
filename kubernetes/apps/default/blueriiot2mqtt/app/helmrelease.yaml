@@ -1,0 +1,55 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s-labs/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: &app blueriiot2mqtt
+spec:
+  interval: 30m
+  chartRef:
+    kind: OCIRepository
+    name: blueriiot2mqtt
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      strategy: rollback
+      retries: 3
+  values:
+    controllers:
+      blueriiot2mqtt:
+        annotations:
+          reloader.stakater.com/auto: "true"
+        containers:
+          app:
+            image:
+              repository: lordmike/blueriiot2mqtt
+              tag: latest
+            env:
+              TZ: ${TIMEZONE}
+              MQTT__Server: mosquitto.default.svc.cluster.local
+              MQTT__Port: "1883"
+              HASS__DiscoveryPrefix: homeassistant
+              HASS__TopicPrefix: blueriiot
+              HASS__EnableHASSDiscovery: "true"
+              BlueRiiot__UpdateInterval: "01:00:00"
+              BlueRiiot__Language: en
+            envFrom:
+              - secretRef:
+                  name: blueriiot2mqtt-secret
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities: { drop: ["ALL"] }
+            resources:
+              requests:
+                cpu: 10m
+              limits:
+                memory: 128Mi
+    defaultPodOptions:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 568
+        runAsGroup: 568
