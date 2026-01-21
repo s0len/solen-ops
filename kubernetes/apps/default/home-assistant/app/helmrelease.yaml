@@ -57,6 +57,15 @@ spec:
         ports:
           http:
             port: 8123
+      lb:
+        controller: *app
+        type: LoadBalancer
+        annotations:
+          lbipam.cilium.io/ips: ${HOMEASSISTANT_LB_IP}
+        externalTrafficPolicy: Local
+        ports:
+          http:
+            port: 8123
     route:
       app:
         hostnames:
