@@ -70,9 +70,9 @@ spec:
                   httpGet:
                     path: /
                     port: 9999
-                  initialDelaySeconds: 10
+                  initialDelaySeconds: 30
                   periodSeconds: 10
-                  failureThreshold: 5
+                  failureThreshold: 10
             restartPolicy: Always
             securityContext:
               capabilities:
