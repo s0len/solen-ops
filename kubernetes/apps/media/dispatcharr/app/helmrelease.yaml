@@ -60,20 +60,12 @@ spec:
                   httpGet:
                     path: /
                     port: 9999
-                  timeoutSeconds: 10
-                  periodSeconds: 30
+                  initialDelaySeconds: 60
+                  timeoutSeconds: 30
+                  periodSeconds: 60
                   failureThreshold: 5
               startup:
-                enabled: true
-                custom: true
-                spec:
-                  httpGet:
-                    path: /
-                    port: 9999
-                  initialDelaySeconds: 30
-                  timeoutSeconds: 30
-                  periodSeconds: 15
-                  failureThreshold: 20
+                enabled: false
             restartPolicy: Always
             securityContext:
               capabilities:
