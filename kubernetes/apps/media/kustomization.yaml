@@ -10,7 +10,7 @@ resources:
   - ./autobrr/ks.yaml
   - ./bazarr/ks.yaml
   - ./cross-seed/ks.yaml
-  # - ./dispatcharr/ks.yaml  # disabled: nginx group bug https://github.com/Dispatcharr/Dispatcharr/issues/877
+  - ./dispatcharr/ks.yaml  # testing: PR #878 + #879 fixes
   - ./flaresolverr/ks.yaml
   - ./maintainerr/ks.yaml
   - ./notifiarr/ks.yaml
