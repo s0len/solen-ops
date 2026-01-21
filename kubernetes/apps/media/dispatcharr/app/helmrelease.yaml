@@ -9,6 +9,9 @@ spec:
   chartRef:
     kind: OCIRepository
     name: app-template
+  dependsOn:
+    - name: generic-device-plugin
+      namespace: kube-system
   install:
     remediation:
       retries: 3
@@ -30,6 +33,64 @@ spec:
             envFrom: &envFrom
               - secretRef:
                   name: dispatcharr-secret
+          gluetun:
+            image:
+              repository: ghcr.io/qdm12/gluetun
+              tag: v3.41.0
+            env:
+              DNS_ADDRESS: "10.96.0.10"
+              DOT: "off"
+              FIREWALL_INPUT_PORTS: 9191
+              FIREWALL_OUTBOUND_SUBNETS: 10.69.0.0/16,10.96.0.0/16
+              HEALTH_SERVER_ADDRESS: :9999
+              HEALTH_TARGET_ADDRESS: airvpn.org
+              VPN_TYPE: wireguard
+              VPN_INTERFACE: tun0
+              VPN_SERVICE_PROVIDER: airvpn
+              WIREGUARD_MTU: 3418
+              SERVER_COUNTRIES: Sweden
+            envFrom:
+              - secretRef:
+                  name: qbittorrent-secret
+            probes:
+              liveness:
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /
+                    port: 9999
+                  timeoutSeconds: 10
+                  periodSeconds: 30
+                  failureThreshold: 5
+              startup:
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /
+                    port: 9999
+                  initialDelaySeconds: 10
+                  periodSeconds: 10
+                  failureThreshold: 5
+            restartPolicy: Always
+            securityContext:
+              capabilities:
+                add:
+                  - NET_ADMIN
+              allowPrivilegeEscalation: false
+            lifecycle:
+              postStart:
+                exec:
+                  command:
+                    [
+                      "/bin/sh",
+                      "-c",
+                      "(ip rule del table 51820; ip -6 rule del table 51820) || true",
+                    ]
+            resources:
+              limits:
+                kernel.org/tun: 1
         containers:
           app:
             image:
