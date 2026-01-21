@@ -71,8 +71,9 @@ spec:
                     path: /
                     port: 9999
                   initialDelaySeconds: 30
-                  periodSeconds: 10
-                  failureThreshold: 10
+                  timeoutSeconds: 30
+                  periodSeconds: 15
+                  failureThreshold: 20
             restartPolicy: Always
             securityContext:
               capabilities:
