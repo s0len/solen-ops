@@ -48,7 +48,7 @@ spec:
               VPN_INTERFACE: tun0
               VPN_SERVICE_PROVIDER: airvpn
               WIREGUARD_MTU: 1320
-              SERVER_COUNTRIES: Romania
+              SERVER_COUNTRIES: Sweden
             envFrom:
               - secretRef:
                   name: qbittorrent-secret
