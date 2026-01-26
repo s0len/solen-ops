@@ -49,7 +49,6 @@ spec:
               VPN_SERVICE_PROVIDER: airvpn
               WIREGUARD_MTU: 1320
               SERVER_COUNTRIES: Romania
-              VPN_ENDPOINT_IP: 37.46.196.20
             envFrom:
               - secretRef:
                   name: qbittorrent-secret
