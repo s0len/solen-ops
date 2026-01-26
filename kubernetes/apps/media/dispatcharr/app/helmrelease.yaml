@@ -49,7 +49,6 @@ spec:
               VPN_SERVICE_PROVIDER: airvpn
               WIREGUARD_MTU: 1420
               SERVER_COUNTRIES: Romania
-              SERVER_NAMES: Nembus
             envFrom:
               - secretRef:
                   name: qbittorrent-secret
