@@ -43,7 +43,7 @@ spec:
               FIREWALL_INPUT_PORTS: 9191
               FIREWALL_OUTBOUND_SUBNETS: 10.69.0.0/16,10.96.0.0/16
               HEALTH_SERVER_ADDRESS: :9999
-              HEALTH_TARGET_ADDRESS: check.airservers.org:443
+              HEALTH_TARGET_ADDRESS: cloudflare.com:443
               VPN_TYPE: wireguard
               VPN_INTERFACE: tun0
               VPN_SERVICE_PROVIDER: airvpn
