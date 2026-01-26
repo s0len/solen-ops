@@ -2,6 +2,10 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Home Assistant Notes
+
+- When creating automations, do NOT include the `id` field - it requires a server restart to take effect. Let HA auto-generate the ID.
+
 ## Project Overview
 
 This is a Kubernetes home operations repository for a self-hosted bare-metal cluster running on Talos Linux. It uses GitOps principles with Flux CD to manage all deployments declaratively.

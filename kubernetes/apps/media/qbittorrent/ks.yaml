@@ -17,7 +17,7 @@ spec:
     - name: onepassword
       namespace: external-secrets
   wait: false
-  path: ./kubernetes/apps/media/qbittorrent/qbittorrent
+  path: ./kubernetes/apps/media/qbittorrent/app
   prune: true
   retryInterval: 2m
   sourceRef:
@@ -34,28 +34,3 @@ spec:
       VOLSYNC_STORAGECLASS: ceph-filesystem
       VOLSYNC_SNAPSHOTCLASS: csi-ceph-filesystem
       VOLSYNC_ACCESSMODES: ReadWriteMany
----
-# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/kustomize.toolkit.fluxcd.io/kustomization_v1.json
-apiVersion: kustomize.toolkit.fluxcd.io/v1
-kind: Kustomization
-metadata:
-  name: &app qbitmanage
-  namespace: &namespace media
-spec:
-  targetNamespace: *namespace
-  commonMetadata:
-    labels:
-      app.kubernetes.io/name: *app
-  dependsOn:
-    - name: onepassword
-      namespace: external-secrets
-  wait: false
-  path: ./kubernetes/apps/media/qbittorrent/qbitmanage
-  prune: true
-  retryInterval: 2m
-  sourceRef:
-    kind: GitRepository
-    name: flux-system
-    namespace: flux-system
-  interval: 30m
-  timeout: 5m

@@ -31,6 +31,8 @@ wiki
 
 debug.log
 playbook.log
+home-assistant-md3-dashboard.yaml
+CLAUDE.md
 
 # Auto Claude data directory
 .auto-claude/
