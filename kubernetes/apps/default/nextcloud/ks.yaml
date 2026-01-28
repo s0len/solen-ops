@@ -35,6 +35,7 @@ spec:
       APP: *app
       VOLSYNC_CAPACITY: 400Gi
       VOLSYNC_CACHE_CAPACITY: 32Gi
+      VOLSYNC_SCHEDULE: "20 6 * * *"
       VOLSYNC_STORAGECLASS: ceph-block
       VOLSYNC_SNAPSHOTCLASS: csi-ceph-blockpool
       GATUS_SUBDOMAIN: cloud

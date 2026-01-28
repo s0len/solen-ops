@@ -31,6 +31,7 @@ spec:
       APP: *app
       GATUS_SUBDOMAIN: qbit
       VOLSYNC_CAPACITY: 5Gi
+      VOLSYNC_SCHEDULE: "0 9 * * *"
       VOLSYNC_STORAGECLASS: ceph-filesystem
       VOLSYNC_SNAPSHOTCLASS: csi-ceph-filesystem
       VOLSYNC_ACCESSMODES: ReadWriteMany
