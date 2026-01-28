@@ -55,7 +55,7 @@ spec:
               TZ: ${TIMEZONE}
               DEBUG: "false"
               API_V1_PREFIX: /api/v1
-              UPDATER_LEAGUES: "4391:auto,4370:auto"
+              UPDATER_LEAGUES: "4391:auto,4370:auto,4443:auto"
               # Database
               DATABASE_URL:
                 valueFrom:
