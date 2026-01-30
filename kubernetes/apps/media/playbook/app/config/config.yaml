@@ -47,442 +47,313 @@ settings:
     episode_template: "{show_title} - S{season_number:02d}E{episode_number:02d} - {episode_title}.{extension}"
 
 pattern_sets:
-  # Built-in pattern templates load automatically from `pattern_templates.yaml`.
-  # Available names: formula1, motogp, moto2, moto3, isle_of_man_tt, football, ufc.
-  # Add custom sets below if you need overrides or extra matchers.
-  # Example:
-  #   my_custom_pack:
-  #     - description: Custom fallback matcher
-  #       regex: >-
-  #         (?i)^Example\.(?P<year>\d{4})\.(?P<session>.+)$
-  #       season_selector:
-  #         mode: round
-  #         group: year
-  #       episode_selector:
-  #         group: session
-
-######################################################################
-# Sports - tie pattern sets to metadata, variants, and overrides
-#
-# Each sport declares:
-#   * `source_globs` to pick up matching downloads.
-#   * `pattern_sets` to pull in built-in matchers (or `file_patterns` for inline setups).
-#   * Optional metadata endpoints and per-year overrides.
-######################################################################
-
 sports:
-  - id: nhl
-    name: NHL
-    enabled: true
+    - id: nhl
+      name: NHL
+      enabled: true
+      show_slug: "nhl-2025-2026"
+      team_alias_map: nhl
 
-    metadata:
-      url: https://raw.githubusercontent.com/s0len/meta-manager-config/refs/heads/main/metadata/nhl/2025-2026.yaml
-      show_key: NHL 2025-2026
-      ttl_hours: 24
+      source_globs:
+        - "NHL.*"
+        - "NHL *"
+        - "nhl.*"
+        - "nhl *"
 
-    source_globs:
-      - "NHL.*"
-      - "NHL *"
-      - "nhl.*"
-      - "nhl *"
+      pattern_sets:
+        - nhl
 
-    pattern_sets:
-      - nhl
-  - id: formula1
-    name: Formula 1
-    enabled: true
+    - id: formula1
+      name: Formula 1
+      enabled: true
 
-    # Filenames that should be considered for Formula 1 processing.
-    source_globs:
-      - "Formula.1.*"
-      - "Formula1.*"
-      - "Formula1 *"
-      - "Formula 1 *"
-      - "formula1.*"
-      - "formula1 *"
-      - "formula 1 *"
+      source_globs:
+        - "Formula.1.*"
+        - "Formula1.*"
+        - "Formula1 *"
+        - "Formula 1 *"
+        - "formula1.*"
+        - "formula1 *"
+        - "formula 1 *"
 
-    # Use the built-in Formula 1 pattern template.
-    pattern_sets:
-      - formula1
+      pattern_sets:
+        - formula1
 
-    # Optional per-season metadata sources. Useful when schedules change.
-    variants:
-      - year: 2025
-        metadata:
-          url: https://raw.githubusercontent.com/s0len/meta-manager-config/refs/heads/main/metadata/formula1/2025.yaml
-          show_key: Formula 1 2025
-          ttl_hours: 24
-          season_overrides:
-            Pre-Season Testing:
-              season_number: 0
-              round: 0
-      - year: 2026
-        metadata:
-          url: https://raw.githubusercontent.com/s0len/meta-manager-config/refs/heads/main/metadata/formula1/2026.yaml
-          show_key: Formula 1 2026
-          ttl_hours: 24
-          season_overrides:
-            Pre-Season Testing:
-              season_number: 0
-              round: 0
+      variants:
+        - year: 2025
+          show_slug: "formula-1-2025"
+        - year: 2026
+          show_slug: "formula-1-2026"
 
-  - id: formula_e
-    name: Formula E
-    enabled: true
+    - id: formula_e
+      name: Formula E
+      enabled: true
 
-    source_globs:
-      - "FormulaE.*"
-      - "FormulaE *"
-      - "Formula.E.*"
-      - "Formula E *"
-      - "formulae.*"
-      - "formulae *"
-      - "formula.e.*"
-      - "formula e *"
+      source_globs:
+        - "FormulaE.*"
+        - "FormulaE *"
+        - "Formula.E.*"
+        - "Formula E *"
+        - "formulae.*"
+        - "formulae *"
+        - "formula.e.*"
+        - "formula e *"
 
-    pattern_sets:
-      - formula_e
+      pattern_sets:
+        - formula_e
 
-    variants:
-      - year: 2025
-        metadata:
-          url: https://raw.githubusercontent.com/s0len/meta-manager-config/refs/heads/main/metadata/formula-e/2024-2025.yaml
-          show_key: Formula E 2024-2025
-          ttl_hours: 24
-      - year: 2026
-        metadata:
-          url: https://raw.githubusercontent.com/s0len/meta-manager-config/refs/heads/main/metadata/formula-e/2025-2026.yaml
-          show_key: Formula E 2025-2026
-          ttl_hours: 24
+      variants:
+        - year: 2025
+          show_slug: "formula-e-2024-2025"
+        - year: 2026
+          show_slug: "formula-e-2025-2026"
 
-  - id: indycar
-    name: NTT IndyCar Series
-    enabled: true
+    - id: indycar
+      name: NTT IndyCar Series
+      enabled: true
 
-    source_globs:
-      - "IndyCar.*"
-      - "IndyCar *"
-      - "IndyCar.Series.*"
-      - "IndyCar Series *"
-      - "indycar.*"
-      - "indycar *"
-      - "indycar.series.*"
-      - "indycar series *"
+      source_globs:
+        - "IndyCar.*"
+        - "IndyCar *"
+        - "IndyCar.Series.*"
+        - "IndyCar Series *"
+        - "indycar.*"
+        - "indycar *"
+        - "indycar.series.*"
+        - "indycar series *"
 
-    pattern_sets:
-      - indycar
+      pattern_sets:
+        - indycar
 
-    variants:
-      - year: 2025
-        metadata:
-          url: https://raw.githubusercontent.com/s0len/meta-manager-config/refs/heads/main/metadata/indycar-series/2025.yaml
-          show_key: NTT IndyCar Series 2025
-          ttl_hours: 24
-      - year: 2026
-        metadata:
-          url: https://raw.githubusercontent.com/s0len/meta-manager-config/refs/heads/main/metadata/indycar-series/2026.yaml
-          show_key: NTT IndyCar Series 2026
-          ttl_hours: 24
+      variants:
+        - year: 2025
+          show_slug: "ntt-indycar-series-2025"
+        - year: 2026
+          show_slug: "ntt-indycar-series-2026"
 
-  - id: motogp
-    name: MotoGP
-    enabled: true
+    - id: motogp
+      name: MotoGP
+      enabled: true
 
-    source_globs:
-      - "MotoGP.*"
-      - "MotoGP *"
-      - "motogp.*"
-      - "motogp *"
+      source_globs:
+        - "MotoGP.*"
+        - "MotoGP *"
+        - "motogp.*"
+        - "motogp *"
 
-    # Use the built-in MotoGP pattern template.
-    pattern_sets:
-      - motogp
+      pattern_sets:
+        - motogp
 
-    variants:
-      - year: 2026
-        metadata:
-          url: https://raw.githubusercontent.com/s0len/meta-manager-config/refs/heads/main/metadata/motogp/2026.yaml
-          show_key: MotoGP 2026
-          ttl_hours: 24
-      - year: 2025
-        metadata:
-          url: https://raw.githubusercontent.com/s0len/meta-manager-config/refs/heads/main/metadata/motogp/2025.yaml
-          show_key: MotoGP 2025
-          ttl_hours: 24
-      - year: 2024
-        metadata:
-          url: https://raw.githubusercontent.com/s0len/meta-manager-config/refs/heads/main/metadata/motogp/2024.yaml
-          show_key: MotoGP 2024
-          ttl_hours: 24
-      - year: 2023
-        metadata:
-          url: https://raw.githubusercontent.com/s0len/meta-manager-config/refs/heads/main/metadata/motogp/2023.yaml
-          show_key: MotoGP 2023
-          ttl_hours: 24
+      variants:
+        - year: 2026
+          show_slug: "motogp-2026"
+        - year: 2025
+          show_slug: "motogp-2025"
+        - year: 2024
+          show_slug: "motogp-2024"
+        - year: 2023
+          show_slug: "motogp-2023"
 
-  - id: moto2
-    name: Moto2
-    enabled: true
+    - id: moto2
+      name: Moto2
+      enabled: true
 
-    source_globs:
-      - "Moto2.*"
-      - "Moto2 *"
-      - "moto2.*"
-      - "moto2 *"
+      source_globs:
+        - "Moto2.*"
+        - "Moto2 *"
+        - "moto2.*"
+        - "moto2 *"
 
-    # Use the built-in Moto2 pattern template.
-    pattern_sets:
-      - moto2
+      pattern_sets:
+        - moto2
 
-    variants:
-      - year: 2025
-        metadata:
-          url: https://raw.githubusercontent.com/s0len/meta-manager-config/refs/heads/main/metadata/moto2/2025.yaml
-          show_key: Moto2 2025
-          ttl_hours: 24
+      variants:
+        - year: 2025
+          show_slug: "moto2-2025"
 
-  - id: moto3
-    name: Moto3
-    enabled: true
+    - id: moto3
+      name: Moto3
+      enabled: true
 
-    source_globs:
-      - "Moto3.*"
-      - "Moto3 *"
-      - "moto3.*"
-      - "moto3 *"
+      source_globs:
+        - "Moto3.*"
+        - "Moto3 *"
+        - "moto3.*"
+        - "moto3 *"
 
-    # Use the built-in Moto3 pattern template.
-    pattern_sets:
-      - moto3
+      pattern_sets:
+        - moto3
 
-    variants:
-      - year: 2025
-        metadata:
-          url: https://raw.githubusercontent.com/s0len/meta-manager-config/refs/heads/main/metadata/moto3/2025.yaml
-          show_key: Moto3 2025
-          ttl_hours: 24
+      variants:
+        - year: 2025
+          show_slug: "moto3-2025"
 
-  - id: world_supersport
-    name: World Supersport
-    enabled: true
+    - id: world_supersport
+      name: World Supersport
+      enabled: true
 
-    source_globs:
-      - "WSSP.*"
-      - "WSSP *"
-      - "World.Supersport.*"
-      - "World Supersport *"
-      - "world.supersport.*"
-      - "world supersport *"
+      source_globs:
+        - "WSSP.*"
+        - "WSSP *"
+        - "World.Supersport.*"
+        - "World Supersport *"
+        - "world.supersport.*"
+        - "world supersport *"
 
-    pattern_sets:
-      - world_supersport
+      pattern_sets:
+        - world_supersport
 
-    variants:
-      - year: 2025
-        metadata:
-          url: https://raw.githubusercontent.com/s0len/meta-manager-config/refs/heads/main/metadata/wssp-2025.yaml
-          show_key: World Supersport 2025
-          ttl_hours: 24
-      - year: 2024
-        metadata:
-          url: https://raw.githubusercontent.com/s0len/meta-manager-config/refs/heads/main/metadata/wssp-2024.yaml
-          show_key: World Supersport 2024
-          ttl_hours: 24
-      - year: 2023
-        metadata:
-          url: https://raw.githubusercontent.com/s0len/meta-manager-config/refs/heads/main/metadata/wssp-2023.yaml
-          show_key: World Supersport 2023
-          ttl_hours: 24
+      variants:
+        - year: 2025
+          show_slug: "world-supersport-2025"
+        - year: 2024
+          show_slug: "world-supersport-2024"
+        - year: 2023
+          show_slug: "world-supersport-2023"
 
-  - id: world_superbike
-    name: World Superbike
-    enabled: true
+    - id: world_superbike
+      name: World Superbike
+      enabled: true
 
-    source_globs:
-      - "WSBK.*"
-      - "WSBK *"
-      - "wsbk.*"
-      - "wsbk *"
-      - "World.Superbike.*"
-      - "World Superbike *"
-      - "WorldSuperbike.*"
-      - "WorldSuperbike *"
-      - "world.superbike.*"
-      - "world superbike *"
+      source_globs:
+        - "WSBK.*"
+        - "WSBK *"
+        - "wsbk.*"
+        - "wsbk *"
+        - "World.Superbike.*"
+        - "World Superbike *"
+        - "WorldSuperbike.*"
+        - "WorldSuperbike *"
+        - "world.superbike.*"
+        - "world superbike *"
 
-    pattern_sets:
-      - world_superbike
+      pattern_sets:
+        - world_superbike
 
-    variants:
-      - year: 2025
-        metadata:
-          url: https://raw.githubusercontent.com/s0len/meta-manager-config/refs/heads/main/metadata/wsbk-2025.yaml
-          show_key: World Superbike 2025
-          ttl_hours: 24
-      - year: 2024
-        metadata:
-          url: https://raw.githubusercontent.com/s0len/meta-manager-config/refs/heads/main/metadata/wsbk-2024.yaml
-          show_key: World Superbike 2024
-          ttl_hours: 24
-      - year: 2023
-        metadata:
-          url: https://raw.githubusercontent.com/s0len/meta-manager-config/refs/heads/main/metadata/wsbk-2023.yaml
-          show_key: World Superbike 2023
-          ttl_hours: 24
+      variants:
+        - year: 2025
+          show_slug: "world-superbike-2025"
+        - year: 2024
+          show_slug: "world-superbike-2024"
+        - year: 2023
+          show_slug: "world-superbike-2023"
 
-  - id: isle_of_man_tt
-    name: Isle of Man TT
-    enabled: true
+    - id: isle_of_man_tt
+      name: Isle of Man TT
+      enabled: true
+      show_slug: "isle-of-man-tt"
 
-    metadata:
-      url: https://raw.githubusercontent.com/s0len/meta-manager-config/refs/heads/main/metadata/isle-of-man-tt.yaml
-      show_key: Isle of Man TT
-      ttl_hours: 24
+      source_globs:
+        - "Isle*TT*"
+        - "isle*tt*"
+        - "IOMTT*"
+        - "iomtt*"
 
-    source_globs:
-      - "Isle*TT*"
-      - "isle*tt*"
-      - "IOMTT*"
-      - "iomtt*"
+      pattern_sets:
+        - isle_of_man_tt
 
-    # Use the built-in Isle of Man TT template.
-    pattern_sets:
-      - isle_of_man_tt
+      destination:
+        season_dir_template: "{season_title}"
+        episode_template: "{show_title} - S{season_number:02d}E{episode_number:02d} - {episode_title}.{extension}"
 
-    destination:
-      season_dir_template: "{season_title}"
-      episode_template: "{show_title} - S{season_number:02d}E{episode_number:02d} - {episode_title}.{extension}"
+    - id: nfl
+      name: NFL
+      enabled: true
+      show_slug: "nfl-2025"
 
-  - id: nfl
-    name: NFL
-    enabled: true
+      source_globs:
+        - "NFL.*"
+        - "NFL *"
+        - "nfl.*"
+        - "nfl *"
 
-    metadata:
-      url: https://raw.githubusercontent.com/s0len/meta-manager-config/refs/heads/main/metadata/nfl/2025.yaml
-      show_key: NFL 2025
-      ttl_hours: 24
+      pattern_sets:
+        - nfl
 
-    source_globs:
-      - "NFL.*"
-      - "NFL *"
-      - "nfl.*"
-      - "nfl *"
+    - id: nba
+      name: NBA
+      enabled: true
+      show_slug: "nba-2025-2026"
 
-    # Use the built-in NFL template (pattern set name `nfl`).
-    pattern_sets:
-      - nfl
+      source_globs:
+        - "NBA.*"
+        - "NBA *"
+        - "nba.*"
+        - "nba *"
 
-  - id: nba
-    name: NBA
-    enabled: true
+      pattern_sets:
+        - nba
 
-    metadata:
-      url: https://raw.githubusercontent.com/s0len/meta-manager-config/refs/heads/main/metadata/nba/2025-2026.yaml
-      show_key: NBA 2025-2026
-      ttl_hours: 24
+    - id: uefa_champions_league
+      name: UEFA Champions League
+      enabled: true
+      show_slug: "uefa-champions-league-2025-2026"
 
-    source_globs:
-      - "NBA.*"
-      - "NBA *"
-      - "nba.*"
-      - "nba *"
+      source_globs:
+        - "UEFA Champions League *"
+        - "UEFA Champions League*"
+        - "UEFA.Champions.League.*"
+        - "UEFA.Champions.League*"
+        - "UEFA-Champions-League-*"
+        - "UCL.*"
+        - "UCL *"
 
-    # Use the built-in NBA template (pattern set name `nba`).
-    pattern_sets:
-      - nba
+      pattern_sets:
+        - uefa_champions_league
 
-  - id: uefa_champions_league
-    name: UEFA Champions League
-    enabled: true
+    - id: figure_skating_grand_prix
+      name: Figure Skating Grand Prix
+      enabled: true
+      show_slug: "figure-skating-grand-prix-2025"
 
-    metadata:
-      url: https://raw.githubusercontent.com/s0len/meta-manager-config/refs/heads/main/metadata/uefa-champions-league/2025-2026.yaml
-      show_key: UEFA Champions League 2025-2026
-      ttl_hours: 24
+      source_globs:
+        - "Figure Skating Grand Prix *"
+        - "Figure Skating Grand Prix*"
+        - "Figure.Skating.Grand.Prix.*"
+        - "Figure.Skating.Grand.Prix*"
+        - "Figure Skating * Grand Prix *"
 
-    source_globs:
-      - "UEFA Champions League *"
-      - "UEFA Champions League*"
-      - "UEFA.Champions.League.*"
-      - "UEFA.Champions.League*"
-      - "UEFA-Champions-League-*"
-      - "UCL.*"
-      - "UCL *"
+      pattern_sets:
+        - figure_skating_grand_prix
 
-    pattern_sets:
-      - uefa_champions_league
+    - id: premier_league
+      name: Premier League
+      enabled: true
+      show_slug: "english-premier-league-2025-2026"
+      team_alias_map: premier_league
 
-  - id: figure_skating_grand_prix
-    name: Figure Skating Grand Prix
-    enabled: true
+      source_globs:
+        - "EPL.*"
+        - "EPL *"
+        - "epl.*"
+        - "epl *"
+        - "Premier.League.*"
+        - "Premier League *"
+        - "premier.league.*"
+        - "premier league *"
+        - "English.Premier.League.*"
+        - "English Premier League *"
 
-    metadata:
-      url: https://raw.githubusercontent.com/s0len/meta-manager-config/refs/heads/main/metadata/figure-skating-grand-prix-2025.yaml
-      show_key: Figure Skating Grand Prix 2025
-      ttl_hours: 24
+      pattern_sets:
+        - premier_league
 
-    source_globs:
-      - "Figure Skating Grand Prix *"
-      - "Figure Skating Grand Prix*"
-      - "Figure.Skating.Grand.Prix.*"
-      - "Figure.Skating.Grand.Prix*"
-      - "Figure Skating * Grand Prix *"
+    - id: ufc
+      name: UFC
+      enabled: true
 
-    pattern_sets:
-      - figure_skating_grand_prix
+      variants:
+        - year: 2026
+          show_slug: "ufc-2026"
+        - year: 2025
+          show_slug: "ufc-2025"
+        - year: 2024
+          show_slug: "ufc-2024"
 
-  - id: premier_league
-    name: Premier League
-    enabled: true
+      source_globs:
+        - "UFC.*"
+        - "UFC *"
+        - "ufc.*"
+        - "ufc *"
 
-    metadata:
-      url: https://raw.githubusercontent.com/s0len/meta-manager-config/refs/heads/main/metadata/premier-league/2025-2026.yaml
-      show_key: Premier League 2025-2026
-      ttl_hours: 24
-
-    source_globs:
-      - "EPL.*"
-      - "EPL *"
-      - "epl.*"
-      - "epl *"
-      - "Premier.League.*"
-      - "Premier League *"
-      - "premier.league.*"
-      - "premier league *"
-      - "English.Premier.League.*"
-      - "English Premier League *"
-
-    # Use the built-in Premier League pattern template.
-    pattern_sets:
-      - premier_league
-
-  - id: ufc
-    name: UFC
-    enabled: true
-
-    variants:
-      - year: 2026
-        metadata:
-          url: https://raw.githubusercontent.com/s0len/meta-manager-config/refs/heads/main/metadata/ufc/2026.yaml
-          show_key: UFC 2026
-          ttl_hours: 24
-      - year: 2025
-        metadata:
-          url: https://raw.githubusercontent.com/s0len/meta-manager-config/refs/heads/main/metadata/ufc/2025.yaml
-          show_key: UFC 2025
-          ttl_hours: 24
-      - year: 2024
-        metadata:
-          url: https://raw.githubusercontent.com/s0len/meta-manager-config/refs/heads/main/metadata/ufc/2024.yaml
-          show_key: UFC 2024
-          ttl_hours: 24
-
-    source_globs:
-      - "UFC.*"
-      - "UFC *"
-      - "ufc.*"
-      - "ufc *"
-
-    pattern_sets:
-      - ufc
+      pattern_sets:
+        - ufc
