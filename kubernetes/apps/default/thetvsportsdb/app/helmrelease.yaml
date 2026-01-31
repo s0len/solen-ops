@@ -37,7 +37,7 @@ spec:
           init-migrations:
             image:
               repository: ghcr.io/s0len/thetvsportsdb-backend
-              tag: latest@sha256:916ff26a22b717b171334c82a2262eb0de55e709028304af3ac5431e6e187342
+              tag: latest@sha256:e8a76a0d20885d2ef1670cf23c2cb8e62707bfc89766a90d9d781465edee16eb
             command: ["alembic", "upgrade", "head"]
             env:
               DATABASE_URL:
