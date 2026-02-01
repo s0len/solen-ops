@@ -17,6 +17,7 @@ settings:
     debounce_seconds: 5
     reconcile_interval: 300
   notifications:
+    summary_mode: true
     batch_daily: false
     flush_time: "00:00"
     mentions:
