@@ -47,13 +47,45 @@ spec:
               PLEX_SYNC_ENABLED: true
               PLEX_LIBRARY_NAME: Sport
               PLEX_URL: http://${PLEX_IP}:32400
+              # GUI settings
+              GUI_ENABLED: "true"
+              GUI_PORT: &port 8080
             envFrom:
               - secretRef:
                   name: playbook-secret
             securityContext:
               privileged: false
+            probes:
+              liveness: &probes
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /
+                    port: *port
+                  initialDelaySeconds: 30
+                  periodSeconds: 10
+                  timeoutSeconds: 1
+                  failureThreshold: 3
+              readiness: *probes
         annotations:
           reloader.stakater.com/auto: "true"
+
+    service:
+      app:
+        controller: main
+        ports:
+          http:
+            port: *port
+
+    route:
+      app:
+        hostnames:
+          - "{{ .Release.Name }}.${SECRET_DOMAIN}"
+        parentRefs:
+          - name: envoy-external
+            namespace: network
+            sectionName: https
 
     defaultPodOptions:
       automountServiceAccountToken: true
