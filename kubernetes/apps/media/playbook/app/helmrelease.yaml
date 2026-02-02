@@ -42,7 +42,7 @@ spec:
               LOG_DIR: /tmp
               LOG_LEVEL: DEBUG
               SOURCE_DIR: /data/torrents/sport
-              PLEX_FORCE: false
+              PLEX_FORCE: true
               PLEX_SCAN_WAIT: 5
               PLEX_SYNC_ENABLED: true
               PLEX_LIBRARY_NAME: Sport
