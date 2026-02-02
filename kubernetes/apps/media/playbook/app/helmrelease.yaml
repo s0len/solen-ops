@@ -31,7 +31,7 @@ spec:
           app:
             image:
               repository: ghcr.io/s0len/playbook
-              tag: develop@sha256:87d65c8f0bab53d02795fda63f615508f085711b307684247c51299ceba9e2c0
+              tag: develop@sha256:3faa907b6285174153332a4d7a647c2df96338838bcd0687571741ea46d94d43
               pullPolicy: Always
             env:
               CACHE_DIR: /settings/cache
