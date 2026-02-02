@@ -23,7 +23,7 @@ spec:
       playbook: {}
 
     controllers:
-      main:
+      playbook:
         serviceAccount:
           identifier: playbook
         type: deployment
@@ -73,13 +73,15 @@ spec:
 
     service:
       app:
-        controller: main
+        controller: *app
         ports:
           http:
             port: *port
 
     route:
       app:
+        labels:
+          auth.home.arpa/enabled: "true"
         hostnames:
           - "{{ .Release.Name }}.${SECRET_DOMAIN}"
         parentRefs:
