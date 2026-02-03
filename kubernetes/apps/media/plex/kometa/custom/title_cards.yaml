@@ -9707,6 +9707,54 @@ metadata:
             url_poster: https://api.mediux.pro/assets/420dae45-a850-48a7-a796-51430215de7c
           8:
             url_poster: https://api.mediux.pro/assets/e392e5dc-ff0b-4173-9667-3a69fc3a1e47
+  448176: # TVDB id for The Pitt. Set by willtong93 on MediUX. https://mediux.pro/sets/29512
+    url_poster: https://api.mediux.pro/assets/74f6e679-eb82-42f2-980a-3fb14b37307a
+    url_background: https://api.mediux.pro/assets/5a1d3e62-c1d2-42b8-aabb-3e1510885538
+    seasons:
+      1:
+        url_poster: https://api.mediux.pro/assets/b575270a-075e-40bd-8302-a3e6e7b922b2
+        episodes:
+          1:
+            url_poster: https://api.mediux.pro/assets/11f59a67-26fd-4ef5-be22-7059d863af53
+          2:
+            url_poster: https://api.mediux.pro/assets/8761ea50-ae05-41e1-bbe0-cc9aaaa76bda
+          3:
+            url_poster: https://api.mediux.pro/assets/74e3b037-b1bb-42f1-86eb-535c8b60a44e
+          4:
+            url_poster: https://api.mediux.pro/assets/f9f74828-169a-4ad7-9fba-2d68cf16a81e
+          5:
+            url_poster: https://api.mediux.pro/assets/dc6beb74-d324-4181-b53d-38ee98f03894
+          6:
+            url_poster: https://api.mediux.pro/assets/52446fe3-27b6-4bf1-8084-030826736d6f
+          7:
+            url_poster: https://api.mediux.pro/assets/bc1ad6fb-01ed-4f64-818f-cdd1d2b3b0a1
+          8:
+            url_poster: https://api.mediux.pro/assets/6032035f-2501-43f4-82df-c280f6e81955
+          9:
+            url_poster: https://api.mediux.pro/assets/febef509-d867-4e48-91cd-b37ff9609034
+          10:
+            url_poster: https://api.mediux.pro/assets/04ccaa52-b1bf-4629-a1dd-c1b58b616d09
+          11:
+            url_poster: https://api.mediux.pro/assets/aac552e6-0a2b-461e-b298-b9f6c7fa427d
+          12:
+            url_poster: https://api.mediux.pro/assets/a1e6e539-5c40-4d7a-aba8-5507606c4b62
+          13:
+            url_poster: https://api.mediux.pro/assets/7257c694-4fb5-4e5c-9fbd-e8a15a61c8b5
+          14:
+            url_poster: https://api.mediux.pro/assets/d11ef3c8-41d0-48fa-a6cf-bd8484de9473
+          15:
+            url_poster: https://api.mediux.pro/assets/31e1722d-41f8-4fbc-98fc-1abb868983fc
+      2:
+        url_poster: https://api.mediux.pro/assets/097bbbbf-7695-4653-bf6e-bcf75e55945c
+        episodes:
+          1:
+            url_poster: https://api.mediux.pro/assets/b7d8a601-c08f-4a70-b634-c61aedd9de14
+          2:
+            url_poster: https://api.mediux.pro/assets/18e3ede8-b167-44ba-8bee-c16d2f12d829
+          3:
+            url_poster: https://api.mediux.pro/assets/cb8d28be-a0fa-465c-a3d8-c615c16670fa
+          4:
+            url_poster: https://api.mediux.pro/assets/e9cb311a-f4a3-45c0-8ad9-50ec3c830edb
 
   85539: # TVDB id for The Pacific. Set by willtong93 on MediUX. https://mediux.pro/sets/8798
     url_poster: https://api.mediux.pro/assets/f4fa31f6-ecee-4110-98ba-bc44f46060eb
