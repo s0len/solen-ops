@@ -37,7 +37,7 @@ spec:
           init-migrations:
             image:
               repository: ghcr.io/s0len/thetvsportsdb-backend
-              tag: latest@sha256:83c54e8e75e2f41d5e6788e4bb59212bc1cdb365522a7694728f68437cf26348
+              tag: latest@sha256:ee3ba132640c2ee39dc2dcd96ba78055c1420528796b7a54a919378f03d4ffb5
             command: ["alembic", "upgrade", "head"]
             env:
               DATABASE_URL:
@@ -56,7 +56,7 @@ spec:
               DEBUG: "false"
               API_V1_PREFIX: /api/v1
               UPDATER_LEAGUES: "4391:auto,4370:auto,4443:2023,4443:2024,4443:2025,4443:auto,4371:auto,4328:auto,4480:auto,4481:auto,4490:auto,4502:auto,4517:auto,4380:auto,4387:auto,4407:auto,4436:auto,4437:auto"
-              UPDATER_CRON_HOURS: "8,9,11,12,14,15,16,17,20"
+              UPDATER_CRON_HOURS: "8,9,11,12,14,15,16,17,19,20"
               # Database
               DATABASE_URL:
                 valueFrom:
