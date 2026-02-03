@@ -125,7 +125,7 @@ spec:
           app:
             image:
               repository: ghcr.io/s0len/thetvsportsdb-frontend
-              tag: latest@sha256:faf5d5b62767453ca7c49824aa88e87db25aee2a84e3e2be0221102698d8c426
+              tag: latest@sha256:b7ccb83d621eb0efaa037a794da19a7dad97c522176cf71b1e9ebed3633d3c76
             env:
               TZ: ${TIMEZONE}
               PORT: &frontendPort 3000
