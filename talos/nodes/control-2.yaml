@@ -1,6 +1,6 @@
 # Node: control-2
 # IP: 192.168.10.42
-# Hardware: Intel 13400, Intel A310 GPU, 2.5G NIC, 64GB RAM, Samsung 870 EVO SATA SSD
+# Hardware: Intel 13400, Intel A310 GPU, 10G Realtek NIC, 64GB RAM, Samsung 870 EVO SATA SSD
 ---
 machine:
   type: controlplane
@@ -18,7 +18,7 @@ machine:
     hostname: control-2
     interfaces:
       - deviceSelector:
-          hardwareAddr: 78:20:51:38:a8:5d
+          hardwareAddr: 1c:86:0b:3a:93:6b
         mtu: 1500
         dhcp: true
         vip:
