@@ -13,6 +13,8 @@ spec:
   dependsOn:
     - name: cloudnative-pg-cluster
       namespace: database
+    - name: dragonfly-cluster
+      namespace: database
     - name: onepassword
       namespace: external-secrets
   path: ./kubernetes/apps/default/thetvsportsdb/app
