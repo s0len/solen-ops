@@ -37,14 +37,10 @@ spec:
               CACHE_DIR: /settings/cache
               # CLEAR_PROCESSED_CACHE: true
               CONFIG_PATH: /settings/config.yaml
-              DRY_RUN: false
               DESTINATION_DIR: /data/media/sport
               LOG_DIR: /tmp
-              # LOG_LEVEL: DEBUG
+              LOG_LEVEL: DEBUG
               SOURCE_DIR: /data/torrents/sport
-              # PLEX_FORCE: true
-              # PLEX_SCAN_WAIT: 5
-              PLEX_SYNC_ENABLED: true
               PLEX_LIBRARY_NAME: Sport
               PLEX_URL: http://${PLEX_IP}:32400
               # GUI settings
@@ -118,4 +114,3 @@ spec:
         globalMounts:
           - path: /data
             readOnly: false
-
