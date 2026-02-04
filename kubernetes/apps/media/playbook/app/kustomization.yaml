@@ -7,9 +7,3 @@ resources:
   - ./helmrelease.yaml
   - ./pvc.yaml
   - ./rbac.yaml
-configMapGenerator:
-  - name: playbook-configmap
-    files:
-      - ./config/config.yaml
-generatorOptions:
-  disableNameSuffixHash: true
