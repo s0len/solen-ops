@@ -1,6 +1,6 @@
 settings:
   tvsportsdb:
-    ttl_hours: 0
+    ttl_hours: 12
   source_dir: /data/torrents/sport
   destination_dir: /data/media/sport
   cache_dir: /settings/cache
