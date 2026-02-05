@@ -37,7 +37,7 @@ spec:
           init-migrations:
             image:
               repository: ghcr.io/s0len/thetvsportsdb-backend
-              tag: latest@sha256:70ff911323710229892ac548fae4705e04bc407fdde96fbdc6a0631a3099c7e6
+              tag: latest@sha256:33159d175ea118e16887abca1ba8a1db5189bd92255e914dcd52cb01b982518a
             command: ["alembic", "upgrade", "head"]
             env:
               DATABASE_URL:
@@ -50,7 +50,7 @@ spec:
           app:
             image:
               repository: ghcr.io/s0len/thetvsportsdb-backend
-              tag: latest@sha256:70ff911323710229892ac548fae4705e04bc407fdde96fbdc6a0631a3099c7e6
+              tag: latest@sha256:33159d175ea118e16887abca1ba8a1db5189bd92255e914dcd52cb01b982518a
             env:
               TZ: ${TIMEZONE}
               DEBUG: "false"
