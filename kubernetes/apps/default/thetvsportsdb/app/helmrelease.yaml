@@ -55,7 +55,7 @@ spec:
               TZ: ${TIMEZONE}
               DEBUG: "false"
               API_V1_PREFIX: /api/v1
-              UPDATER_LEAGUES: "4391:auto,4370:auto,4443:2023,4443:2024,4443:2025,4443:auto,4371:auto,4328:auto,4480:auto,4481:auto,4490:auto,4502:auto,4517:auto,4380:auto,4387:auto,4407:auto,4436:auto,4437:auto,4436:auto,4437:auto,4373:auto"
+              UPDATER_LEAGUES: "4391:auto,4370:auto,4443:2023,4443:2024,4443:2025,4443:auto,4371:auto,4328:auto,4480:auto,4481:auto,4490:auto,4502:auto,4517:auto,4380:auto,4387:auto,4407:auto,4436:auto,4437:auto,4373:auto"
               UPDATER_CRON_HOURS: "8,9,11,12,14,15,16,17,19,20"
               # Database
               DATABASE_URL:
