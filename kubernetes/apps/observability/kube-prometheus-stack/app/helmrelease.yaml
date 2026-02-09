@@ -214,7 +214,7 @@ spec:
               - alert: NfsServerSpaceLow
                 annotations:
                   summary: "NFS server {{ $labels.device }} is {{ printf \"%.1f\" $value }}% full"
-                  description: "NFS mount {{ $labels.mountpoint }} on {{ $labels.kubernetes_node }} (server: {{ $labels.device }}) has only {{ printf \"%.1f\" (100 - $value) }}% space remaining."
+                  description: "NFS mount {{ $labels.mountpoint }} on {{ $labels.kubernetes_node }} (server: {{ $labels.device }}) is {{ printf \"%.1f\" $value }}% full."
                 expr: |-
                   (
                     100 - (node_filesystem_avail_bytes{fstype="nfs4"} / node_filesystem_size_bytes{fstype="nfs4"} * 100)
@@ -225,7 +225,7 @@ spec:
               - alert: NfsServerSpaceCritical
                 annotations:
                   summary: "NFS server {{ $labels.device }} is {{ printf \"%.1f\" $value }}% full - CRITICAL"
-                  description: "NFS mount {{ $labels.mountpoint }} on {{ $labels.kubernetes_node }} (server: {{ $labels.device }}) has only {{ printf \"%.1f\" (100 - $value) }}% space remaining. Immediate action required."
+                  description: "NFS mount {{ $labels.mountpoint }} on {{ $labels.kubernetes_node }} (server: {{ $labels.device }}) is {{ printf \"%.1f\" $value }}% full. Immediate action required."
                 expr: |-
                   (
                     100 - (node_filesystem_avail_bytes{fstype="nfs4"} / node_filesystem_size_bytes{fstype="nfs4"} * 100)

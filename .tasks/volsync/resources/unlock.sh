@@ -1,9 +1,79 @@
 #!/usr/bin/env bash
 
+NFS_SERVER="192.168.10.98"
+NFS_PATH="/mnt/rust/volsync"
+RESTIC_IMAGE="docker.io/restic/restic:latest"
+
+# --- Unlock local (NFS) repositories ---
+
+gum log --structured --level info "=== Unlocking local (NFS) repositories ==="
+
+mapfile -t local_secrets < <(kubectl get secrets --all-namespaces --no-headers -o custom-columns="NAMESPACE:.metadata.namespace,NAME:.metadata.name" | grep "volsync-local-secret$")
+
+if [ -z "${local_secrets[*]}" ]; then
+    gum log --structured --level warn "No local volsync secrets found"
+else
+    for secret in "${local_secrets[@]}"; do
+        namespace=$(echo "$secret" | awk '{print $1}')
+        secret_name=$(echo "$secret" | awk '{print $2}')
+        application=$(echo "$secret_name" | sed -E 's|-volsync-local-secret$||')
+
+        secret_data=$(kubectl --namespace "$namespace" get secret "$secret_name" -o jsonpath='{.data}')
+        RESTIC_PASSWORD=$(echo "$secret_data" | jq -r '.RESTIC_PASSWORD' | base64 -d)
+        RESTIC_REPOSITORY=$(echo "$secret_data" | jq -r '.RESTIC_REPOSITORY' | base64 -d)
+
+        if [ -z "$RESTIC_PASSWORD" ] || [ -z "$RESTIC_REPOSITORY" ]; then
+            gum log --structured --level error "Invalid secret data for $namespace/$secret_name, skipping..."
+            continue
+        fi
+
+        gum log --structured --level info "Processing local secret: $namespace/$secret_name"
+
+        output=$(kubectl run "volsync-unlock-${application}" \
+            --namespace "$namespace" \
+            --rm -i --restart=Never \
+            --image="$RESTIC_IMAGE" \
+            --overrides="{
+                \"spec\": {
+                    \"volumes\": [{
+                        \"name\": \"repository\",
+                        \"nfs\": {
+                            \"server\": \"$NFS_SERVER\",
+                            \"path\": \"$NFS_PATH\"
+                        }
+                    }],
+                    \"containers\": [{
+                        \"name\": \"restic-unlock\",
+                        \"image\": \"$RESTIC_IMAGE\",
+                        \"command\": [\"restic\", \"unlock\", \"--remove-all\"],
+                        \"env\": [
+                            {\"name\": \"RESTIC_REPOSITORY\", \"value\": \"$RESTIC_REPOSITORY\"},
+                            {\"name\": \"RESTIC_PASSWORD\", \"value\": \"$RESTIC_PASSWORD\"}
+                        ],
+                        \"volumeMounts\": [{
+                            \"name\": \"repository\",
+                            \"mountPath\": \"/repository\"
+                        }]
+                    }]
+                }
+            }" 2>&1)
+
+        if echo "$output" | grep -q "successfully removed"; then
+            gum log --structured --level info "Removed locks for $application" "output" "$(echo "$output" | grep "successfully removed")"
+        else
+            gum log --structured --level info "No lock files found for $application"
+        fi
+    done
+fi
+
+# --- Unlock remote (S3/R2) repositories ---
+
+gum log --structured --level info "=== Unlocking remote (S3) repositories ==="
+
 mapfile -t secrets < <(kubectl get secrets --all-namespaces --no-headers -o custom-columns="NAMESPACE:.metadata.namespace,NAME:.metadata.name" | grep "remote-secret$")
 
 if [ -z "${secrets[*]}" ]; then
-    gum log --structured --level warn "No secrets found.."
+    gum log --structured --level warn "No remote volsync secrets found"
 fi
 
 for secret in "${secrets[@]}"; do
