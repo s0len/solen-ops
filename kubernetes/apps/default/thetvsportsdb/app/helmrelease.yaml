@@ -96,7 +96,7 @@ spec:
               # Redis
               REDIS_URL: "redis://dragonfly.database.svc.cluster.local:6379"
               # CORS
-              CORS_ORIGINS: '["https://thetvsportsdb.${SECRET_DOMAIN}"]'
+              CORS_ORIGINS: '["https://tvsportsdb.${SECRET_DOMAIN}"]'
             envFrom: *envFrom
             probes:
               liveness: &probes
@@ -181,25 +181,25 @@ spec:
     route:
       backend:
         hostnames:
-          - "thetvsportsdb-api.${SECRET_DOMAIN}"
+          - "tvsportsdb-api.${SECRET_DOMAIN}"
         parentRefs:
           - name: envoy-external
             namespace: network
             sectionName: https
         rules:
           - backendRefs:
-              - name: thetvsportsdb-backend
+              - name: tvsportsdb-backend
                 port: *backendPort
       frontend:
         hostnames:
-          - "thetvsportsdb.${SECRET_DOMAIN}"
+          - "tvsportsdb.${SECRET_DOMAIN}"
         parentRefs:
           - name: envoy-external
             namespace: network
             sectionName: https
         rules:
           - backendRefs:
-              - name: thetvsportsdb-frontend
+              - name: tvsportsdb-frontend
                 port: *frontendPort
 
     persistence:
