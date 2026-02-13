@@ -68,7 +68,7 @@ spec:
           mariadb:
             image:
               repository: mariadb
-              tag: "12.1"
+              tag: "12.2"
             env:
               MARIADB_DATABASE: hortusfox
               MARIADB_USER: hortusfox
