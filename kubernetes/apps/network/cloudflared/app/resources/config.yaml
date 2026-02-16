@@ -7,4 +7,12 @@ ingress:
     service: https://envoy-external.network.svc.cluster.local:443
   - hostname: "*.${SECRET_DOMAIN}"
     service: https://envoy-external.network.svc.cluster.local:443
+  - hostname: "${SECRET_TVSPORTSDB_DOMAIN}"
+    service: https://envoy-external.network.svc.cluster.local:443
+    originRequest:
+      originServerName: "${SECRET_TVSPORTSDB_DOMAIN}"
+  - hostname: "*.${SECRET_TVSPORTSDB_DOMAIN}"
+    service: https://envoy-external.network.svc.cluster.local:443
+    originRequest:
+      originServerName: "${SECRET_TVSPORTSDB_DOMAIN}"
   - service: http_status:404

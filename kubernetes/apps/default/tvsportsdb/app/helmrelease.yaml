@@ -180,6 +180,8 @@ spec:
 
     route:
       backend:
+        annotations:
+          external-dns.alpha.kubernetes.io/target: "external.${SECRET_TVSPORTSDB_DOMAIN}"
         hostnames:
           - "api.${SECRET_TVSPORTSDB_DOMAIN}"
         parentRefs:
@@ -191,6 +193,8 @@ spec:
               - name: tvsportsdb-backend
                 port: *backendPort
       frontend:
+        annotations:
+          external-dns.alpha.kubernetes.io/target: "external.${SECRET_TVSPORTSDB_DOMAIN}"
         hostnames:
           - "${SECRET_TVSPORTSDB_DOMAIN}"
         parentRefs:
