@@ -3,7 +3,7 @@
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: &app thetvsportsdb
+  name: &app tvsportsdb
 spec:
   interval: 15m
   chartRef:
@@ -32,24 +32,24 @@ spec:
               tag: 18
             envFrom: &envFrom
               - secretRef:
-                  name: thetvsportsdb-secret
+                  name: tvsportsdb-secret
 
           init-migrations:
             image:
-              repository: ghcr.io/s0len/thetvsportsdb-backend
+              repository: ghcr.io/s0len/tvsportsdb-backend
               tag: latest@sha256:802524414f7dd8905293dd9ed86c807dcbc7663f915d5ce62cabd256f8af1eff
             command: ["alembic", "upgrade", "head"]
             env:
               DATABASE_URL:
                 valueFrom:
                   secretKeyRef:
-                    name: thetvsportsdb-secret
+                    name: tvsportsdb-secret
                     key: DATABASE_URL
 
         containers:
           app:
             image:
-              repository: ghcr.io/s0len/thetvsportsdb-backend
+              repository: ghcr.io/s0len/tvsportsdb-backend
               tag: latest@sha256:802524414f7dd8905293dd9ed86c807dcbc7663f915d5ce62cabd256f8af1eff
             env:
               TZ: ${TIMEZONE}
@@ -61,34 +61,34 @@ spec:
               DATABASE_URL:
                 valueFrom:
                   secretKeyRef:
-                    name: thetvsportsdb-secret
+                    name: tvsportsdb-secret
                     key: DATABASE_URL
               # Security
               SECRET_KEY:
                 valueFrom:
                   secretKeyRef:
-                    name: thetvsportsdb-secret
+                    name: tvsportsdb-secret
                     key: SECRET_KEY
               # S3/R2 Storage
               S3_ENDPOINT_URL:
                 valueFrom:
                   secretKeyRef:
-                    name: thetvsportsdb-secret
+                    name: tvsportsdb-secret
                     key: S3_ENDPOINT_URL
               S3_ACCESS_KEY:
                 valueFrom:
                   secretKeyRef:
-                    name: thetvsportsdb-secret
+                    name: tvsportsdb-secret
                     key: S3_ACCESS_KEY
               S3_SECRET_KEY:
                 valueFrom:
                   secretKeyRef:
-                    name: thetvsportsdb-secret
+                    name: tvsportsdb-secret
                     key: S3_SECRET_KEY
               S3_BUCKET_NAME:
                 valueFrom:
                   secretKeyRef:
-                    name: thetvsportsdb-secret
+                    name: tvsportsdb-secret
                     key: S3_BUCKET_NAME
               S3_REGION: auto
               S3_PUBLIC_URL: "https://pub-fd61494d840c4273af7d86d7a8a10e0f.r2.dev"
@@ -126,7 +126,7 @@ spec:
         containers:
           app:
             image:
-              repository: ghcr.io/s0len/thetvsportsdb-frontend
+              repository: ghcr.io/s0len/tvsportsdb-frontend
               tag: latest@sha256:b9773c24b43423a3a413359b6713f66c68c62e9840b3489da1e297e2e28c6761
             env:
               TZ: ${TIMEZONE}
@@ -188,7 +188,7 @@ spec:
             sectionName: https
         rules:
           - backendRefs:
-              - name: thetvsportsdb-backend
+              - name: tvsportsdb-backend
                 port: *backendPort
       frontend:
         hostnames:
@@ -199,7 +199,7 @@ spec:
             sectionName: https
         rules:
           - backendRefs:
-              - name: thetvsportsdb-frontend
+              - name: tvsportsdb-frontend
                 port: *frontendPort
 
     persistence:

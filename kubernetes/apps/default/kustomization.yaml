@@ -14,5 +14,5 @@ resources:
   - ./hortusfox-web/ks.yaml
   - ./mosquitto/ks.yaml
   - ./nextcloud/ks.yaml
-  - ./thetvsportsdb/ks.yaml
+  - ./tvsportsdb/ks.yaml
   - ./zigbee/ks.yaml
