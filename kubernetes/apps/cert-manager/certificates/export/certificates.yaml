@@ -13,3 +13,18 @@ spec:
   dnsNames:
     - "${SECRET_DOMAIN}"
     - "*.${SECRET_DOMAIN}"
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/cert-manager.io/certificate_v1.json
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: "${SECRET_TVSPORTSDB_DOMAIN//./-}"
+spec:
+  secretName: "${SECRET_TVSPORTSDB_DOMAIN//./-}-tls"
+  issuerRef:
+    name: letsencrypt-production
+    kind: ClusterIssuer
+  commonName: "${SECRET_TVSPORTSDB_DOMAIN}"
+  dnsNames:
+    - "${SECRET_TVSPORTSDB_DOMAIN}"
+    - "*.${SECRET_TVSPORTSDB_DOMAIN}"
