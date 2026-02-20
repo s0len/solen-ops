@@ -109,18 +109,18 @@ spec:
               - |
                 python3 kometa.py --run --read-only-config --overlays-only --run-libraries "Animefilmer"
 
-      sport:
-        type: *type
-        cronjob:
-          <<: *cronjob
-          ttlSecondsAfterFinished: 7200
-          schedule: "16 1,9 * * *"
-        containers:
-          app:
-            <<: *container_app
-            args:
-              - |
-                python3 kometa.py --run --read-only-config --run-libraries "Sport"
+      # sport:
+      #   type: *type
+      #   cronjob:
+      #     <<: *cronjob
+      #     ttlSecondsAfterFinished: 7200
+      #     schedule: "16 1,9 * * *"
+      #   containers:
+      #     app:
+      #       <<: *container_app
+      #       args:
+      #         - |
+      #           python3 kometa.py --run --read-only-config --run-libraries "Sport"
 
       asset-shell:
         type: deployment
