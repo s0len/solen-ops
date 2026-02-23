@@ -22,6 +22,7 @@ spec:
   values:
     controllers:
       backend:
+        replicas: 3
         annotations:
           reloader.stakater.com/auto: "true"
 
