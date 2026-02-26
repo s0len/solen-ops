@@ -43,7 +43,7 @@ spec:
           app:
             image:
               repository: ghcr.io/seerr-team/seerr
-              tag: develop@sha256:ef571ee84ede4166b203cf174e91d9aacf02c703f80ee6be8df23a4fbf7c7810
+              tag: develop@sha256:b194c97c1077eeda880ee0ea8716cbd9591e0c8ab85c043dfa65184e01442144
             env:
               TZ: ${TIMEZONE}
               LOG_LEVEL: "info"
