@@ -61,6 +61,8 @@ spec:
               SNOOKER_UPDATER_ENABLED: "true"
               SNOOKER_UPDATER_CRON_HOURS: "8,12,16,20"
               SNOOKER_ORG_REQUESTED_BY: "solentankar@proton.me"
+              SNOOKER_USE_CANONICAL_EVENTS: true
+              SNOOKER_CANONICAL_BACKFILL_ENABLED: true
               # Database
               DATABASE_URL:
                 valueFrom:
