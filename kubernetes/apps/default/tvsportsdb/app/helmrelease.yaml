@@ -60,6 +60,7 @@ spec:
               UPDATER_CRON_HOURS: "8,10,11,12,14,15,16,17,19,20"
               SNOOKER_UPDATER_ENABLED: "true"
               SNOOKER_UPDATER_CRON_HOURS: "8,12,16,20"
+              SNOOKER_ORG_REQUESTED_BY: "solentankar@proton.me"
               # Database
               DATABASE_URL:
                 valueFrom:
