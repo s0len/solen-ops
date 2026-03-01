@@ -26,7 +26,7 @@ spec:
           app:
             image:
               repository: ghcr.io/autobrr/qui
-              tag: develop@sha256:ac1939593c73ff7794142794f0eb2bc7460855963cfc6627adc5b09d5e0cdd04
+              tag: develop@sha256:4d564717ed364e197e6a7c7aa0bb09b34b2c30aa374c97dee156c7aafc9cba28
             env:
               TZ: ${TIMEZONE}
               QUI__HOST: 0.0.0.0
