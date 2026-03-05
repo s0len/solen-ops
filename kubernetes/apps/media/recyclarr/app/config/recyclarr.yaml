@@ -47,7 +47,7 @@ sonarr:
           - eb3d5cc0a2be0db205fb823640db6a3c # Not Swedish
         assign_scores_to:
           - name: Swedish
-            score: -10000
+            score: 7000
 
       # HDR Formats
       - trash_ids:
@@ -141,7 +141,7 @@ sonarr:
         reset_unmatched_scores:
           enabled: true
           except:
-            - Not Swedish
+            - Swedish
             - "Personal Good Swedish Release Groups"
         qualities:
           - name: WEB 1080p
@@ -621,11 +621,11 @@ radarr:
     quality_profiles:
       - name: SQP-1 (1080p)
         # Uncomment the below line if you don't have access to top-tier indexers
-        min_format_score: 0
+        min_format_score: 7000
         reset_unmatched_scores:
           enabled: true
           except:
-            - Not Swedish
+            - Swedish
 
     # Custom Formats: https://recyclarr.dev/wiki/yaml/config-reference/custom-formats/
     custom_formats:
