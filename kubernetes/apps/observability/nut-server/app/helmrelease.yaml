@@ -29,9 +29,12 @@ spec:
               tag: 2.8.2-r0@sha256:33c4d8c1f9907f6044b1b01130b9ed191e79b954792da68276f335c976ebca20
             env:
               TZ: ${TIMEZONE}
-              DRIVER: usbhid-ups
+              DRIVER: nutdrv_qx
+              PORT: auto
               NAME: ups
+              VENDORID: "06DA"
               DESCRIPTION: "Allnet USV 3000VA"
+              POLLINTERVAL: "15"
             envFrom:
               - secretRef:
                   name: nut-server-secret
