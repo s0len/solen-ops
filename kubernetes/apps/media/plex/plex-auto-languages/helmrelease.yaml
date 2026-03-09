@@ -35,6 +35,7 @@ spec:
               TZ: ${TIMEZONE}
               PLEX_URL: http://plex.media.svc.cluster.local:32400
               REFRESH_LIBRARY_ON_SCAN: false
+              TRIGGER_ON_PLAY: false
             envFrom:
               - secretRef:
                   name: plex-auto-languages-secret
