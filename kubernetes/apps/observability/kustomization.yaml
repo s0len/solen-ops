@@ -11,6 +11,8 @@ resources:
   - ./gatus/ks.yaml
   - ./grafana/ks.yaml
   - ./kube-prometheus-stack/ks.yaml
+  - ./nut-exporter/ks.yaml
+  - ./nut-server/ks.yaml
   - ./silence-operator/ks.yaml
   - ./smartctl-exporter/ks.yaml
   - ./unpoller/ks.yaml

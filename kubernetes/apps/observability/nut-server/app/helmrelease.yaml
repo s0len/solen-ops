@@ -1,0 +1,85 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s-labs/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: &app nut-server
+spec:
+  interval: 30m
+  chartRef:
+    kind: OCIRepository
+    name: nut-server
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      strategy: rollback
+      retries: 3
+  values:
+    controllers:
+      nut-server:
+        annotations:
+          reloader.stakater.com/auto: "true"
+        containers:
+          app:
+            image:
+              repository: docker.io/instantlinux/nut-upsd
+              tag: 2.8.2-r0@sha256:33c4d8c1f9907f6044b1b01130b9ed191e79b954792da68276f335c976ebca20
+            env:
+              TZ: ${TIMEZONE}
+              DRIVER: usbhid-ups
+              NAME: ups
+              DESCRIPTION: "Allnet USV 3000VA"
+            envFrom:
+              - secretRef:
+                  name: nut-server-secret
+            probes:
+              liveness:
+                enabled: true
+                custom: true
+                spec:
+                  tcpSocket:
+                    port: 3493
+                  periodSeconds: 30
+              readiness:
+                enabled: true
+                custom: true
+                spec:
+                  tcpSocket:
+                    port: 3493
+              startup:
+                enabled: true
+                custom: true
+                spec:
+                  tcpSocket:
+                    port: 3493
+                  failureThreshold: 30
+                  periodSeconds: 5
+            securityContext:
+              privileged: true
+            resources:
+              requests:
+                cpu: 25m
+                memory: 64Mi
+              limits:
+                memory: 128Mi
+    defaultPodOptions:
+      nodeSelector:
+        kubernetes.io/hostname: control-0
+    service:
+      app:
+        controller: nut-server
+        ports:
+          server:
+            port: 3493
+            protocol: TCP
+    persistence:
+      usb:
+        type: hostPath
+        hostPath: /dev/bus/usb
+        hostPathType: Directory
+        globalMounts:
+          - path: /dev/bus/usb
+            readOnly: false
