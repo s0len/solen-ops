@@ -31,7 +31,7 @@ spec:
       GPU_SELECTOR: "device.attributes['gpu.intel.com'].pciId == '0x56a6'"
       VOLSYNC_CAPACITY: 600Gi
       VOLSYNC_CACHE_CAPACITY: 50Gi
-      VOLSYNC_SCHEDULE: "0 7 * * *"
+      VOLSYNC_SCHEDULE: "0 2 * * *"
       VOLSYNC_STORAGECLASS: ceph-block
       VOLSYNC_SNAPSHOTCLASS: csi-ceph-blockpool
 ---
@@ -91,7 +91,7 @@ spec:
     substitute:
       APP: *app
       VOLSYNC_CAPACITY: 10Gi
-      VOLSYNC_SCHEDULE: "20 7 * * *"
+      VOLSYNC_SCHEDULE: "45 2 * * *"
       VOLSYNC_STORAGECLASS: ceph-block
       VOLSYNC_SNAPSHOTCLASS: csi-ceph-blockpool
 ---
@@ -127,7 +127,7 @@ spec:
       APP_UID: "568"
       APP_GID: "568"
       VOLSYNC_CAPACITY: 2Gi
-      VOLSYNC_SCHEDULE: "30 7 * * *"
+      VOLSYNC_SCHEDULE: "0 3 * * *"
       VOLSYNC_STORAGECLASS: ceph-block
       VOLSYNC_SNAPSHOTCLASS: csi-ceph-blockpool
 ---
@@ -213,6 +213,6 @@ spec:
     substitute:
       APP: *app
       VOLSYNC_CAPACITY: 2Gi
-      VOLSYNC_SCHEDULE: "40 7 * * *"
+      VOLSYNC_SCHEDULE: "15 3 * * *"
       VOLSYNC_STORAGECLASS: ceph-block
       VOLSYNC_SNAPSHOTCLASS: csi-ceph-blockpool

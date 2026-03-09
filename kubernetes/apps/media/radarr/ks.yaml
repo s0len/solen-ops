@@ -31,7 +31,7 @@ spec:
       APP: *app
       GATUS_SUBDOMAIN: radarr-standard
       VOLSYNC_CAPACITY: 6Gi
-      VOLSYNC_SCHEDULE: "0 8 * * *"
+      VOLSYNC_SCHEDULE: "45 3 * * *"
       VOLSYNC_STORAGECLASS: ceph-block
       VOLSYNC_SNAPSHOTCLASS: csi-ceph-blockpool
 ---
@@ -67,7 +67,7 @@ spec:
       APP: *app
       GATUS_SUBDOMAIN: radarr-kids
       VOLSYNC_CAPACITY: 6Gi
-      VOLSYNC_SCHEDULE: "0 8 * * *"
+      VOLSYNC_SCHEDULE: "0 4 * * *"
       VOLSYNC_STORAGECLASS: ceph-block
       VOLSYNC_SNAPSHOTCLASS: csi-ceph-blockpool
 ---
@@ -103,6 +103,6 @@ spec:
       APP: *app
       GATUS_SUBDOMAIN: radarr-anime
       VOLSYNC_CAPACITY: 6Gi
-      VOLSYNC_SCHEDULE: "0 8 * * *"
+      VOLSYNC_SCHEDULE: "15 4 * * *"
       VOLSYNC_STORAGECLASS: ceph-block
       VOLSYNC_SNAPSHOTCLASS: csi-ceph-blockpool
