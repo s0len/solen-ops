@@ -6,6 +6,7 @@ namespace: default
 components:
   - ../../components/common
 resources:
+  - ./no-auth-securitypolicy.yaml
   - ./authelia/ks.yaml
   - ./blueriiot2mqtt/ks.yaml
   - ./glauth/ks.yaml

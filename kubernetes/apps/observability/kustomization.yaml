@@ -6,6 +6,7 @@ namespace: observability
 components:
   - ../../components/common
 resources:
+  - ./no-auth-securitypolicy.yaml
   # - ./dcmg-exporter/ks.yaml
   - ./fluent-bit/ks.yaml
   - ./gatus/ks.yaml
