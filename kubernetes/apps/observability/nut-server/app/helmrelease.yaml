@@ -72,6 +72,16 @@ spec:
           server:
             port: 3493
             protocol: TCP
+      lb:
+        controller: nut-server
+        type: LoadBalancer
+        annotations:
+          lbipam.cilium.io/ips: ${NUT_SERVER_LB_IP}
+        externalTrafficPolicy: Cluster
+        ports:
+          server:
+            port: 3493
+            protocol: TCP
     persistence:
       usb:
         type: hostPath
@@ -88,4 +98,13 @@ spec:
             app:
               - path: /etc/nut/local/ups.conf
                 subPath: ups.conf
+                readOnly: true
+      users:
+        type: secret
+        name: nut-server-secret
+        advancedMounts:
+          nut-server:
+            app:
+              - path: /etc/nut/local/upsd.users
+                subPath: upsd.users
                 readOnly: true
