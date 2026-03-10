@@ -92,12 +92,10 @@ spec:
             port: *port
     route:
       app:
-        labels:
-          auth.home.arpa/enabled: "true"
         hostnames:
           - "{{ .Release.Name }}.${SECRET_DOMAIN}"
         parentRefs:
-          - name: envoy-external
+          - name: envoy-internal
             namespace: network
             sectionName: https
     persistence:

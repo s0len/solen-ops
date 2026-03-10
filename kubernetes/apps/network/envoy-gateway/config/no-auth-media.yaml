@@ -1,0 +1,24 @@
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/gateway.envoyproxy.io/securitypolicy_v1alpha1.json
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: SecurityPolicy
+metadata:
+  name: no-auth-media
+  namespace: media
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: plex
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: seerr
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: tautulli
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: audiobookshelf
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: notifiarr

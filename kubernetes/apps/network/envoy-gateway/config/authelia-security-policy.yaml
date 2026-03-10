@@ -4,12 +4,12 @@ apiVersion: gateway.envoyproxy.io/v1alpha1
 kind: SecurityPolicy
 metadata:
   name: authelia-auth
+  namespace: network
 spec:
-  targetSelectors:
+  targetRefs:
     - group: gateway.networking.k8s.io
-      kind: HTTPRoute
-      matchLabels:
-        auth.home.arpa/enabled: "true"
+      kind: Gateway
+      name: envoy-external
   extAuth:
     http:
       backendRefs:

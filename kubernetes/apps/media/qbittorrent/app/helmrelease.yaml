@@ -192,12 +192,10 @@ spec:
 
     route:
       app:
-        labels:
-          auth.home.arpa/enabled: "true"
         hostnames:
           - "qbit.${SECRET_DOMAIN}"
         parentRefs:
-          - name: envoy-external
+          - name: envoy-internal
             namespace: network
             sectionName: https
         rules:

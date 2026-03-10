@@ -6,5 +6,11 @@ resources:
   - ./authelia-security-policy.yaml
   - ./envoy.yaml
   - ./grafanadashboard.yaml
+  - ./no-auth-ai.yaml
+  - ./no-auth-default.yaml
+  - ./no-auth-flux-system.yaml
+  - ./no-auth-media.yaml
+  - ./no-auth-network.yaml
+  - ./no-auth-observability.yaml
   - ./observability.yaml
 
