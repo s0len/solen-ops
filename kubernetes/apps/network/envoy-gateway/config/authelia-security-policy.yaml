@@ -12,10 +12,10 @@ spec:
         auth.home.arpa/enabled: "true"
   extAuth:
     http:
-      backendRef:
-        name: authelia
-        namespace: default
-        port: 80
+      backendRefs:
+        - name: authelia
+          namespace: default
+          port: 80
       path: /api/authz/ext-authz
       headersToBackend:
         - Authorization
