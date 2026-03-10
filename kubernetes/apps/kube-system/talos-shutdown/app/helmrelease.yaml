@@ -25,9 +25,16 @@ spec:
         initContainers:
           talosctl:
             image:
-              repository: ghcr.io/siderolabs/talosctl
-              tag: v1.12.4
-            command: [cp, /talosctl, /shared/talosctl]
+              repository: alpine
+              tag: "3.21"
+            command:
+              - sh
+              - -c
+              - wget -qO /shared/talosctl "https://github.com/siderolabs/talos/releases/download/v1.12.4/talosctl-linux-amd64" && chmod +x /shared/talosctl
+            securityContext:
+              allowPrivilegeEscalation: false
+              capabilities:
+                drop: ["ALL"]
         containers:
           app:
             image:
