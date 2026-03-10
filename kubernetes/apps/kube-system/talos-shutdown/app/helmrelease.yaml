@@ -1,0 +1,101 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s-labs/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: &app talos-shutdown
+spec:
+  interval: 30m
+  chartRef:
+    kind: OCIRepository
+    name: talos-shutdown
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      strategy: rollback
+      retries: 3
+  values:
+    controllers:
+      talos-shutdown:
+        annotations:
+          reloader.stakater.com/auto: "true"
+        initContainers:
+          talosctl:
+            image:
+              repository: ghcr.io/siderolabs/talosctl
+              tag: v1.12.4
+            command: [cp, /talosctl, /shared/talosctl]
+        containers:
+          app:
+            image:
+              repository: python
+              tag: 3.13-alpine
+            command: [python3, /app/server.py]
+            env:
+              TALOS_NODES: "192.168.10.40,192.168.10.41,192.168.10.42"
+            envFrom:
+              - secretRef:
+                  name: talos-shutdown-secret
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities:
+                drop: ["ALL"]
+            resources:
+              requests:
+                cpu: 5m
+                memory: 32Mi
+              limits:
+                memory: 64Mi
+            probes:
+              liveness:
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /health
+                    port: 8080
+                  periodSeconds: 30
+              readiness:
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /health
+                    port: 8080
+    defaultPodOptions:
+      hostNetwork: true
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534
+        runAsGroup: 65534
+        seccompProfile:
+          type: RuntimeDefault
+    service:
+      app:
+        controller: *app
+        ports:
+          http:
+            port: 8080
+    persistence:
+      script:
+        type: configMap
+        name: talos-shutdown-script
+        globalMounts:
+          - path: /app/server.py
+            subPath: server.py
+            readOnly: true
+      talosconfig:
+        type: secret
+        name: talos-shutdown-secret
+        globalMounts:
+          - path: /talos/config
+            subPath: config
+            readOnly: true
+      shared:
+        type: emptyDir
+        globalMounts:
+          - path: /shared

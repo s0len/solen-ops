@@ -1,0 +1,60 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: talos-shutdown-script
+data:
+  server.py: |
+    #!/usr/bin/env python3
+    """Tiny HTTP webhook that triggers graceful Talos node shutdown."""
+    import json
+    import subprocess
+    import os
+    from http.server import HTTPServer, BaseHTTPRequestHandler
+
+    NODES = os.environ.get("TALOS_NODES", "192.168.10.40,192.168.10.41,192.168.10.42")
+    TOKEN = os.environ.get("WEBHOOK_TOKEN", "")
+
+    class Handler(BaseHTTPRequestHandler):
+        def do_POST(self):
+            if self.path != "/shutdown":
+                self.send_response(404)
+                self.end_headers()
+                return
+
+            auth = self.headers.get("Authorization", "")
+            if TOKEN and auth != f"Bearer {TOKEN}":
+                self.send_response(403)
+                self.end_headers()
+                self.wfile.write(b'{"error":"unauthorized"}')
+                return
+
+            results = []
+            for node in NODES.split(","):
+                node = node.strip()
+                cmd = ["/shared/talosctl", "shutdown", "--nodes", node,
+                       "--talosconfig", "/talos/config"]
+                result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
+                results.append({
+                    "node": node,
+                    "rc": result.returncode,
+                    "stdout": result.stdout.strip(),
+                    "stderr": result.stderr.strip(),
+                })
+
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.end_headers()
+            self.wfile.write(json.dumps({"results": results}).encode())
+
+        def do_GET(self):
+            if self.path == "/health":
+                self.send_response(200)
+                self.end_headers()
+                self.wfile.write(b'{"status":"ok"}')
+                return
+            self.send_response(404)
+            self.end_headers()
+
+    print(f"Starting shutdown webhook on :8080 (nodes: {NODES})")
+    HTTPServer(("0.0.0.0", 8080), Handler).serve_forever()

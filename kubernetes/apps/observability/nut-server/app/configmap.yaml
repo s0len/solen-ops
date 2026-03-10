@@ -1,0 +1,15 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nut-server-config
+data:
+  ups.conf: |
+    [ups]
+        driver = nutdrv_qx
+        port = auto
+        desc = "Allnet USV 3000VA"
+        vendorid = 06DA
+        pollinterval = 15
+        default.battery.voltage.high = 82.0
+        default.battery.voltage.low = 63.0

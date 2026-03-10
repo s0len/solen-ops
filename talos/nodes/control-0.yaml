@@ -40,6 +40,8 @@ machine:
   udev:
     rules:
       - SUBSYSTEM=="drm", KERNEL=="renderD*", GROUP="44", MODE="0660"
+      # Unbind usbhid from OMRON USB UPS (06DA:0003) so NUT can access it via libusb
+      - ACTION=="add|change", SUBSYSTEM=="usb", ATTR{idVendor}=="06da", ATTR{idProduct}=="0003", RUN+="/bin/sh -c 'echo 1-7:1.0 > /sys/bus/usb/drivers/usbhid/unbind 2>/dev/null || true'"
   nodeLabels:
     intel.feature.node.kubernetes.io/gpu: "true"
     topology.kubernetes.io/zone: zone-a
