@@ -25,3 +25,12 @@ spec:
     - group: gateway.networking.k8s.io
       kind: HTTPRoute
       name: hortusfox-web
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: paperless
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: tandoor
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: zipline
