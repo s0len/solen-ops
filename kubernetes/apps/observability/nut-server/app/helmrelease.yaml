@@ -63,21 +63,12 @@ spec:
               limits:
                 memory: 128Mi
     defaultPodOptions:
+      hostNetwork: true
       nodeSelector:
         kubernetes.io/hostname: control-0
     service:
       app:
         controller: nut-server
-        ports:
-          server:
-            port: 3493
-            protocol: TCP
-      lb:
-        controller: nut-server
-        type: LoadBalancer
-        annotations:
-          lbipam.cilium.io/ips: ${NUT_SERVER_LB_IP}
-        externalTrafficPolicy: Cluster
         ports:
           server:
             port: 3493
