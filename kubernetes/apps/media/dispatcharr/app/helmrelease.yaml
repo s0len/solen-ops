@@ -87,8 +87,8 @@ spec:
         containers:
           app:
             image:
-              repository: ghcr.io/s0len/dispatcharr
-              tag: test@sha256:1a1c471f338c52ec5b1250d6998d1cf69d41a3a218d111be9acf7072211f9d5c # Testing PR #878 (nginx fix) and PR #879 (external services)
+              repository: ghcr.io/dispatcharr/dispatcharr
+              tag: 0.20.2@sha256:116f7f4ffa512afc4d196f2f1649bb5af55a3384097632c33203dd8feb37a91b
             env:
               TZ: ${TIMEZONE}
               REDIS_HOST: dragonfly.database.svc.cluster.local
