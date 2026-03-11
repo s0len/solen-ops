@@ -22,9 +22,9 @@ machine:
   network:
     hostname: control-1
     interfaces:
-      # Onboard Intel (reliable for etcd)
+      # USB 2.5GbE adapter (stabilized via usbcore.autosuspend=-1 and quirks in schematic)
       - deviceSelector:
-          hardwareAddr: 20:88:10:8a:8f:4b
+          hardwareAddr: c8:4d:44:23:47:08
         mtu: 1500
         dhcp: true
         vip:

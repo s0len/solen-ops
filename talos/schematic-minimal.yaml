@@ -17,6 +17,8 @@ customization:
     - -selinux
     - cpufreq.default_governor=ondemand
     - pcie_aspm=off
+    - usbcore.autosuspend=-1
+    - usbcore.quirks=0bda:8156:k,0bda:8153:k
   systemExtensions:
     officialExtensions:
       - siderolabs/i915
