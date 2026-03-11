@@ -22,18 +22,13 @@ machine:
   network:
     hostname: control-1
     interfaces:
-      # USB 2.5GbE adapter (primary - faster!)
+      # Onboard Intel (reliable for etcd)
       - deviceSelector:
-          hardwareAddr: c8:4d:44:23:47:08
+          hardwareAddr: 20:88:10:8a:8f:4b
         mtu: 1500
         dhcp: true
         vip:
           ip: 192.168.10.80
-      # Onboard Intel (backup/secondary)
-      # - deviceSelector:
-      #     hardwareAddr: 20:88:10:8a:8f:4b
-      #   mtu: 1500
-      #   dhcp: false
   install:
     diskSelector:
       model: "*Seagate BarraCud*"
