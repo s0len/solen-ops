@@ -39,7 +39,7 @@ spec:
           app:
             image:
               repository: python
-              tag: 3.13-alpine
+              tag: 3.14-alpine
             command: [python3, /app/server.py]
             env:
               TALOS_NODES: "192.168.10.40,192.168.10.41,192.168.10.42"
