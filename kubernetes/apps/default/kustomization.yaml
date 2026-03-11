@@ -14,6 +14,7 @@ resources:
   - ./home-assistant/ks.yaml
   - ./hortusfox-web/ks.yaml
   - ./mosquitto/ks.yaml
+  - ./netronome/ks.yaml
   - ./nextcloud/ks.yaml
   - ./tvsportsdb/ks.yaml
   - ./zigbee/ks.yaml
