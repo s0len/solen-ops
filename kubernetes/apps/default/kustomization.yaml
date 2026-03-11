@@ -16,5 +16,9 @@ resources:
   - ./mosquitto/ks.yaml
   - ./netronome/ks.yaml
   - ./nextcloud/ks.yaml
+  - ./paperless/ks.yaml
+  - ./searxng/ks.yaml
+  - ./tandoor/ks.yaml
   - ./tvsportsdb/ks.yaml
+  - ./zipline/ks.yaml
   - ./zigbee/ks.yaml
