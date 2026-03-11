@@ -14,4 +14,4 @@ spec:
   resources:
     requests:
       storage: "${VOLSYNC_CAPACITY}"
-  storageClassName: "${VOLSYNC_STORAGECLASS:-openebs-zfs-128k}"
+  storageClassName: "${VOLSYNC_STORAGECLASS:-ceph-block}"

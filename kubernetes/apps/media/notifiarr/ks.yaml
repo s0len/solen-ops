@@ -31,5 +31,3 @@ spec:
       APP: *app
       VOLSYNC_CAPACITY: 3Gi
       VOLSYNC_SCHEDULE: "45 6 * * *"
-      VOLSYNC_STORAGECLASS: ceph-block
-      VOLSYNC_SNAPSHOTCLASS: csi-ceph-blockpool

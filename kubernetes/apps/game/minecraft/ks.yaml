@@ -31,8 +31,6 @@ spec:
       APP: *app
       VOLSYNC_CAPACITY: 30Gi
       VOLSYNC_SCHEDULE: "30 1 * * *"
-      VOLSYNC_STORAGECLASS: ceph-block
-      VOLSYNC_SNAPSHOTCLASS: csi-ceph-blockpool
   patches:
     # Remove dataSourceRef for fresh install (no backup to restore from yet)
     # Delete this patch once backups exist and you want to restore

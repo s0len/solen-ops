@@ -36,7 +36,5 @@ spec:
       VOLSYNC_CAPACITY: 400Gi
       VOLSYNC_CACHE_CAPACITY: 32Gi
       VOLSYNC_SCHEDULE: "0 1 * * *"
-      VOLSYNC_STORAGECLASS: ceph-block
-      VOLSYNC_SNAPSHOTCLASS: csi-ceph-blockpool
       GATUS_SUBDOMAIN: cloud
       GATUS_PATH: /status.php

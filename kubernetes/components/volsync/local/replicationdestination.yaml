@@ -12,11 +12,11 @@ spec:
   restic:
     repository: "${APP}-volsync-local-secret"
     copyMethod: "${VOLSYNC_COPYMETHOD:-Snapshot}"
-    volumeSnapshotClassName: "${VOLSYNC_SNAPSHOTCLASS:-openebs-zfs}"
-    cacheStorageClassName: "${VOLSYNC_STORAGECLASS:-openebs-zfs-128k}"
+    volumeSnapshotClassName: "${VOLSYNC_SNAPSHOTCLASS:-csi-ceph-blockpool}"
+    cacheStorageClassName: "${VOLSYNC_STORAGECLASS:-ceph-block}"
     cacheAccessModes: ["${VOLSYNC_CACHE_ACCESSMODES:-ReadWriteOnce}"]
     cacheCapacity: "${VOLSYNC_CACHE_CAPACITY:-10Gi}"
-    storageClassName: "${VOLSYNC_STORAGECLASS:-openebs-zfs-128k}"
+    storageClassName: "${VOLSYNC_STORAGECLASS:-ceph-block}"
     accessModes: ["${VOLSYNC_ACCESSMODES:-ReadWriteOnce}"]
     capacity: "${VOLSYNC_CAPACITY}"
     cleanupCachePVC: true
