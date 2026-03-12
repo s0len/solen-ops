@@ -69,6 +69,10 @@ spec:
     service:
       app:
         controller: nut-server
+        type: LoadBalancer
+        annotations:
+          lbipam.cilium.io/ips: ${NUT_SERVER_LB_IP}
+        externalTrafficPolicy: Local
         ports:
           server:
             port: 3493
