@@ -13,7 +13,6 @@ sonarr:
     api_key: !env_var SONARR_API_KEY
 
     delete_old_custom_formats: true
-    replace_existing_custom_formats: false
 
     media_naming:
       series: plex-tvdb
@@ -69,12 +68,8 @@ sonarr:
       add:
         # Golden Rule HD for WEB-1080p
         - trash_id: 158188097a58d7687dee647e04af0da3  # [Required] Golden Rule HD
-          select:
-            - 47435ece6b99a0b477caf360e79ba0bb  # x265 (HD)
         # Golden Rule UHD for WEB-2160p
         - trash_id: e3f37512790f00d0e89e54fe5e790d1c  # [Required] Golden Rule UHD
-          select:
-            - 9b64dff695c2115facf1b6ea59c9bd07  # x265 (no HDR/DV)
         # DV Boost for WEB-2160p
         - trash_id: e0b2774083df4265f25c9e5bc6c80940  # [HDR Formats] DV Boost
         # DV (w/o HDR fallback) for WEB-2160p
@@ -155,7 +150,6 @@ radarr:
     api_key: !env_var RADARR_API_KEY
 
     delete_old_custom_formats: true
-    replace_existing_custom_formats: false
 
     media_naming:
       folder: plex-tmdb
@@ -195,7 +189,6 @@ radarr:
     base_url: http://radarr-standard.media.svc.cluster.local
     api_key: !env_var RADARR_API_KEY
 
-    replace_existing_custom_formats: true
     delete_old_custom_formats: true
 
     media_naming:
@@ -218,8 +211,6 @@ radarr:
       - trash_id: 0ada8e60cc3ddf2733b65de10f4a6c72  # [SQP] SQP-3 (Audio)
         reset_unmatched_scores:
           enabled: true
-          except:
-            - "!Personal LQ list"
 
       # Guide-backed SQP-4
       - trash_id: 013f89e6da27519fe56cf482702a2db9  # [SQP] SQP-4
@@ -230,8 +221,6 @@ radarr:
       add:
         # Required Golden Rule UHD for all SQP profiles
         - trash_id: ff204bbcecdd487d1cefcefdbf0c278d  # [Required] Golden Rule UHD
-          select:
-            - 839bea857ed2c0a8e084f3cbdbd65ecb  # x265 (no HDR/DV)
         # DV Boost
         - trash_id: 1616617ab3a14397a2b2321bcbda44d1  # [HDR Formats] DV Boost
         # DV (w/o HDR fallback) block
@@ -306,7 +295,6 @@ radarr:
     api_key: !env_var RADARR_API_KEY
 
     delete_old_custom_formats: true
-    replace_existing_custom_formats: false
 
     media_naming:
       folder: plex-tmdb
