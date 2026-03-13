@@ -46,8 +46,7 @@ spec:
               PLEX_LIBRARY_NAME: Sport
               PLEX_URL: http://${PLEX_IP}:32400
               # GUI settings
-              GUI_ENABLED: "true"
-              GUI_PORT: &port 8080
+              GUI_PORT: &port 8765
             envFrom:
               - secretRef:
                   name: playbook-secret
