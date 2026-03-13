@@ -102,6 +102,8 @@ spec:
         type: emptyDir
         globalMounts:
           - path: /tmp
-            subPath: tmp
+      run:
+        type: emptyDir
+        medium: Memory
+        globalMounts:
           - path: /run
-            subPath: run
