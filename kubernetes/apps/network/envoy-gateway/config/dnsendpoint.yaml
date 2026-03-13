@@ -1,0 +1,15 @@
+---
+# Make internal.uniflix.vip resolvable from public DNS resolvers.
+# Without this, the CNAME chain (e.g. playbook.uniflix.vip → internal.uniflix.vip)
+# breaks for clients not using the local UniFi DNS.
+apiVersion: externaldns.k8s.io/v1alpha1
+kind: DNSEndpoint
+metadata:
+  name: envoy-internal-gateway
+  annotations:
+    external-dns.alpha.kubernetes.io/cloudflare-proxied: "false"
+spec:
+  endpoints:
+    - dnsName: "internal.${SECRET_DOMAIN}"
+      recordType: A
+      targets: ["${NGINX_INTERNAL_IP}"]
