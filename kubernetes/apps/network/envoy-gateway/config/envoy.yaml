@@ -82,6 +82,7 @@ metadata:
   name: envoy-internal
   annotations:
     external-dns.alpha.kubernetes.io/target: &hostname "internal.${SECRET_DOMAIN}"
+    external-dns.alpha.kubernetes.io/cloudflare-proxied: "false"
 spec:
   gatewayClassName: envoy
   infrastructure:
