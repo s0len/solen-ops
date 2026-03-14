@@ -38,7 +38,7 @@ spec:
           init-migrations:
             image:
               repository: ghcr.io/s0len/tvsportsdb-backend
-              tag: latest@sha256:274da7bee596262ff205c9f492eae5e8dcf1836299730ab1a5494baf73dd0b8a
+              tag: latest@sha256:807d93f4648d6071ea7a060e2b7a042a963afc561b74bb2ab9d798ba2c0ee6c1
             command: ["alembic", "upgrade", "head"]
             env:
               DATABASE_URL:
@@ -51,7 +51,7 @@ spec:
           app:
             image:
               repository: ghcr.io/s0len/tvsportsdb-backend
-              tag: latest@sha256:274da7bee596262ff205c9f492eae5e8dcf1836299730ab1a5494baf73dd0b8a
+              tag: latest@sha256:807d93f4648d6071ea7a060e2b7a042a963afc561b74bb2ab9d798ba2c0ee6c1
             env:
               TZ: ${TIMEZONE}
               DEBUG: "false"
@@ -62,7 +62,7 @@ spec:
               SNOOKER_UPDATER_CRON_HOURS: "8,12,15,18"
               SNOOKER_USE_CANONICAL_EVENTS: "true"
               SNOOKER_CANONICAL_BACKFILL_ENABLED: "true"
-              SNOOKER_ORG_MIN_REQUEST_INTERVAL_SECONDS: "10"
+              SNOOKER_ORG_MIN_REQUEST_INTERVAL_SECONDS: "15"
               SNOOKER_ALLOWED_TOURNAMENTS:
 
               # Database
