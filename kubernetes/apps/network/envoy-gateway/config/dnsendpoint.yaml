@@ -6,10 +6,11 @@ apiVersion: externaldns.k8s.io/v1alpha1
 kind: DNSEndpoint
 metadata:
   name: envoy-internal-gateway
-  annotations:
-    external-dns.alpha.kubernetes.io/cloudflare-proxied: "false"
 spec:
   endpoints:
     - dnsName: "internal.${SECRET_DOMAIN}"
       recordType: A
       targets: ["${NGINX_INTERNAL_IP}"]
+      providerSpecific:
+        - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
+          value: "false"
