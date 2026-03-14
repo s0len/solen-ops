@@ -63,7 +63,7 @@ spec:
               SNOOKER_USE_CANONICAL_EVENTS: "true"
               SNOOKER_CANONICAL_BACKFILL_ENABLED: "true"
               SNOOKER_ORG_MIN_REQUEST_INTERVAL_SECONDS: "15"
-              SNOOKER_ALLOWED_TOURNAMENTS:
+              SNOOKER_ALLOWED_TOURNAMENTS: "Masters,German Masters,Welsh Open,World Grand Prix,Players Championship,Tour Championship,World Championship,UK Championship,International Championship,Northern Ireland Open,Wuhan Open,Saudi Arabia Masters,Shanghai Masters,World Open,China Grand Prix"
 
               # Database
               DATABASE_URL:
