@@ -75,7 +75,7 @@ sonarr:
         # Golden Rule HD for WEB-1080p and Swedish
         - trash_id: 158188097a58d7687dee647e04af0da3  # [Required] Golden Rule HD
           assign_scores_to:
-            - trash_id: 72dae194fc92bf828f32cde7744e51a1  # WEB-1080p
+            - name: WEB-1080p
             - name: Swedish
         # Golden Rule UHD for WEB-2160p
         - trash_id: e3f37512790f00d0e89e54fe5e790d1c  # [Required] Golden Rule UHD
@@ -90,7 +90,7 @@ sonarr:
         # Optional miscellaneous for WEB-1080p and Swedish
         - trash_id: f4a0410a1df109a66d6e47dcadcce014  # [Optional] Miscellaneous
           assign_scores_to:
-            - trash_id: 72dae194fc92bf828f32cde7744e51a1  # WEB-1080p
+            - name: WEB-1080p
             - name: Swedish
           select:
             - 32b367365729d530ca1c124a0b180c64  # Bad Dual Groups
