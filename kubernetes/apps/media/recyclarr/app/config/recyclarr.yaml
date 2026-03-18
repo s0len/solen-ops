@@ -131,19 +131,19 @@ sonarr:
       - trash_ids:
           - 026d5aadd1a6b4e550b134cb6c72b3ca # Uncensored
         assign_scores_to:
-          - name: Remux-1080p - Anime
+          - name: "[Anime] Remux-1080p"
             score: 0
 
       - trash_ids:
           - b2550eb333d27b75833e25b8c2557b38 # 10bit
         assign_scores_to:
-          - name: Remux-1080p - Anime
+          - name: "[Anime] Remux-1080p"
             score: 0
 
       - trash_ids:
           - 418f50b10f1907201b6cfdf881f467b7 # Anime Dual Audio
         assign_scores_to:
-          - name: Remux-1080p - Anime
+          - name: "[Anime] Remux-1080p"
             score: 0
 
 # Configuration specific to Radarr
@@ -173,19 +173,19 @@ radarr:
       - trash_ids:
           - 064af5f084a0a24458cc8ecd3220f93f # Uncensored
         assign_scores_to:
-          - name: Remux-1080p - Anime
+          - name: "[Anime] Remux-1080p"
             score: 0
 
       - trash_ids:
           - a5d148168c4506b55cf53984107c396e # 10bit
         assign_scores_to:
-          - name: Remux-1080p - Anime
+          - name: "[Anime] Remux-1080p"
             score: 0
 
       - trash_ids:
           - 4a3b087eea2ce012fcc1ce319259a3be # Anime Dual Audio
         assign_scores_to:
-          - name: Remux-1080p - Anime
+          - name: "[Anime] Remux-1080p"
             score: 0
 
   radarr-standard:
@@ -261,26 +261,26 @@ radarr:
       - trash_ids:
           - 2899d84dc9372de3408e6d8cc18e9666 # x264
         assign_scores_to:
-          - name: SQP-2
+          - name: "[SQP] SQP-2"
             score: 0
-          - name: SQP-4
+          - name: "[SQP] SQP-4"
             score: 0
 
       # x265 (HD) allowed for SQP-2
       - trash_ids:
           - dc98083864ea246d05a42df0d05f81cc # x265 (HD)
         assign_scores_to:
-          - name: SQP-2
-          - name: SQP-3
-          - name: SQP-4
+          - name: "[SQP] SQP-2"
+          - name: "[SQP] SQP-3 (Audio)"
+          - name: "[SQP] SQP-4"
 
       # x265 (no HDR/DV) score 0 for SQP-2 and SQP-3
       - trash_ids:
           - 839bea857ed2c0a8e084f3cbdbd65ecb # x265 (no HDR/DV)
         assign_scores_to:
-          - name: SQP-2
+          - name: "[SQP] SQP-2"
             score: 0
-          - name: SQP-3
+          - name: "[SQP] SQP-3 (Audio)"
             score: 0
 
       # SQP-3 release group boosts
@@ -291,7 +291,7 @@ radarr:
           - 7a0d1ad358fee9f5b074af3ef3f9d9ef # hallowed
           - d66d26d37c32b0137cd26f42abaa7c2e # TheFarm
         assign_scores_to:
-          - name: SQP-3
+          - name: "[SQP] SQP-3 (Audio)"
 
   radarr-kids:
     base_url: http://radarr-kids.media.svc.cluster.local
