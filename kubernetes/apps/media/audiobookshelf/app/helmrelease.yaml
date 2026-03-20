@@ -27,8 +27,8 @@ spec:
         containers:
           app:
             image:
-              repository: ghcr.io/advplyr/audiobookshelf
-              tag: 2.33.0@sha256:41047b9985f9c38c92ae8b4b34ffd1d77fca36efdfe49c6b962ff2fc8ccae1e9
+              repository: ghcr.io/s0len/audiobookshelf
+              tag: kobo-sync@sha256:6ac349499ef9998c20fa661efc7fe926f8a8a04f7f842f4b3b170654043f99d7
             env:
               TZ: ${TIMEZONE}
               AUDIOBOOKSHELF_UID: 568
