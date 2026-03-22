@@ -13,6 +13,7 @@ resources:
   - ./cross-seed/ks.yaml
   - ./dispatcharr/ks.yaml  # testing: PR #878 + #879 fixes
   - ./flaresolverr/ks.yaml
+  - ./grimmory/ks.yaml
   - ./maintainerr/ks.yaml
   - ./notifiarr/ks.yaml
   - ./plex/ks.yaml
