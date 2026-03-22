@@ -140,14 +140,14 @@ spec:
             mariadb:
               - path: /config
 
-      books:
+      data:
         type: nfs
         server: ${TRUENAS_IP}
-        path: /mnt/rust/data/media/books
+        path: /mnt/rust/data
         advancedMounts:
           grimmory:
             app:
-              - path: /books
+              - path: /data
 
       tmp:
         type: emptyDir
