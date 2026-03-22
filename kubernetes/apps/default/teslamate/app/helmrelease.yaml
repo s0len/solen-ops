@@ -39,7 +39,18 @@ spec:
             command: ["sh", "-c"]
             args:
               - |
-                PGPASSWORD="$INIT_POSTGRES_SUPER_PASS" psql -h "$DATABASE_HOST" -U postgres -d "$DATABASE_NAME" -c "CREATE EXTENSION IF NOT EXISTS cube WITH SCHEMA public;" -c "CREATE EXTENSION IF NOT EXISTS earthdistance WITH SCHEMA public;"
+                PGPASSWORD="$INIT_POSTGRES_SUPER_PASS" psql -h "$DATABASE_HOST" -U postgres -d "$DATABASE_NAME" \
+                  -c "CREATE EXTENSION IF NOT EXISTS cube WITH SCHEMA public;" \
+                  -c "CREATE EXTENSION IF NOT EXISTS earthdistance WITH SCHEMA public;" \
+                  -c "ALTER FUNCTION ll_to_earth SET search_path = public;" \
+                  -c "ALTER FUNCTION earth() OWNER TO $DATABASE_USER;" \
+                  -c "ALTER FUNCTION earth_box(earth, float8) OWNER TO $DATABASE_USER;" \
+                  -c "ALTER FUNCTION earth_distance(earth, earth) OWNER TO $DATABASE_USER;" \
+                  -c "ALTER FUNCTION gc_to_sec(float8) OWNER TO $DATABASE_USER;" \
+                  -c "ALTER FUNCTION latitude(earth) OWNER TO $DATABASE_USER;" \
+                  -c "ALTER FUNCTION longitude(earth) OWNER TO $DATABASE_USER;" \
+                  -c "ALTER FUNCTION ll_to_earth(float8, float8) OWNER TO $DATABASE_USER;" \
+                  -c "ALTER FUNCTION sec_to_gc(float8) OWNER TO $DATABASE_USER;"
             envFrom: *envFrom
         containers:
           app:
