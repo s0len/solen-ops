@@ -66,7 +66,7 @@ spec:
           mariadb:
             image:
               repository: lscr.io/linuxserver/mariadb
-              tag: 11.4.5@sha256:df34ab028c29a5317759e4ee308b5a41bef46df3f5c6da1ce0f143cab075bae3
+              tag: 11.4.9@sha256:be333803b6701d24d657bfe264f9101f43c4fbf7c8cbbe967ad7da04a5389d03
             env:
               TZ: ${TIMEZONE}
             envFrom: *envFrom
