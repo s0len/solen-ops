@@ -28,14 +28,14 @@ spec:
           init-db:
             image:
               repository: ghcr.io/home-operations/postgres-init
-              tag: 18
+              tag: 18@sha256:6fa1f331cddd2eb0b6afa7b8d3685c864127a81ab01c3d9400bc3ff5263a51cf
             envFrom: &envFrom
               - secretRef:
                   name: teslamate-secret
           init-extensions:
             image:
               repository: ghcr.io/cloudnative-pg/postgresql
-              tag: "16.9"
+              tag: "16.9@sha256:4418a66c2232ba0bd63dd6c7a98ee401bcac340efbb5f380f8879d004654a7d3"
             command: ["sh", "-c"]
             args:
               - |

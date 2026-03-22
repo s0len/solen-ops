@@ -24,23 +24,6 @@ spec:
       grimmory:
         annotations:
           reloader.stakater.com/auto: "true"
-        initContainers:
-          init-db:
-            image:
-              repository: lscr.io/linuxserver/mariadb
-              tag: 11.4.5@sha256:df34ab028c29a5317759e4ee308b5a41bef46df3f5c6da1ce0f143cab075bae3
-            command: ["bash", "-c"]
-            args:
-              - |
-                echo "Starting MariaDB for init check..."
-                until mariadb-admin ping -h localhost --silent; do
-                  sleep 1
-                done
-                echo "MariaDB is ready"
-            envFrom: &envFrom
-              - secretRef:
-                  name: grimmory-secret
-            restartPolicy: Always
         containers:
           app:
             image:
@@ -50,7 +33,9 @@ spec:
               TZ: ${TIMEZONE}
               DISK_TYPE: NETWORK
               SWAGGER_ENABLED: "false"
-            envFrom: *envFrom
+            envFrom: &envFrom
+              - secretRef:
+                  name: grimmory-secret
             probes:
               liveness: &probes
                 enabled: true
@@ -85,6 +70,32 @@ spec:
             env:
               TZ: ${TIMEZONE}
             envFrom: *envFrom
+            probes:
+              liveness:
+                enabled: true
+                custom: true
+                spec:
+                  exec:
+                    command:
+                      - mariadb-admin
+                      - ping
+                      - -h
+                      - localhost
+                  initialDelaySeconds: 30
+                  periodSeconds: 10
+                  failureThreshold: 3
+              readiness:
+                enabled: true
+                custom: true
+                spec:
+                  exec:
+                    command:
+                      - mariadb-admin
+                      - ping
+                      - -h
+                      - localhost
+                  initialDelaySeconds: 5
+                  periodSeconds: 5
             resources:
               requests:
                 cpu: 10m
@@ -112,7 +123,7 @@ spec:
         hostnames:
           - "{{ .Release.Name }}.${SECRET_DOMAIN}"
         parentRefs:
-          - name: envoy-internal
+          - name: envoy-external
             namespace: network
             sectionName: https
 
@@ -123,20 +134,20 @@ spec:
           - path: /app/data
 
       mariadb-data:
-        type: emptyDir
+        existingClaim: grimmory-mariadb
         advancedMounts:
           grimmory:
             mariadb:
-              - path: /config
-            init-db:
               - path: /config
 
       books:
         type: nfs
         server: ${TRUENAS_IP}
         path: /mnt/rust/data/media/books
-        globalMounts:
-          - path: /books
+        advancedMounts:
+          grimmory:
+            app:
+              - path: /books
 
       tmp:
         type: emptyDir
