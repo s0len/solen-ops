@@ -32,6 +32,15 @@ spec:
             envFrom: &envFrom
               - secretRef:
                   name: teslamate-secret
+          init-extensions:
+            image:
+              repository: ghcr.io/cloudnative-pg/postgresql
+              tag: "16.9"
+            command: ["sh", "-c"]
+            args:
+              - |
+                PGPASSWORD="$INIT_POSTGRES_SUPER_PASS" psql -h "$DATABASE_HOST" -U postgres -d "$DATABASE_NAME" -c "CREATE EXTENSION IF NOT EXISTS cube WITH SCHEMA public;" -c "CREATE EXTENSION IF NOT EXISTS earthdistance WITH SCHEMA public;"
+            envFrom: *envFrom
         containers:
           app:
             image:
