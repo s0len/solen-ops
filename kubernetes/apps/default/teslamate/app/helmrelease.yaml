@@ -50,6 +50,12 @@ spec:
               TZ: ${TIMEZONE}
               PORT: &port 80
               DISABLE_MQTT: "false"
+              TESLA_API_HOST: https://api.myteslamate.com
+              TESLA_AUTH_HOST: https://api.myteslamate.com
+              TESLA_AUTH_PATH: /api/oauth2/v3
+              TESLA_WSS_HOST: wss://streaming.myteslamate.com
+              TESLA_WSS_TLS_ACCEPT_INVALID_CERTS: "true"
+              TESLA_WSS_USE_VIN: "true"
             envFrom: *envFrom
             probes:
               liveness: &probes
