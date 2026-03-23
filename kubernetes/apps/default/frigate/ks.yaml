@@ -3,8 +3,8 @@
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: &app dispatcharr
-  namespace: &namespace media
+  name: &app frigate
+  namespace: &namespace default
 spec:
   targetNamespace: *namespace
   commonMetadata:
@@ -12,16 +12,15 @@ spec:
       app.kubernetes.io/name: *app
   components:
     - ../../../../components/gpu
+    - ../../../../components/volsync
   dependsOn:
     - name: intel-gpu-resource-driver
       namespace: kube-system
-    - name: cloudnative-pg-cluster
-      namespace: database
-    - name: dragonfly-cluster
-      namespace: database
+    - name: mosquitto
+      namespace: default
     - name: onepassword
       namespace: external-secrets
-  path: ./kubernetes/apps/media/dispatcharr/app
+  path: ./kubernetes/apps/default/frigate/app
   prune: true
   retryInterval: 2m
   sourceRef:
@@ -35,4 +34,4 @@ spec:
     substitute:
       APP: *app
       VOLSYNC_CAPACITY: 5Gi
-      VOLSYNC_SCHEDULE: "15 7 * * *"
+      VOLSYNC_SCHEDULE: "0 2 * * *"

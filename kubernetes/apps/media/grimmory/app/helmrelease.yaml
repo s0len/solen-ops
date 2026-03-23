@@ -18,24 +18,94 @@ spec:
     remediation:
       strategy: rollback
       retries: 3
-
   values:
     controllers:
       grimmory:
         annotations:
           reloader.stakater.com/auto: "true"
+        pod:
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 1000
+            fsGroup: 1000
+            fsGroupChangePolicy: OnRootMismatch
+        initContainers:
+          mariadb:
+            image:
+              repository: docker.io/library/mariadb
+              tag: 11.7.2
+            env:
+              MARIADB_DATABASE: grimmory
+              MARIADB_USER: grimmory
+              MARIADB_PASSWORD:
+                valueFrom:
+                  secretKeyRef:
+                    name: grimmory-secret
+                    key: DATABASE_PASSWORD
+              MARIADB_ROOT_PASSWORD:
+                valueFrom:
+                  secretKeyRef:
+                    name: grimmory-secret
+                    key: MYSQL_ROOT_PASSWORD
+            probes:
+              liveness:
+                enabled: true
+                custom: true
+                spec:
+                  exec:
+                    command:
+                      - bash
+                      - -c
+                      - |-
+                        mariadb-admin ping --socket=/run/mysqld/mysqld.sock --user=root --password=$${MARIADB_ROOT_PASSWORD}
+            restartPolicy: Always
+            securityContext:
+              allowPrivilegeEscalation: false
+              capabilities:
+                drop:
+                  - ALL
+              readOnlyRootFilesystem: true
+              seccompProfile: { type: RuntimeDefault }
+          wait-for-mariadb:
+            image:
+              repository: docker.io/library/mariadb
+              tag: 11.7.2
+            command:
+              - bash
+              - -c
+              - |
+                until mariadb-admin ping --socket=/run/mysqld/mysqld.sock --user=root --password=$${MARIADB_ROOT_PASSWORD} 2>/dev/null; do
+                  echo "Waiting for MariaDB..."
+                  sleep 2
+                done
+            env:
+              MARIADB_ROOT_PASSWORD:
+                valueFrom:
+                  secretKeyRef:
+                    name: grimmory-secret
+                    key: MYSQL_ROOT_PASSWORD
         containers:
-          app:
+          grimmory:
             image:
               repository: ghcr.io/grimmory-tools/grimmory
               tag: v2.3.0@sha256:62ba6f7a3e84ce6188de645c9965fa45a7913b6bfcaf9e2e0df2da0d2466a51a
+            command:
+              - java
+            args:
+              - -jar
+              - /app/app.jar
             env:
               TZ: ${TIMEZONE}
               DISK_TYPE: NETWORK
               SWAGGER_ENABLED: "false"
-            envFrom: &envFrom
-              - secretRef:
-                  name: grimmory-secret
+              DATABASE_URL: jdbc:mariadb://localhost:3306/grimmory
+              DATABASE_USERNAME: grimmory
+              DATABASE_PASSWORD:
+                valueFrom:
+                  secretKeyRef:
+                    name: grimmory-secret
+                    key: DATABASE_PASSWORD
             probes:
               liveness: &probes
                 enabled: true
@@ -44,80 +114,33 @@ spec:
                   httpGet:
                     path: /api/v1/healthcheck
                     port: &port 6060
-                  initialDelaySeconds: 0
-                  periodSeconds: 10
-                  timeoutSeconds: 1
-                  failureThreshold: 3
+                  periodSeconds: 30
+                  timeoutSeconds: 5
+                  failureThreshold: 5
               readiness: *probes
               startup:
                 enabled: true
                 spec:
-                  httpGet:
-                    path: /api/v1/healthcheck
-                    port: *port
                   failureThreshold: 30
                   periodSeconds: 10
             resources:
               requests:
-                cpu: 10m
-                memory: 512Mi
+                cpu: 50m
+                memory: 1Gi
               limits:
                 memory: 2Gi
-          mariadb:
-            image:
-              repository: lscr.io/linuxserver/mariadb
-              tag: 11.4.5@sha256:df34ab028c29a5317759e4ee308b5a41bef46df3f5c6da1ce0f143cab075bae3
-            env:
-              TZ: ${TIMEZONE}
-            envFrom: *envFrom
-            probes:
-              liveness:
-                enabled: true
-                custom: true
-                spec:
-                  exec:
-                    command:
-                      - mariadb-admin
-                      - ping
-                      - -h
-                      - localhost
-                  initialDelaySeconds: 30
-                  periodSeconds: 10
-                  failureThreshold: 3
-              readiness:
-                enabled: true
-                custom: true
-                spec:
-                  exec:
-                    command:
-                      - mariadb-admin
-                      - ping
-                      - -h
-                      - localhost
-                  initialDelaySeconds: 5
-                  periodSeconds: 5
-            resources:
-              requests:
-                cpu: 10m
-                memory: 256Mi
-              limits:
-                memory: 512Mi
-
-    defaultPodOptions:
-      securityContext:
-        runAsNonRoot: false
-        runAsUser: 0
-        runAsGroup: 0
-        fsGroup: 1000
-        fsGroupChangePolicy: OnRootMismatch
-
+            securityContext:
+              allowPrivilegeEscalation: false
+              capabilities:
+                drop:
+                  - ALL
+              readOnlyRootFilesystem: true
     service:
       app:
         controller: *app
         ports:
           http:
             port: *port
-
     route:
       app:
         hostnames:
@@ -126,28 +149,42 @@ spec:
           - name: envoy-external
             namespace: network
             sectionName: https
-
     persistence:
-      config:
+      data:
         existingClaim: *app
-        globalMounts:
-          - path: /app/data
-
-      mariadb-data:
-        existingClaim: grimmory-mariadb
         advancedMounts:
           grimmory:
+            grimmory:
+              - path: /app/data
+                subPath: app
             mariadb:
-              - path: /config
-
-      data:
+              - path: /var/lib/mysql
+                subPath: mysql
+      nfs-data:
         type: nfs
         server: ${TRUENAS_IP}
         path: /mnt/rust/data
         advancedMounts:
           grimmory:
-            app:
+            grimmory:
               - path: /data
-
+      mysqld:
+        type: emptyDir
+        medium: Memory
+        sizeLimit: 1Mi
+        advancedMounts:
+          grimmory:
+            mariadb:
+              - path: /run/mysqld
+            wait-for-mariadb:
+              - path: /run/mysqld
       tmp:
         type: emptyDir
+        advancedMounts:
+          grimmory:
+            grimmory:
+              - path: /tmp
+                subPath: app
+            mariadb:
+              - path: /tmp
+                subPath: mysql

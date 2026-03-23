@@ -20,7 +20,7 @@ spec:
             limits:
               memory: 1Gi
       envoyService:
-        externalTrafficPolicy: Cluster
+        externalTrafficPolicy: Local
   shutdown:
     drainTimeout: 180s
   telemetry:
@@ -114,8 +114,14 @@ metadata:
   name: envoy
 spec:
   compression:
+    - type: Zstd
     - type: Brotli
     - type: Gzip
+  retry:
+    numRetries: 2
+    retryOn:
+      triggers:
+        - reset
   targetSelectors:
     - group: gateway.networking.k8s.io
       kind: Gateway
@@ -124,6 +130,7 @@ spec:
   tcpKeepalive: {}
   timeout:
     http:
+      connectionIdleTimeout: 15s
       requestTimeout: 0s
 ---
 # yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/gateway.envoyproxy.io/clienttrafficpolicy_v1alpha1.json
@@ -145,6 +152,9 @@ spec:
       matchLabels:
         app.kubernetes.io/name: envoy-gateway-config
   tcpKeepalive: {}
+  timeout:
+    http:
+      idleTimeout: 60s
   tls:
     minVersion: "1.2"
     alpnProtocols:

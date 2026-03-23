@@ -1,0 +1,120 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s-labs/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: &app frigate
+spec:
+  interval: 30m
+  chartRef:
+    kind: OCIRepository
+    name: frigate
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      strategy: rollback
+      retries: 3
+  values:
+    controllers:
+      frigate:
+        annotations:
+          reloader.stakater.com/auto: "true"
+        pod:
+          resourceClaims:
+            - name: gpu
+              resourceClaimTemplateName: frigate-gpu
+        containers:
+          app:
+            image:
+              repository: ghcr.io/blakeblackshear/frigate
+              tag: 0.17.1@sha256:1724960349dad0bd2ae8ec884171a6fd5755a4dc242a0e66cadbda9c0e85c99b
+            env:
+              TZ: ${TIMEZONE}
+            envFrom:
+              - secretRef:
+                  name: frigate-secret
+            probes:
+              liveness:
+                enabled: true
+                spec:
+                  periodSeconds: 30
+                  timeoutSeconds: 5
+                  failureThreshold: 5
+              readiness:
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /api/version
+                    port: &port 5000
+                  periodSeconds: 10
+                  timeoutSeconds: 5
+                  failureThreshold: 5
+              startup:
+                enabled: true
+                spec:
+                  failureThreshold: 30
+                  periodSeconds: 10
+            resources:
+              claims:
+                - name: gpu
+              requests:
+                cpu: 200m
+                memory: 2Gi
+              limits:
+                memory: 8Gi
+    service:
+      frigate:
+        type: LoadBalancer
+        annotations:
+          lbipam.cilium.io/ips: ${FRIGATE_LB_IP}
+        externalTrafficPolicy: Local
+        ports:
+          http:
+            appProtocol: kubernetes.io/ws
+            primary: true
+            port: *port
+          go2rtc:
+            port: 1984
+          rtsp:
+            port: 8554
+          webrtc-tcp:
+            port: 8555
+            protocol: TCP
+          webrtc-udp:
+            port: 8555
+            protocol: UDP
+    route:
+      frigate:
+        hostnames:
+          - "frigate.${SECRET_DOMAIN}"
+        parentRefs:
+          - name: envoy-internal
+            namespace: network
+            sectionName: https
+        rules:
+          - backendRefs:
+              - identifier: frigate
+                port: http
+    persistence:
+      config:
+        existingClaim: frigate
+      media:
+        existingClaim: frigate-media
+        globalMounts:
+          - path: /media/frigate
+      cache:
+        type: emptyDir
+        medium: Memory
+        sizeLimit: 2Gi
+        globalMounts:
+          - path: /dev/shm
+      tmp:
+        type: emptyDir
+        advancedMounts:
+          frigate:
+            app:
+              - path: /tmp
