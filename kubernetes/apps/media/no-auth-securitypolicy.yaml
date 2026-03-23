@@ -22,3 +22,6 @@ spec:
     - group: gateway.networking.k8s.io
       kind: HTTPRoute
       name: notifiarr
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: grimmory
