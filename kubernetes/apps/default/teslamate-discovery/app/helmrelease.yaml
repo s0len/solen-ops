@@ -35,6 +35,7 @@ spec:
                   --mqtt-port 1883 \
                   --mqtt-scheme tcp \
                   --mqtt-username anonymous \
+                  --mqtt-password anonymous \
                   --units-distance metric \
                   --units-pressure metric
             securityContext:
