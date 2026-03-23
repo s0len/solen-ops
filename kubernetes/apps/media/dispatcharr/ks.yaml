@@ -34,5 +34,6 @@ spec:
   postBuild:
     substitute:
       APP: *app
+      GPU_SELECTOR: "true"
       VOLSYNC_CAPACITY: 5Gi
       VOLSYNC_SCHEDULE: "15 7 * * *"
