@@ -1,0 +1,55 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s-labs/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: &app teslamate-discovery
+spec:
+  interval: 30m
+  chartRef:
+    kind: OCIRepository
+    name: app-template
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      strategy: rollback
+      retries: 3
+  values:
+    controllers:
+      teslamate-discovery:
+        containers:
+          app:
+            image:
+              repository: alpine
+              tag: "3.21"
+            command: ["sh", "-c"]
+            args:
+              - |
+                wget -qO- https://github.com/nebhale/teslamate-discovery/releases/download/v2.6.0/teslamate-discovery_2.6.0_linux_amd64.tar.gz | tar xz -C /tmp &&
+                /tmp/teslamate-discovery \
+                  --mqtt-host mosquitto.default.svc.cluster.local \
+                  --mqtt-port 1883 \
+                  --mqtt-scheme tcp \
+                  --units-distance metric \
+                  --units-pressure metric
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities: { drop: ["ALL"] }
+            resources:
+              requests:
+                cpu: 10m
+                memory: 32Mi
+              limits:
+                memory: 64Mi
+    defaultPodOptions:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 568
+        runAsGroup: 568
+    persistence:
+      tmp:
+        type: emptyDir

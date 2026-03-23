@@ -20,6 +20,7 @@ resources:
   - ./searxng/ks.yaml
   - ./tandoor/ks.yaml
   - ./teslamate/ks.yaml
+  - ./teslamate-discovery/ks.yaml
   - ./tvsportsdb/ks.yaml
   - ./zipline/ks.yaml
   - ./zigbee/ks.yaml
