@@ -34,6 +34,7 @@ spec:
                   --mqtt-host mosquitto.default.svc.cluster.local \
                   --mqtt-port 1883 \
                   --mqtt-scheme tcp \
+                  --mqtt-username anonymous \
                   --units-distance metric \
                   --units-pressure metric
             securityContext:
