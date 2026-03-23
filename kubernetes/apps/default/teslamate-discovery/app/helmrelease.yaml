@@ -28,6 +28,7 @@ spec:
             command: ["sh", "-c"]
             args:
               - |
+                apk add --no-cache libc6-compat &&
                 wget -qO- https://github.com/nebhale/teslamate-discovery/releases/download/v2.6.0/teslamate-discovery_2.6.0_linux_amd64.tar.gz | tar xz -C /tmp &&
                 /tmp/teslamate-discovery \
                   --mqtt-host mosquitto.default.svc.cluster.local \
@@ -37,7 +38,6 @@ spec:
                   --units-pressure metric
             securityContext:
               allowPrivilegeEscalation: false
-              readOnlyRootFilesystem: true
               capabilities: { drop: ["ALL"] }
             resources:
               requests:
@@ -47,9 +47,8 @@ spec:
                 memory: 64Mi
     defaultPodOptions:
       securityContext:
-        runAsNonRoot: true
-        runAsUser: 568
-        runAsGroup: 568
+        runAsUser: 0
+        runAsGroup: 0
     persistence:
       tmp:
         type: emptyDir
