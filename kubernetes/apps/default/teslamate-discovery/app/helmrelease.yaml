@@ -20,6 +20,11 @@ spec:
   values:
     controllers:
       teslamate-discovery:
+        type: cronjob
+        cronjob:
+          schedule: "0 */6 * * *"
+          successfulJobsHistory: 1
+          failedJobsHistory: 1
         containers:
           app:
             image:
