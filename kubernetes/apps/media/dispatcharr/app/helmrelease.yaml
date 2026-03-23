@@ -28,7 +28,7 @@ spec:
         pod:
           resourceClaims:
             - name: gpu
-              resourceClaimTemplateName: dispatcharr-gpu
+              resourceClaimTemplateName: dispatcharr
         initContainers:
           init-db:
             image:
