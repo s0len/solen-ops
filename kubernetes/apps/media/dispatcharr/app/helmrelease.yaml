@@ -25,6 +25,10 @@ spec:
       dispatcharr:
         annotations:
           reloader.stakater.com/auto: "true"
+        pod:
+          resourceClaims:
+            - name: gpu
+              resourceClaimTemplateName: dispatcharr-gpu
         initContainers:
           init-db:
             image:
@@ -112,10 +116,11 @@ spec:
               allowPrivilegeEscalation: false
               readOnlyRootFilesystem: false
             resources:
+              claims:
+                - name: gpu
               requests:
                 cpu: 10m
               limits:
-                gpu.intel.com/igpu: 1
                 memory: 2Gi
     defaultPodOptions:
       securityContext:

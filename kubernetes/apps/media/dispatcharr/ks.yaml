@@ -10,8 +10,10 @@ spec:
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
+  components:
+    - ../../../../components/gpu
   dependsOn:
-    - name: generic-device-plugin
+    - name: intel-gpu-resource-driver
       namespace: kube-system
     - name: cloudnative-pg-cluster
       namespace: database
