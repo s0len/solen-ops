@@ -56,7 +56,7 @@ spec:
               startup:
                 enabled: true
                 spec:
-                  failureThreshold: 30
+                  failureThreshold: 60
                   periodSeconds: 10
             resources:
               claims:
