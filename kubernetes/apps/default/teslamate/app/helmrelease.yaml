@@ -56,7 +56,7 @@ spec:
           app:
             image:
               repository: teslamate/teslamate
-              tag: 3.0.0@sha256:f064d5b303a98b3ae72d26dac2e7a4adfa67d40c33a2f08f3cc1348d7494cd33
+              tag: 3.0.0@sha256:6569026b73bd657455bbec05965d07fa30b6d4d70eaab0bd5b343231c0429167
             env:
               TZ: ${TIMEZONE}
               PORT: &port 80
