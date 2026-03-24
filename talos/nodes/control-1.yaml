@@ -29,6 +29,10 @@ machine:
         dhcp: true
         vip:
           ip: 192.168.10.80
+        vlans:
+          - vlanId: 20
+            addresses:
+              - 192.168.20.41/24
   install:
     diskSelector:
       model: "*Seagate BarraCud*"
