@@ -11,10 +11,9 @@ spec:
     labels:
       app.kubernetes.io/name: *app
   components:
-    - ../../../../components/gpu
     - ../../../../components/volsync
   dependsOn:
-    - name: intel-gpu-resource-driver
+    - name: generic-device-plugin
       namespace: kube-system
     - name: mosquitto
       namespace: default

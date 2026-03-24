@@ -60,6 +60,15 @@ spec:
                   - count: 1
                     paths:
                       - path: /dev/zfs
+              - --domain
+              - gpu.intel.com
+              - --device
+              - |
+                name: igpu
+                groups:
+                  - count: 10
+                    paths:
+                      - path: /dev/dri/renderD128
             ports:
               - containerPort: 8080
                 name: http
