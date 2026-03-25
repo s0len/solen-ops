@@ -25,3 +25,6 @@ spec:
     - group: gateway.networking.k8s.io
       kind: HTTPRoute
       name: grimmory
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: jellyfin
