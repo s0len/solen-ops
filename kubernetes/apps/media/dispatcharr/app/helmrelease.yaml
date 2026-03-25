@@ -139,7 +139,7 @@ spec:
                 memory: 2Gi
     defaultPodOptions:
       securityContext:
-        fsGroup: 1000
+        fsGroup: 0
         fsGroupChangePolicy: OnRootMismatch
     service:
       app:
