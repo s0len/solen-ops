@@ -37,6 +37,14 @@ spec:
             envFrom: &envFrom
               - secretRef:
                   name: dispatcharr-secret
+          init-permissions:
+            image:
+              repository: alpine
+              tag: 3.21
+            command:
+              - /bin/sh
+              - -c
+              - mkdir -p /data/db && chmod 0700 /data/db && chown 1000:1000 /data/db
           gluetun:
             image:
               repository: ghcr.io/qdm12/gluetun
