@@ -44,14 +44,14 @@ spec:
             env:
               DNS_ADDRESS: "10.96.0.10"
               DOT: "off"
-              FIREWALL_INPUT_PORTS: 9191
+              FIREWALL_INPUT_PORTS: 9191,9999
               FIREWALL_OUTBOUND_SUBNETS: 10.69.0.0/16,10.96.0.0/16
               HEALTH_SERVER_ADDRESS: :9999
               HEALTH_TARGET_ADDRESS: cloudflare.com:443
               VPN_TYPE: wireguard
               VPN_INTERFACE: tun0
               VPN_SERVICE_PROVIDER: airvpn
-              WIREGUARD_MTU: 1320
+              WIREGUARD_MTU: 1420
               SERVER_COUNTRIES: Sweden
             envFrom:
               - secretRef:
@@ -69,7 +69,15 @@ spec:
                   periodSeconds: 60
                   failureThreshold: 5
               startup:
-                enabled: false
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /
+                    port: 9999
+                  initialDelaySeconds: 10
+                  periodSeconds: 10
+                  failureThreshold: 5
             restartPolicy: Always
             securityContext:
               capabilities:
