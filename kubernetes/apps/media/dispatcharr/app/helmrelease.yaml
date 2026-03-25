@@ -60,7 +60,7 @@ spec:
               VPN_INTERFACE: tun0
               VPN_SERVICE_PROVIDER: airvpn
               WIREGUARD_MTU: 1420
-              SERVER_NAMES: Menkalinan
+              SERVER_COUNTRIES: Germany
             envFrom:
               - secretRef:
                   name: qbittorrent-secret
