@@ -61,14 +61,12 @@ spec:
                 enabled: true
                 custom: true
                 spec:
-                  exec:
-                    command:
-                      - /bin/sh
-                      - -c
-                      - wget -qO- http://localhost:8000/v1/openvpn/status | grep -q running
+                  httpGet:
+                    path: /
+                    port: 9999
                   timeoutSeconds: 10
                   periodSeconds: 30
-                  failureThreshold: 3
+                  failureThreshold: 5
               startup:
                 enabled: true
                 custom: true
