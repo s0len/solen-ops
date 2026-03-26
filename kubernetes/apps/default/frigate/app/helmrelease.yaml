@@ -23,6 +23,8 @@ spec:
         annotations:
           reloader.stakater.com/auto: "true"
         pod:
+          nodeSelector:
+            plex.node/preferred: "true"
           resourceClaims:
             - name: gpu
               resourceClaimTemplateName: frigate-gpu
