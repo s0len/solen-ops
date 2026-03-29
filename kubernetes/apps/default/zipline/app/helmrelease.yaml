@@ -34,7 +34,7 @@ spec:
           app:
             image:
               repository: ghcr.io/diced/zipline
-              tag: 4.5.0@sha256:ec27aac2548db511a6c9c544a640649d96be2bf703ca480c6acd0f0a68efc9d0
+              tag: 4.5.2@sha256:21bcd1d22e77a55f5eef50767ce011b91f2364a50d531dd526e21993f547554d
             env:
               TZ: ${TIMEZONE}
               CORE_RETURN_HTTPS_URLS: true
