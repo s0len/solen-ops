@@ -37,7 +37,7 @@ spec:
         containers:
           app:
             image:
-              repository: ghcr.io/jorenn92/maintainerr
+              repository: docker.io/jorenn92/maintainerr
               tag: 2.19.0
             probes:
               liveness:
