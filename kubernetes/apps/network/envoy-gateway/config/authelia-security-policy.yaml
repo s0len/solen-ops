@@ -11,6 +11,16 @@ spec:
       kind: Gateway
       name: envoy-external
   extAuth:
+    headersToExtAuth:
+      - Cookie
+      - Authorization
+      - Proxy-Authorization
+      - Accept
+      - X-Forwarded-For
+      - X-Forwarded-Proto
+      - X-Forwarded-Host
+      - X-Forwarded-Uri
+      - X-Forwarded-Method
     http:
       backendRefs:
         - name: authelia
