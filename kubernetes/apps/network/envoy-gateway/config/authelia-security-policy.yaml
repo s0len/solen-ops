@@ -17,6 +17,9 @@ spec:
       - Authorization
       - Proxy-Authorization
       - X-Forwarded-Proto
+      - X-Forwarded-Host
+      - X-Forwarded-URI
+      - X-Forwarded-Method
     failOpen: false
     http:
       backendRefs:

@@ -6,6 +6,7 @@ resources:
   - ./authelia-security-policy.yaml
   - ./dnsendpoint.yaml
   - ./envoy.yaml
+  - ./envoy-patch-policy.yaml
   - ./grafanadashboard.yaml
   - ./no-auth-network.yaml
   - ./observability.yaml

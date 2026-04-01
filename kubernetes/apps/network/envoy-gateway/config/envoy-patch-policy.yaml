@@ -1,0 +1,32 @@
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: EnvoyPatchPolicy
+metadata:
+  name: authelia-forwarded-headers
+  namespace: network
+spec:
+  targetRef:
+    group: gateway.networking.k8s.io
+    kind: Gateway
+    name: envoy-external
+  type: JSONPatch
+  jsonPatches:
+    - type: "type.googleapis.com/envoy.config.listener.v3.Listener"
+      name: network/envoy-external/https
+      operation:
+        op: add
+        path: "/filter_chains/0/filters/0/typed_config/http_filters/0"
+        value:
+          name: envoy.filters.http.lua
+          typed_config:
+            "@type": "type.googleapis.com/envoy.extensions.filters.http.lua.v3.Lua"
+            default_source_code:
+              inline_string: |
+                function envoy_on_request(request_handle)
+                  local path = request_handle:headers():get(":path")
+                  local method = request_handle:headers():get(":method")
+                  local host = request_handle:headers():get(":authority")
+                  request_handle:headers():add("X-Forwarded-URI", path)
+                  request_handle:headers():add("X-Forwarded-Method", method)
+                  request_handle:headers():add("X-Forwarded-Host", host)
+                end
