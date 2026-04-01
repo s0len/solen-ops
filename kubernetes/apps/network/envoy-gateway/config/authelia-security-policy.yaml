@@ -12,29 +12,21 @@ spec:
       name: envoy-external
   extAuth:
     headersToExtAuth:
+      - Accept
       - Cookie
       - Authorization
       - Proxy-Authorization
-      - Accept
-      - X-Forwarded-For
       - X-Forwarded-Proto
-      - X-Forwarded-Host
-      - X-Forwarded-Uri
-      - X-Forwarded-Method
+    failOpen: false
     http:
       backendRefs:
         - name: authelia
           namespace: default
           port: 80
-      path: /api/authz/forward-auth
+      path: /api/authz/ext-authz/
       headersToBackend:
-        - Authorization
-        - Proxy-Authorization
-        - Cookie
-        - Accept
-        - X-Forwarded-Method
-        - X-Forwarded-Proto
-        - X-Forwarded-Host
-        - X-Forwarded-Uri
-        - X-Forwarded-For
+        - Remote-User
+        - Remote-Groups
+        - Remote-Name
+        - Remote-Email
 
