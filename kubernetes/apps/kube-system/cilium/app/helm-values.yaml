@@ -1,5 +1,4 @@
 ---
-upgradeCompatibility: "1.18"
 autoDirectNodeRoutes: true
 bandwidthManager:
   enabled: true
