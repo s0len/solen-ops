@@ -6,7 +6,6 @@ bandwidthManager:
   bbr: true
 bpf:
   masquerade: true
-  tproxy: true
   preallocateMaps: true
   datapathMode: netkit
   ctAnyTimeout: 5m0s
