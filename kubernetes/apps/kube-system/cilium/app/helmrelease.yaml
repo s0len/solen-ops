@@ -21,7 +21,10 @@ spec:
     - kind: ConfigMap
       name: cilium-helm-values
   values:
-    devices: "enp1s0f1 enp0s20f0u5 enp5s0"
+    devices:
+      - enp1s0f1
+      - enp0s20f0u5
+      - enp5s0
     hubble:
       enabled: true
       metrics:
