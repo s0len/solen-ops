@@ -21,6 +21,7 @@ spec:
     - kind: ConfigMap
       name: cilium-helm-values
   values:
+    devices: "enp+ eth+ bond+"
     hubble:
       enabled: true
       metrics:
