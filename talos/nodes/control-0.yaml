@@ -22,15 +22,16 @@ machine:
   network:
     hostname: control-0
     interfaces:
-      - deviceSelector:
-          hardwareAddr: cc:96:e5:0e:8d:31
+      - interface: enp1s0f1
         mtu: 1500
         dhcp: true
         vip:
           ip: 192.168.10.80
-      - interface: enp1s0f1.20
-        addresses:
-          - 192.168.20.40/24
+        vlans:
+          - vlanId: 20
+            dhcp: false
+            addresses:
+              - 192.168.20.40/24
   install:
     diskSelector:
       model: "*SSD 870*"

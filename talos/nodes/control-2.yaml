@@ -17,15 +17,16 @@ machine:
   network:
     hostname: control-2
     interfaces:
-      - deviceSelector:
-          hardwareAddr: 1c:86:0b:3a:93:6b
+      - interface: enp5s0
         mtu: 1500
         dhcp: true
         vip:
           ip: 192.168.10.80
-      - interface: enp5s0.20
-        addresses:
-          - 192.168.20.42/24
+        vlans:
+          - vlanId: 20
+            dhcp: false
+            addresses:
+              - 192.168.20.42/24
   install:
     diskSelector:
       model: "*SSD 870*"

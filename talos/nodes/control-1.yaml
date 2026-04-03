@@ -23,15 +23,16 @@ machine:
     hostname: control-1
     interfaces:
       # USB 2.5GbE adapter (stabilized via usbcore.autosuspend=-1 and quirks in schematic)
-      - deviceSelector:
-          hardwareAddr: c8:4d:44:23:47:08
+      - interface: enp0s20f0u5
         mtu: 1500
         dhcp: true
         vip:
           ip: 192.168.10.80
-      - interface: enp0s20f0u5.20
-        addresses:
-          - 192.168.20.41/24
+        vlans:
+          - vlanId: 20
+            dhcp: false
+            addresses:
+              - 192.168.20.41/24
   install:
     diskSelector:
       model: "*Seagate BarraCud*"
