@@ -28,10 +28,9 @@ machine:
         dhcp: true
         vip:
           ip: 192.168.10.80
-        vlans:
-          - vlanId: 20
-            addresses:
-              - 192.168.20.40/24
+      - interface: enp1s0f1.20
+        addresses:
+          - 192.168.20.40/24
   install:
     diskSelector:
       model: "*SSD 870*"
