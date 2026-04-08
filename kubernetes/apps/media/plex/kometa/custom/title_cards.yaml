@@ -12375,6 +12375,40 @@ metadata:
           8:
             url_poster: https://api.mediux.pro/assets/4c1ab886-29a3-4802-8683-cc6c7e1ed67a
 
+  455162: # TVDB id for LOL: Last One Laughing UK. Set by Hikari on MediUX. https://mediux.pro/sets/45798
+    url_poster: https://api.mediux.pro/assets/eb5e52a2-630b-40c1-95b0-1d5a60c79582
+    seasons:
+      1:
+        url_poster: https://api.mediux.pro/assets/a251aa14-d0ec-4c07-a084-2f71525fce87
+        episodes:
+          1:
+            url_poster: https://api.mediux.pro/assets/7e96b460-66e3-4b2c-8eaa-0b629f056680
+          2:
+            url_poster: https://api.mediux.pro/assets/1baa2857-531a-442f-a537-788208719ff8
+          3:
+            url_poster: https://api.mediux.pro/assets/19399d8d-0b7c-4ccd-bc79-117438ccbbf5
+          4:
+            url_poster: https://api.mediux.pro/assets/e8804b1b-0683-412e-a5bd-c70b9846b8f5
+          5:
+            url_poster: https://api.mediux.pro/assets/107b9604-10ad-4257-806a-9604499d8721
+          6:
+            url_poster: https://api.mediux.pro/assets/d5ddc6d5-caa0-40d9-8369-d698a00e41fb
+      2:
+        url_poster: https://api.mediux.pro/assets/77fa3cd1-eda3-4f74-910b-968237a5cae8
+        episodes:
+          1:
+            url_poster: https://api.mediux.pro/assets/e69d270d-1ab8-4b1b-8c4a-3b2973dff36a
+          2:
+            url_poster: https://api.mediux.pro/assets/c35da797-c713-4298-b07d-f89859a17577
+          3:
+            url_poster: https://api.mediux.pro/assets/0e13ff4c-776e-4137-8eae-7c9e320d6936
+          4:
+            url_poster: https://api.mediux.pro/assets/a1f97a78-bc4c-4db4-806a-f71df6e3751a
+          5:
+            url_poster: https://api.mediux.pro/assets/c0b37cdd-cdd5-4434-9e98-74c3736aa993
+          6:
+            url_poster: https://api.mediux.pro/assets/9f95a4bb-d143-463a-886e-edabd60ba662
+
   392256: # TVDB id for The Last of Us. Set by willtong93 on MediUX. https://mediux.pro/sets/22639
     url_poster: https://api.mediux.pro/assets/d30da1b0-06dd-4226-8b86-13534eaac845
     url_background: https://api.mediux.pro/assets/75dc3640-fed4-4a4f-9317-41cd1c7d9bae
