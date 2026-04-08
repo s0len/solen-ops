@@ -42,6 +42,7 @@ spec:
                 memory: 2Gi
 
     defaultPodOptions:
+      hostNetwork: true
       securityContext:
         runAsNonRoot: true
         runAsUser: 568
@@ -70,11 +71,11 @@ spec:
       config:
         existingClaim: *app
         globalMounts:
-          - path: /config
+          - path: /data
       media:
         type: nfs
         server: ${TRUENAS_IP}
         path: /mnt/rust/data/media/musik
         globalMounts:
-          - path: /data
+          - path: /media
             readOnly: true
