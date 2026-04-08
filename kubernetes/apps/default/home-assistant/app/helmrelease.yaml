@@ -70,6 +70,8 @@ spec:
                 memory: 256Mi
     defaultPodOptions:
       hostNetwork: true
+      nodeSelector:
+        kubernetes.io/hostname: control-1
       securityContext:
         runAsNonRoot: true
         runAsUser: 568
