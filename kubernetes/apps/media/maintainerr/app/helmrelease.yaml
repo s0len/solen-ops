@@ -38,7 +38,7 @@ spec:
           app:
             image:
               repository: docker.io/jorenn92/maintainerr
-              tag: 3.3.0
+              tag: 3.4.1
             probes:
               liveness:
                 enabled: true
