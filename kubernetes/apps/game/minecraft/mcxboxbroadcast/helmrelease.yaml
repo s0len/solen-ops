@@ -26,6 +26,26 @@ spec:
         annotations:
           reloader.stakater.com/auto: "true"
 
+        initContainers:
+          seed-config:
+            image:
+              repository: busybox
+              tag: "1.37"
+            command:
+              - sh
+              - -c
+              - |
+                if [ ! -f /opt/app/config/config.yml ]; then
+                  cp /config-seed/config.yml /opt/app/config/config.yml
+                  echo "Seeded default config.yml"
+                else
+                  echo "config.yml already exists, leaving it alone"
+                fi
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities: { drop: ["ALL"] }
+
         containers:
           app:
             image:
@@ -51,13 +71,14 @@ spec:
         globalMounts:
           - path: /opt/app/config
 
-      config-file:
+      config-seed:
         type: configMap
         name: mcxboxbroadcast-configmap
-        globalMounts:
-          - path: /opt/app/config/config.yml
-            subPath: config.yml
-            readOnly: false
+        advancedMounts:
+          mcxboxbroadcast:
+            seed-config:
+              - path: /config-seed
+                readOnly: true
 
       tmp:
         type: emptyDir
