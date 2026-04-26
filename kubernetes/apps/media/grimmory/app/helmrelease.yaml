@@ -89,7 +89,7 @@ spec:
           grimmory:
             image:
               repository: ghcr.io/grimmory-tools/grimmory
-              tag: nightly@sha256:41a2c1647becc74773514dd0dbdbfffe217fef1a63b5b23c29c8468856a12e96
+              tag: nightly@sha256:ac09c7a8da6918000ee49b12b380683ff0c9439cfac2bd802e451b33ca418d41
             command:
               - java
             args:
