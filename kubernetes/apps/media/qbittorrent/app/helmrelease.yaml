@@ -80,17 +80,16 @@ spec:
           #       cpu: 10m
           #       memory: 25Mi
 
-          # Keep this block around as a reference in case mamapi is needed again.
-          # mamapi:
-          #   dependsOn: app
-          #   image:
-          #     repository: ghcr.io/elforkhead/mamapi
-          #     tag: v2.1.2@sha256:9403628e9c0e773c04bb640743105bdbfca53423033828e13d3f5efc79370493
-          #   env:
-          #     TZ: ${TIMEZONE}
-          #   envFrom:
-          #     - secretRef:
-          #         name: qbittorrent-secret
+          mamapi:
+            dependsOn: app
+            image:
+              repository: ghcr.io/elforkhead/mamapi
+              tag: v2.1.2@sha256:9403628e9c0e773c04bb640743105bdbfca53423033828e13d3f5efc79370493
+            env:
+              TZ: ${TIMEZONE}
+            envFrom:
+              - secretRef:
+                  name: qbittorrent-secret
 
         initContainers:
           gluetun:
