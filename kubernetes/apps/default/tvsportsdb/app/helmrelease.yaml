@@ -77,6 +77,10 @@ spec:
                   secretKeyRef:
                     name: tvsportsdb-secret
                     key: SECRET_KEY
+              # Cookie attributes for cross-site auth (frontend on apex, backend on api.)
+              COOKIE_SECURE: "true"
+              COOKIE_SAMESITE: "none"
+              COOKIE_DOMAIN: ".${SECRET_TVSPORTSDB_DOMAIN}"
               # S3/R2 Storage
               S3_ENDPOINT_URL:
                 valueFrom:
