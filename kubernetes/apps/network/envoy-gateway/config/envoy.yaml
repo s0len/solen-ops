@@ -8,6 +8,8 @@ spec:
   logging:
     level:
       default: info
+  # = nginx large_client_header_buffers 8 32k; needed for Kobo sync via Grimmory
+  maxRequestHeadersKB: 256
   provider:
     type: Kubernetes
     kubernetes:

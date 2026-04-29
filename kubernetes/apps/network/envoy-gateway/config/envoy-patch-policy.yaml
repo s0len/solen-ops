@@ -23,10 +23,19 @@ spec:
             default_source_code:
               inline_string: |
                 function envoy_on_request(request_handle)
-                  local path = request_handle:headers():get(":path")
-                  local method = request_handle:headers():get(":method")
-                  local host = request_handle:headers():get(":authority")
-                  request_handle:headers():add("X-Forwarded-URI", path)
-                  request_handle:headers():add("X-Forwarded-Method", method)
-                  request_handle:headers():add("X-Forwarded-Host", host)
+                  local headers = request_handle:headers()
+                  local path = headers:get(":path")
+                  local method = headers:get(":method")
+                  local host = headers:get(":authority")
+                  headers:add("X-Forwarded-URI", path)
+                  headers:add("X-Forwarded-Method", method)
+                  headers:add("X-Forwarded-Host", host)
+                  headers:add("X-Forwarded-Port", "443")
+                  local xff = headers:get("x-forwarded-for")
+                  if xff then
+                    local client = xff:match("^%s*([^,%s]+)")
+                    if client then
+                      headers:add("X-Real-IP", client)
+                    end
+                  end
                 end
