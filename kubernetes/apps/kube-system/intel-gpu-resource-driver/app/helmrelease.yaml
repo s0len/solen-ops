@@ -12,6 +12,12 @@ spec:
   values:
     image:
       repository: ghcr.io/intel/intel-resource-drivers-for-kubernetes
+    kubeletPlugin:
+      # v0.10.0 moved health monitoring to a separate xpumd daemon that we don't
+      # deploy. Disable it and read hardware details directly from sysfs instead.
+      privileged: true
+      healthMonitoring:
+        enabled: false
     cdi:
       staticPath: /var/cdi/static
       dynamicPath: /var/cdi/dynamic
