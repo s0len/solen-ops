@@ -147,9 +147,11 @@ spec:
               limits:
                 memory: 2Gi
             # Container-level securityContext: must run as root for entrypoint.sh
-            # to addgroup/adduser. Drop privileges to UID 1000 via su-exec
-            # (handled by image entrypoint via USER_ID/GROUP_ID env). RootFS must
-            # be writeable so /etc/group and /etc/passwd can be modified.
+            # to addgroup/adduser/chown. Then su-exec drops privileges to UID
+            # 1000 (via USER_ID/GROUP_ID env). Capabilities needed:
+            #   CHOWN, FOWNER, DAC_OVERRIDE for chown'ing /app/data /home/booklore
+            #   SETUID, SETGID for su-exec dropping privileges
+            # RootFS must be writeable so addgroup/adduser can modify /etc/.
             securityContext:
               runAsNonRoot: false
               runAsUser: 0
@@ -158,6 +160,12 @@ spec:
               capabilities:
                 drop:
                   - ALL
+                add:
+                  - CHOWN
+                  - DAC_OVERRIDE
+                  - FOWNER
+                  - SETGID
+                  - SETUID
               readOnlyRootFilesystem: false
     service:
       app:
