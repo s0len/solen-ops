@@ -42,6 +42,9 @@ spec:
                 ephemeral-storage: 2Gi
 
     defaultPodOptions:
+      # capacitor needs the ServiceAccount token to read the Kubernetes API
+      # (chart 5.0.0 changed the default to false)
+      automountServiceAccountToken: true
       securityContext:
         runAsNonRoot: true
         runAsUser: 568
