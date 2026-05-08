@@ -7,14 +7,17 @@ metadata:
   namespace: media
 spec:
   interval: 30m
+  timeout: 15m
   chartRef:
     kind: OCIRepository
     name: app-template
   install:
+    timeout: 15m
     remediation:
       retries: 3
   upgrade:
     cleanupOnFail: true
+    timeout: 15m
     remediation:
       strategy: rollback
       retries: 3
@@ -24,6 +27,8 @@ spec:
         annotations:
           reloader.stakater.com/auto: "true"
         pod:
+          # ServiceAccount token not needed; chart 5.0.0 default is false anyway
+          automountServiceAccountToken: false
           securityContext:
             runAsNonRoot: true
             runAsUser: 1000
