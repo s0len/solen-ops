@@ -29,10 +29,12 @@ spec:
         pod:
           # ServiceAccount token not needed; chart 5.0.0 default is false anyway
           automountServiceAccountToken: false
+          # NB: pod-level runAsNonRoot/runAsUser intentionally NOT set.
+          # The grimmory container needs to start as root so its entrypoint.sh
+          # can create the booklore user (addgroup/adduser require root) before
+          # dropping privileges to UID 1000 via su-exec. Other containers
+          # (mariadb, wait-for-mariadb) set their own non-root securityContext.
           securityContext:
-            runAsNonRoot: true
-            runAsUser: 1000
-            runAsGroup: 1000
             fsGroup: 1000
             fsGroupChangePolicy: OnRootMismatch
         initContainers:
@@ -66,6 +68,9 @@ spec:
                         mariadb-admin ping --socket=/run/mysqld/mysqld.sock --user=root --password=$${MARIADB_ROOT_PASSWORD}
             restartPolicy: Always
             securityContext:
+              runAsNonRoot: true
+              runAsUser: 1000
+              runAsGroup: 1000
               allowPrivilegeEscalation: false
               capabilities:
                 drop:
@@ -90,6 +95,15 @@ spec:
                   secretKeyRef:
                     name: grimmory-secret
                     key: MYSQL_ROOT_PASSWORD
+            securityContext:
+              runAsNonRoot: true
+              runAsUser: 1000
+              runAsGroup: 1000
+              allowPrivilegeEscalation: false
+              capabilities:
+                drop:
+                  - ALL
+              seccompProfile: { type: RuntimeDefault }
         containers:
           grimmory:
             image:
@@ -106,6 +120,9 @@ spec:
                   secretKeyRef:
                     name: grimmory-secret
                     key: DATABASE_PASSWORD
+              # entrypoint.sh creates user with these IDs and su-exec's into them
+              USER_ID: "1000"
+              GROUP_ID: "1000"
             probes:
               liveness: &probes
                 enabled: true
@@ -129,12 +146,19 @@ spec:
                 memory: 1Gi
               limits:
                 memory: 2Gi
+            # Container-level securityContext: must run as root for entrypoint.sh
+            # to addgroup/adduser. Drop privileges to UID 1000 via su-exec
+            # (handled by image entrypoint via USER_ID/GROUP_ID env). RootFS must
+            # be writeable so /etc/group and /etc/passwd can be modified.
             securityContext:
+              runAsNonRoot: false
+              runAsUser: 0
+              runAsGroup: 0
               allowPrivilegeEscalation: false
               capabilities:
                 drop:
                   - ALL
-              readOnlyRootFilesystem: true
+              readOnlyRootFilesystem: false
     service:
       app:
         controller: *app
