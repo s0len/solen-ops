@@ -64,6 +64,9 @@ spec:
               TESLA_API_HOST: https://fleet-api.prd.eu.vn.cloud.tesla.com
               TESLA_AUTH_HOST: https://auth.tesla.com
               TESLA_AUTH_PATH: /oauth2/v3
+              # Reduce Tesla Fleet API polling to avoid EXCEEDED_LIMIT (default 15/21)
+              SUSPEND_AFTER_IDLE_MIN: "5"
+              SUSPEND_MIN: "60"
             envFrom: *envFrom
             probes:
               liveness: &probes
