@@ -1,0 +1,187 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s-labs/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: &app kanidm
+spec:
+  interval: 30m
+  chartRef:
+    kind: OCIRepository
+    name: app-template
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      strategy: rollback
+      retries: 3
+  values:
+    defaultPodOptions:
+      automountServiceAccountToken: true
+    controllers:
+      kanidm:
+        replicas: 1
+        type: statefulset
+        pod:
+          annotations:
+            reloader.stakater.com/auto: "true"
+          securityContext:
+            fsGroup: 1000
+            fsGroupChangePolicy: OnRootMismatch
+            runAsGroup: 1000
+            runAsNonRoot: true
+            runAsUser: 1000
+        containers:
+          app:
+            image:
+              repository: docker.io/kanidm/server
+              tag: 1.10.2@sha256:5d671b5ecb47bc0b5f37d3306f9e7b9b387998bdf5aa451d76a4e764cc05f0fb
+            env:
+              KANIDM_ADMIN_BIND_PATH: /var/run/kanidmd.sock
+              KANIDM_BINDADDRESS: "[::]:8443"
+              KANIDM_DB_PATH: /data/kanidm.db
+              KANIDM_DOMAIN: "idm.${SECRET_DOMAIN}"
+              KANIDM_LDAPBINDADDRESS: "[::]:3636"
+              KANIDM_ORIGIN: "https://idm.${SECRET_DOMAIN}"
+              KANIDM_TLS_CHAIN: /certs/tls.crt
+              KANIDM_TLS_KEY: /certs/tls.key
+              # TODO: set KANIDM_MAIL_RELAY once an in-cluster SMTP relay exists
+              # (needed for password reset / credential email flows).
+            resources:
+              requests:
+                cpu: 10m
+              limits:
+                memory: 144Mi
+            probes:
+              liveness: &probe
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /status
+                    port: &port 8443
+                    scheme: HTTPS
+                  initialDelaySeconds: 0
+                  periodSeconds: 10
+                  timeoutSeconds: 1
+                  failureThreshold: 3
+              readiness: *probe
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities:
+                drop:
+                  - ALL
+      # Provisioning sidecar — DISABLED on initial deploy.
+      # Bootstrap order:
+      #   1. Deploy this HelmRelease (provision replicas: 0).
+      #   2. Recover admin + idm_admin accounts via `kanidmd recover-account`.
+      #   3. Create the kanidm-provision service account + API token.
+      #   4. Store the token in 1Password as item `kanidm-provision` / field `token`.
+      #   5. Bump replicas to 1 (or remove this override) and reconcile.
+      provision:
+        replicas: 0
+        pod:
+          securityContext:
+            fsGroup: 1000
+            fsGroupChangePolicy: OnRootMismatch
+            runAsGroup: 1000
+            runAsNonRoot: true
+            runAsUser: 1000
+        containers:
+          app:
+            image:
+              repository: ghcr.io/m00nwtchr/kanidm-provision
+              tag: main@sha256:1271844f1db6c3b7656f8954595591ab2c968b005ac4420127343fcb6a7d190f
+            env:
+              KANIDM_INSTANCE: "https://idm.${SECRET_DOMAIN}"
+              KANIDM_NAMESPACE: security
+              KANIDM_TOKEN:
+                valueFrom:
+                  secretKeyRef:
+                    name: kanidm-provision-token
+                    key: token
+            resources:
+              requests:
+                cpu: 10m
+              limits:
+                memory: 100Mi
+            securityContext:
+              capabilities:
+                drop:
+                  - ALL
+    persistence:
+      data:
+        existingClaim: "{{ .Release.Name }}"
+        advancedMounts:
+          kanidm:
+            app:
+              - path: /data
+                subPath: data
+      certs:
+        type: secret
+        name: idm-tls
+        defaultMode: 0400
+        advancedMounts:
+          kanidm:
+            app:
+              - path: /certs
+      empty:
+        type: emptyDir
+        globalMounts:
+          - path: /var/run
+      icon-cache:
+        accessMode: ReadWriteOnce
+        size: 1Gi
+        suffix: icon-cache
+        advancedMounts:
+          provision:
+            app:
+              - path: /data/icons
+    rbac:
+      roles:
+        kanidm-write-secret:
+          type: ClusterRole
+          rules:
+            - apiGroups: [""]
+              resources: ["secrets"]
+              verbs: ["create", "patch"]
+        kanidm-read-cm:
+          type: ClusterRole
+          rules:
+            - apiGroups: [""]
+              resources: ["configmaps"]
+              verbs: ["get", "list", "watch"]
+      bindings:
+        kanidm-write-secret:
+          type: ClusterRoleBinding
+          roleRef:
+            identifier: kanidm-write-secret
+          subjects:
+            - identifier: kanidm
+        kanidm-read-cm:
+          type: ClusterRoleBinding
+          roleRef:
+            identifier: kanidm-read-cm
+          subjects:
+            - identifier: kanidm
+    route:
+      app:
+        hostnames:
+          - "idm.${SECRET_DOMAIN}"
+        parentRefs:
+          - name: envoy-external
+            namespace: network
+            sectionName: https
+    service:
+      app:
+        controller: kanidm
+        ports:
+          http:
+            port: *port
+          ldap:
+            port: 3636
+    serviceAccount:
+      kanidm: {}
