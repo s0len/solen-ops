@@ -25,7 +25,7 @@ spec:
             image:
               # nginx-unprivileged runs as UID 101, listens on 8080, no root needed.
               repository: docker.io/nginxinc/nginx-unprivileged
-              tag: 1.27-alpine
+              tag: 1.31-alpine
             probes:
               liveness: &probes
                 enabled: true
