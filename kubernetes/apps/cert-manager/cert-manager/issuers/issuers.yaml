@@ -19,4 +19,3 @@ spec:
           dnsZones:
             - "${SECRET_DOMAIN}"
             - "${SECRET_TVSPORTSDB_DOMAIN}"
-            - svenss.one

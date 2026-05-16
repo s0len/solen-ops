@@ -13,6 +13,3 @@ spec:
     - group: gateway.networking.k8s.io
       kind: HTTPRoute
       name: https-redirect
-    - group: gateway.networking.k8s.io
-      kind: HTTPRoute
-      name: mta-sts

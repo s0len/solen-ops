@@ -28,19 +28,3 @@ spec:
   dnsNames:
     - "${SECRET_TVSPORTSDB_DOMAIN}"
     - "*.${SECRET_TVSPORTSDB_DOMAIN}"
----
-# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/cert-manager.io/certificate_v1.json
-# Single-name cert for MTA-STS policy host on svenss.one. No wildcard needed —
-# this is the only subdomain we serve from the cluster (mail itself is on Migadu).
-apiVersion: cert-manager.io/v1
-kind: Certificate
-metadata:
-  name: mta-sts-svenss-one
-spec:
-  secretName: mta-sts-svenss-one-tls
-  issuerRef:
-    name: letsencrypt-production
-    kind: ClusterIssuer
-  commonName: mta-sts.svenss.one
-  dnsNames:
-    - mta-sts.svenss.one
