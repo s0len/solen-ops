@@ -122,3 +122,10 @@ Flux Kustomizations use `postBuild.substitute` for templating:
 - SOPS-encrypted files use `.sops.yaml` extension
 - HelmReleases reference values from separate `helm-values.yaml` files
 - Node-specific configs go in `talos/nodes/<node>.yaml`
+
+## Git Workflow
+
+- **Commit straight to `main`** — no PRs, no feature branches. This is a personal cluster repo; the owner reviews changes by reading the diff before committing, not via PR review.
+- **Always push immediately after committing** — Flux only reconciles what's on `origin/main`. A commit that hasn't been pushed has zero effect on the cluster.
+- For urgent fixes, offer to `flux reconcile` after pushing to skip the polling interval.
+- If working from a worktree on a non-main branch, push the commit straight to main with `git push origin HEAD:main` (fast-forward) rather than opening a PR.
