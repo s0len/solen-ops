@@ -1,0 +1,103 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s-labs/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: &app mta-sts
+spec:
+  interval: 30m
+  chartRef:
+    kind: OCIRepository
+    name: app-template
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
+  values:
+    controllers:
+      mta-sts:
+        strategy: RollingUpdate
+        containers:
+          app:
+            image:
+              # nginx-unprivileged runs as UID 101, listens on 8080, no root needed.
+              repository: docker.io/nginxinc/nginx-unprivileged
+              tag: 1.27-alpine
+            probes:
+              liveness: &probes
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /.well-known/mta-sts.txt
+                    port: &port 8080
+                  initialDelaySeconds: 2
+                  periodSeconds: 30
+                  timeoutSeconds: 2
+                  failureThreshold: 3
+              readiness: *probes
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities: { drop: ["ALL"] }
+            resources:
+              requests:
+                cpu: 5m
+                memory: 16Mi
+              limits:
+                memory: 64Mi
+    defaultPodOptions:
+      automountServiceAccountToken: false
+      enableServiceLinks: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 101
+        runAsGroup: 101
+    service:
+      app:
+        controller: mta-sts
+        ports:
+          http:
+            port: *port
+    route:
+      app:
+        annotations:
+          external-dns.alpha.kubernetes.io/target: external.svenss.one
+        hostnames:
+          - mta-sts.svenss.one
+        parentRefs:
+          - name: envoy-external
+            namespace: network
+            sectionName: https
+        rules:
+          - matches:
+              - path:
+                  type: PathPrefix
+                  value: /.well-known/mta-sts.txt
+            backendRefs:
+              - name: mta-sts
+                port: *port
+    persistence:
+      policy:
+        type: configMap
+        name: mta-sts-policy
+        globalMounts:
+          - path: /usr/share/nginx/html/.well-known/mta-sts.txt
+            subPath: mta-sts.txt
+            readOnly: true
+      # nginx-unprivileged writes pid/tmp here; root FS is read-only.
+      cache:
+        type: emptyDir
+        globalMounts:
+          - path: /var/cache/nginx
+      run:
+        type: emptyDir
+        globalMounts:
+          - path: /var/run
+      tmp:
+        type: emptyDir
+        globalMounts:
+          - path: /tmp

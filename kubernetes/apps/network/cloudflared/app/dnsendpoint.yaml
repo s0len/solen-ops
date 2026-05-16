@@ -18,3 +18,13 @@ spec:
     - dnsName: "external.${SECRET_TVSPORTSDB_DOMAIN}"
       recordType: CNAME
       targets: ["${CLUSTER_CLOUDFLARE_TUNNEL_ID}.cfargotunnel.com"]
+---
+apiVersion: externaldns.k8s.io/v1alpha1
+kind: DNSEndpoint
+metadata:
+  name: cloudflared-svenss-one
+spec:
+  endpoints:
+    - dnsName: external.svenss.one
+      recordType: CNAME
+      targets: ["${CLUSTER_CLOUDFLARE_TUNNEL_ID}.cfargotunnel.com"]
