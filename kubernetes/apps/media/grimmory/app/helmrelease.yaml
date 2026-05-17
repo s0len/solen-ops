@@ -200,6 +200,9 @@ spec:
           grimmory:
             grimmory:
               - path: /data
+                subPath: media/books
+              - path: /bookdrop
+                subPath: torrents/books
       mysqld:
         type: emptyDir
         medium: Memory
