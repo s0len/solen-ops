@@ -74,15 +74,11 @@ spec:
               capabilities:
                 drop:
                   - ALL
-      # Provisioning sidecar — DISABLED on initial deploy.
-      # Bootstrap order:
-      #   1. Deploy this HelmRelease (provision replicas: 0).
-      #   2. Recover admin + idm_admin accounts via `kanidmd recover-account`.
-      #   3. Create the kanidm-provision service account + API token.
-      #   4. Store the token in 1Password as item `kanidm-provision` / field `token`.
-      #   5. Bump replicas to 1 (or remove this override) and reconcile.
+      # Provisioning sidecar — watches ConfigMaps labelled `kanidm_config=1`
+      # in this namespace, merges their .json data into Kanidm state, writes
+      # OAuth2 basic secrets back into k8s Secrets. Auto-remove is off by
+      # default so CLI-created entities stay untouched.
       provision:
-        replicas: 0
         pod:
           securityContext:
             fsGroup: 1000
