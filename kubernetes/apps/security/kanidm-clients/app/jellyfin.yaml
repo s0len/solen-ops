@@ -1,0 +1,27 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kanidm-client-jellyfin
+  namespace: security
+  labels:
+    kanidm_config: "1"
+data:
+  targetNamespace: media
+  client.json: |
+    {
+      "systems": {
+        "oauth2": {
+          "jellyfin": {
+            "displayName": "Jellyfin",
+            "originUrl": "https://jellyfin.uniflix.vip/sso/OID/redirect/Kanidm",
+            "originLanding": "https://jellyfin.uniflix.vip/",
+            "preferShortUsername": true,
+            "scopeMaps": {
+              "users": ["openid", "profile", "email", "groups"]
+            },
+            "k8s": {}
+          }
+        }
+      }
+    }

@@ -1,0 +1,27 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kanidm-client-grafana
+  namespace: security
+  labels:
+    kanidm_config: "1"
+data:
+  targetNamespace: observability
+  client.json: |
+    {
+      "systems": {
+        "oauth2": {
+          "grafana": {
+            "displayName": "Grafana",
+            "originUrl": "https://grafana.uniflix.vip/login/generic_oauth",
+            "originLanding": "https://grafana.uniflix.vip/",
+            "preferShortUsername": true,
+            "scopeMaps": {
+              "users": ["openid", "profile", "email", "groups"]
+            },
+            "k8s": {}
+          }
+        }
+      }
+    }

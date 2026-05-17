@@ -8,3 +8,4 @@ components:
 resources:
   - ./no-auth-securitypolicy.yaml
   - ./kanidm/ks.yaml
+  - ./kanidm-clients/ks.yaml

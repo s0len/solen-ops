@@ -36,6 +36,22 @@ spec:
               OLLAMA_BASE_URL: http://ollama.ai.svc.cluster.local:11434
               COMFYUI_BASE_URL: http://comfyui.ai.svc.cluster.local:8188
               ENABLE_IMAGE_GENERATION: True
+              # Kanidm OIDC integration
+              ENABLE_OAUTH_SIGNUP: "true"
+              OAUTH_MERGE_ACCOUNTS_BY_EMAIL: "true"
+              OAUTH_PROVIDER_NAME: Kanidm
+              OPENID_PROVIDER_URL: "https://idm.${SECRET_DOMAIN}/oauth2/openid/open-webui/.well-known/openid-configuration"
+              OAUTH_SCOPES: "openid profile email groups"
+              OAUTH_CLIENT_ID:
+                valueFrom:
+                  secretKeyRef:
+                    name: kanidm-open-webui-oidc
+                    key: client-id
+              OAUTH_CLIENT_SECRET:
+                valueFrom:
+                  secretKeyRef:
+                    name: kanidm-open-webui-oidc
+                    key: client-secret
             envFrom:
               - secretRef:
                   name: openwebui-secret

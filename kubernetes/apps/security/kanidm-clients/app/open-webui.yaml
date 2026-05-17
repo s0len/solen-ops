@@ -1,0 +1,27 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kanidm-client-open-webui
+  namespace: security
+  labels:
+    kanidm_config: "1"
+data:
+  targetNamespace: ai
+  client.json: |
+    {
+      "systems": {
+        "oauth2": {
+          "open-webui": {
+            "displayName": "Open-WebUI",
+            "originUrl": "https://ollama.uniflix.vip/oauth/oidc/callback",
+            "originLanding": "https://ollama.uniflix.vip/",
+            "preferShortUsername": true,
+            "scopeMaps": {
+              "users": ["openid", "profile", "email", "groups"]
+            },
+            "k8s": {}
+          }
+        }
+      }
+    }

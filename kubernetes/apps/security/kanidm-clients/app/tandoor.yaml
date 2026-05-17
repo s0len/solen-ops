@@ -1,0 +1,27 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kanidm-client-tandoor
+  namespace: security
+  labels:
+    kanidm_config: "1"
+data:
+  targetNamespace: default
+  client.json: |
+    {
+      "systems": {
+        "oauth2": {
+          "tandoor": {
+            "displayName": "Tandoor Recipes",
+            "originUrl": "https://recipes.uniflix.vip/oidc/callback/kanidm/",
+            "originLanding": "https://recipes.uniflix.vip/",
+            "preferShortUsername": true,
+            "scopeMaps": {
+              "users": ["openid", "profile", "email", "groups"]
+            },
+            "k8s": {}
+          }
+        }
+      }
+    }

@@ -30,6 +30,31 @@ spec:
             envFrom: &envFrom
               - secretRef:
                   name: paperless-secret
+          # Render PAPERLESS_SOCIALACCOUNT_PROVIDERS JSON with the kanidm-managed
+          # OIDC client secret injected. paperless-ngx supports *_FILE suffix to
+          # read any config var from a file path.
+          render-oidc:
+            image:
+              repository: docker.io/library/busybox
+              tag: "1.37"
+            env:
+              KANIDM_CLIENT_ID:
+                valueFrom:
+                  secretKeyRef:
+                    name: kanidm-paperless-oidc
+                    key: client-id
+              KANIDM_CLIENT_SECRET:
+                valueFrom:
+                  secretKeyRef:
+                    name: kanidm-paperless-oidc
+                    key: client-secret
+            command:
+              - /bin/sh
+              - -c
+              - |
+                cat > /oidc/providers.json <<EOF
+                {"openid_connect":{"APPS":[{"provider_id":"kanidm","name":"Kanidm","client_id":"${KANIDM_CLIENT_ID}","secret":"${KANIDM_CLIENT_SECRET}","settings":{"server_url":"https://idm.${SECRET_DOMAIN}/oauth2/openid/paperless/.well-known/openid-configuration"}}],"OAUTH_PKCE_ENABLED":"True"}}
+                EOF
         containers:
           app:
             image:
@@ -58,6 +83,9 @@ spec:
               PAPERLESS_OCR_SKIP_ARCHIVE_FILE: with_text
               PAPERLESS_OCR_USER_ARGS: '{"invalidate_digital_signatures": true}'
               PAPERLESS_TIKA_ENABLED: 0
+              # Kanidm OIDC (django-allauth)
+              PAPERLESS_APPS: allauth.socialaccount.providers.openid_connect
+              PAPERLESS_SOCIALACCOUNT_PROVIDERS_FILE: /oidc/providers.json
             envFrom: *envFrom
             securityContext:
               readOnlyRootFilesystem: false
@@ -98,6 +126,10 @@ spec:
         type: emptyDir
         globalMounts:
           - path: /tmp
+      oidc:
+        type: emptyDir
+        globalMounts:
+          - path: /oidc
       run:
         type: emptyDir
         medium: Memory
