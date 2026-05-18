@@ -52,8 +52,9 @@ spec:
                   httpGet:
                     path: /api/v2/app/version
                     port: *port
-                  periodSeconds: 10
-                  failureThreshold: 3
+                  timeoutSeconds: 5
+                  periodSeconds: 30
+                  failureThreshold: 5
               readiness: *probes
             securityContext:
               runAsUser: 568
