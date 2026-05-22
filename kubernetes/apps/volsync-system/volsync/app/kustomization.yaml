@@ -7,3 +7,4 @@ resources:
   - ./helmrepository.yaml
   - ./prometheusrule.yaml
   - ./mutatingadmissionpolicy.yaml
+  - ./cronjob-unlock.yaml

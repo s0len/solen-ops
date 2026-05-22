@@ -1,0 +1,82 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: volsync-auto-unlock
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: volsync-auto-unlock
+rules:
+  - apiGroups: ["volsync.backube"]
+    resources: ["replicationsources"]
+    verbs: ["get", "list", "patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: volsync-auto-unlock
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: volsync-auto-unlock
+subjects:
+  - kind: ServiceAccount
+    name: volsync-auto-unlock
+    namespace: volsync-system
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: volsync-auto-unlock
+spec:
+  schedule: "55 0 * * *"
+  timeZone: Etc/UTC
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      ttlSecondsAfterFinished: 3600
+      template:
+        spec:
+          serviceAccountName: volsync-auto-unlock
+          restartPolicy: OnFailure
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 65534
+            runAsGroup: 65534
+            seccompProfile:
+              type: RuntimeDefault
+          containers:
+            - name: kubectl
+              # renovate: datasource=docker depName=docker.io/bitnami/kubectl
+              image: docker.io/bitnami/kubectl:1.36.1
+              imagePullPolicy: IfNotPresent
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                capabilities:
+                  drop: ["ALL"]
+              command: ["/bin/sh", "-c"]
+              args:
+                - |
+                  set -eu
+                  TS=$(date -u +%Y%m%d%H%M%S)
+                  echo "Triggering restic unlock on all ReplicationSources (unlock=$TS)"
+                  kubectl get replicationsources.volsync.backube -A \
+                    -o jsonpath='{range .items[*]}{.metadata.namespace}{"\t"}{.metadata.name}{"\n"}{end}' \
+                    | while IFS=$(printf '\t') read -r ns name; do
+                        [ -z "$ns" ] && continue
+                        echo "patch $ns/$name"
+                        kubectl -n "$ns" patch replicationsource "$name" --type=merge \
+                          -p "{\"spec\":{\"restic\":{\"unlock\":\"$TS\"}}}"
+                      done
+              resources:
+                requests:
+                  cpu: 10m
+                  memory: 32Mi
+                limits:
+                  memory: 128Mi
