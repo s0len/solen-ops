@@ -30,7 +30,7 @@ spec:
       GATUS_PATH: /web/index.html
       GPU_SELECTOR: "device.attributes['gpu.intel.com'].pciId == '0x56a6'"
       VOLSYNC_CAPACITY: 600Gi
-      VOLSYNC_CACHE_CAPACITY: 50Gi
+      VOLSYNC_CACHE_CAPACITY: 100Gi
       VOLSYNC_SCHEDULE: "0 2 * * *"
 ---
 # yaml-language-server: $schema=https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/kustomization-kustomize-v1.json
