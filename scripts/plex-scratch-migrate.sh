@@ -83,7 +83,7 @@ EOF
 echo "==> Waiting for migration pod to be Ready"
 kubectl wait --for=condition=Ready -n "${NS}" "pod/${MIG_POD}" --timeout=300s
 
-PMS_PATH="/src/Library/Application Support/Plex Media Server"
+PMS_PATH="/src"
 
 echo "==> Source contents (top-level sizes):"
 kubectl exec -n "${NS}" "${MIG_POD}" -- sh -c "du -sh '${PMS_PATH}'/* 2>/dev/null || true"
