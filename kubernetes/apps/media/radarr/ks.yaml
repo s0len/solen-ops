@@ -12,7 +12,7 @@ spec:
       app.kubernetes.io/name: *app
   components:
     - ../../../../components/gatus/guarded
-    - ../../../../components/volsync
+    - ../../../../components/volsync-kopia
   dependsOn:
     - name: external-secrets
       namespace: external-secrets
@@ -46,7 +46,7 @@ spec:
       app.kubernetes.io/name: *app
   components:
     - ../../../../components/gatus/guarded
-    - ../../../../components/volsync
+    - ../../../../components/volsync-kopia
   dependsOn:
     - name: external-secrets
       namespace: external-secrets
@@ -80,7 +80,7 @@ spec:
       app.kubernetes.io/name: *app
   components:
     - ../../../../components/gatus/guarded
-    - ../../../../components/volsync
+    - ../../../../components/volsync-kopia
   dependsOn:
     - name: external-secrets
       namespace: external-secrets

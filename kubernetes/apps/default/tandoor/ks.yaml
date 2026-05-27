@@ -16,7 +16,7 @@ spec:
     - name: onepassword
       namespace: external-secrets
   components:
-    - ../../../../components/volsync
+    - ../../../../components/volsync-kopia
   path: ./kubernetes/apps/default/tandoor/app
   prune: true
   sourceRef:

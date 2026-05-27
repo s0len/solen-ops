@@ -13,7 +13,7 @@ spec:
   components:
     - ../../../../components/gpu
     - ../../../../components/gatus/external
-    - ../../../../components/volsync
+    - ../../../../components/volsync-kopia
   wait: false
   path: kubernetes/apps/media/plex/plex
   prune: true
@@ -72,7 +72,7 @@ spec:
     labels:
       app.kubernetes.io/name: *app
   components:
-    - ../../../../components/volsync
+    - ../../../../components/volsync-kopia
   dependsOn:
     - name: onepassword
       namespace: external-secrets
@@ -103,7 +103,7 @@ spec:
     labels:
       app.kubernetes.io/name: *app
   components:
-    - ../../../../components/volsync
+    - ../../../../components/volsync-kopia
   dependsOn:
     - name: onepassword
       namespace: external-secrets
@@ -192,7 +192,7 @@ spec:
       app.kubernetes.io/name: *app
   components:
     - ../../../../components/gatus/guarded
-    - ../../../../components/volsync
+    - ../../../../components/volsync-kopia
   wait: false
   path: kubernetes/apps/media/plex/tautulli
   prune: true

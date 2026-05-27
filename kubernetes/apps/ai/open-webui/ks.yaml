@@ -16,7 +16,7 @@ spec:
     labels:
       app.kubernetes.io/name: *app
   components:
-    - ../../../../components/volsync
+    - ../../../../components/volsync-kopia
     - ../../../../components/gatus/external
   prune: true
   wait: false
