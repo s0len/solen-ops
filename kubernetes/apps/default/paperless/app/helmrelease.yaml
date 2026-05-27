@@ -36,7 +36,7 @@ spec:
           render-oidc:
             image:
               repository: docker.io/library/busybox
-              tag: "1.37"
+              tag: "1.38"
             env:
               KANIDM_CLIENT_ID:
                 valueFrom:
