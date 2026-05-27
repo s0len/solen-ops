@@ -211,13 +211,18 @@ spec:
           qbittorrent:
             app:
               - path: /config
+            mamapi:
+              - path: /data
+                subPath: mamapi
 
       media:
         type: nfs
         server: ${TRUENAS_IP}
         path: /mnt/rust/data/torrents
-        globalMounts:
-          - path: /data/torrents
+        advancedMounts:
+          qbittorrent:
+            app:
+              - path: /data/torrents
 
       addons:
         existingClaim: qbittorrent-addons
