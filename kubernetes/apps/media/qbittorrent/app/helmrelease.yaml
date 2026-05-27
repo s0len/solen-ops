@@ -109,7 +109,12 @@ spec:
               VPN_INTERFACE: tun0
               VPN_SERVICE_PROVIDER: airvpn
               WIREGUARD_MTU: 1420
-              SERVER_COUNTRIES: Sweden
+              # Pin to a single Stockholm hostname (AS51815 / GlobalConnect)
+              # to keep MAM's ASN-locked session stable. SERVER_COUNTRIES=Sweden
+              # randomly rotated between Stockholm hosters with different ASNs
+              # (AltusHost, Netrouting, GlobalConnect), which is what was
+              # triggering MAM session invalidations every few weeks.
+              SERVER_HOSTNAMES: Lupus
             envFrom:
               - secretRef:
                   name: qbittorrent-secret
