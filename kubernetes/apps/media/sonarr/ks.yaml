@@ -13,6 +13,7 @@ spec:
   components:
     - ../../../../components/gatus/guarded
     - ../../../../components/volsync-kopia
+    - ../../../../components/volsync-kopia-offsite
   dependsOn:
     - name: cloudnative-pg-cluster
       namespace: database

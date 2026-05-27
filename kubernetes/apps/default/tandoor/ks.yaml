@@ -17,6 +17,7 @@ spec:
       namespace: external-secrets
   components:
     - ../../../../components/volsync-kopia
+    - ../../../../components/volsync-kopia-offsite
   path: ./kubernetes/apps/default/tandoor/app
   prune: true
   sourceRef:

@@ -73,6 +73,7 @@ spec:
       app.kubernetes.io/name: *app
   components:
     - ../../../../components/volsync-kopia
+    - ../../../../components/volsync-kopia-offsite
   dependsOn:
     - name: onepassword
       namespace: external-secrets
@@ -193,6 +194,7 @@ spec:
   components:
     - ../../../../components/gatus/guarded
     - ../../../../components/volsync-kopia
+    - ../../../../components/volsync-kopia-offsite
   wait: false
   path: kubernetes/apps/media/plex/tautulli
   prune: true

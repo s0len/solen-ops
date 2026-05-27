@@ -12,6 +12,7 @@ spec:
       app.kubernetes.io/name: *app
   components:
     - ../../../../components/volsync-kopia
+    - ../../../../components/volsync-kopia-offsite
   dependsOn:
     - name: onepassword
       namespace: external-secrets

@@ -13,6 +13,7 @@ spec:
   components:
     - ../../../../components/gatus/guarded
     - ../../../../components/volsync-kopia
+    - ../../../../components/volsync-kopia-offsite
   dependsOn:
     - name: external-secrets
       namespace: external-secrets
@@ -47,6 +48,7 @@ spec:
   components:
     - ../../../../components/gatus/guarded
     - ../../../../components/volsync-kopia
+    - ../../../../components/volsync-kopia-offsite
   dependsOn:
     - name: external-secrets
       namespace: external-secrets
@@ -81,6 +83,7 @@ spec:
   components:
     - ../../../../components/gatus/guarded
     - ../../../../components/volsync-kopia
+    - ../../../../components/volsync-kopia-offsite
   dependsOn:
     - name: external-secrets
       namespace: external-secrets

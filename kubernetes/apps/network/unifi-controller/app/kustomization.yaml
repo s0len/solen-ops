@@ -5,3 +5,4 @@ resources:
   - ./helmrelease.yaml
 components:
   - ../../../../components/volsync-kopia
+  - ../../../../components/volsync-kopia-offsite
