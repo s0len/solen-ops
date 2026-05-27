@@ -31,7 +31,7 @@ spec:
           app:
             image:
               repository: ghcr.io/jellyfin/jellyfin
-              tag: 10.11.8@sha256:713be14dd1f838ce1e87ca427139fb970f5447a3e507a0b283935954451d6cff
+              tag: 10.11.10@sha256:e7ae47ca41254acea24612da3b7516c413f54fe5eee43728355a8a2b75953a8c
             env:
               TZ: ${TIMEZONE}
               JELLYFIN_PublishedServerUrl: "https://{{ .Release.Name }}.${SECRET_DOMAIN}"
