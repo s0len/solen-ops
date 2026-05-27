@@ -6,5 +6,3 @@ resources:
   - ./helmrelease.yaml
   - ./helmrepository.yaml
   - ./prometheusrule.yaml
-  - ./mutatingadmissionpolicy.yaml
-  - ./cronjob-unlock.yaml
