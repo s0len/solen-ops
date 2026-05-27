@@ -10,7 +10,7 @@ spec:
       rules:
         - alert: VolSyncComponentAbsent
           expr: |
-            absent(up{job=~"volsync-.*-metrics"})
+            absent(up{job="volsync-metrics"})
           annotations:
             summary: >-
               VolSync component has disappeared from Prometheus target discovery
@@ -18,12 +18,15 @@ spec:
           labels:
             severity: critical
 
+        # ReplicationDestinations are restore-only (manual trigger, no
+        # schedule) — they don't have a meaningful "out of sync" concept.
+        # Restrict the alert to ReplicationSources only.
         - alert: VolSyncVolumeOutOfSync
           expr: |
-            volsync_volume_out_of_sync == 1
+            volsync_volume_out_of_sync{role="source"} == 1
           annotations:
             summary: >-
               {{ $labels.obj_namespace }}/{{ $labels.obj_name }} volume is out of sync
-          for: 5m
+          for: 15m
           labels:
             severity: critical
