@@ -5,6 +5,11 @@ kind: ReplicationDestination
 metadata:
   name: "${APP}-dst"
 spec:
+  # Set VOLSYNC_DST_PAUSED=true in an app's ks.yaml postBuild.substitute
+  # to disable the bootstrap restore (no PVCs created, no mover jobs).
+  # Required for apps whose dataset is too large to safely restore
+  # alongside live data (e.g. nextcloud at 385 GB on a 1.8 TiB cluster).
+  paused: ${VOLSYNC_DST_PAUSED:=false}
   trigger:
     manual: restore-once
   kopia:

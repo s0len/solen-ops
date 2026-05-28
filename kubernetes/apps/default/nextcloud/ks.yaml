@@ -14,22 +14,6 @@ spec:
     - ../../../../components/gatus/external
     - ../../../../components/volsync-kopia
     - ../../../../components/volsync-kopia-offsite
-  patches:
-    # Nextcloud is 385 GB; the bootstrap restore-once destination would
-    # consume ~400 GiB of Ceph for ~5h every time the RD is (re)created.
-    # Backups are still in place via the volsync-kopia ReplicationSource +
-    # offsite R2; restores can be re-enabled by reverting this patch.
-    - target:
-        group: volsync.backube
-        version: v1alpha1
-        kind: ReplicationDestination
-        name: nextcloud-dst
-      patch: |
-        $patch: delete
-        apiVersion: volsync.backube/v1alpha1
-        kind: ReplicationDestination
-        metadata:
-          name: nextcloud-dst
   dependsOn:
     - name: cloudnative-pg-cluster
       namespace: database
@@ -53,5 +37,10 @@ spec:
       VOLSYNC_CAPACITY: 400Gi
       VOLSYNC_CACHE_CAPACITY: 32Gi
       VOLSYNC_SCHEDULE: "0 1 * * *"
+      # Nextcloud is 385 GB; the bootstrap restore would consume ~400 GiB
+      # of Ceph for ~5h every time the RD is (re)created and fill osd.0
+      # past 95%, blocking all writes. The ReplicationSource backups (NFS
+      # kopia + R2 offsite) still run; only the auto-restore is disabled.
+      VOLSYNC_DST_PAUSED: "true"
       GATUS_SUBDOMAIN: cloud
       GATUS_PATH: /status.php
