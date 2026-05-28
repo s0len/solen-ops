@@ -23,10 +23,13 @@ spec:
   values:
     fullnameOverride: *app
     config:
-      # Use regex include so we catch ALL NVMe namespaces, not just nvme0n1.
+      # Use regex include so we catch ALL devices, not just nvme0n1.
       # Previously /dev/nvme0n1 only — that missed nvme1n1 on control-1
       # (where osd.2 lives), so its thermal events went unmonitored.
-      device_include: ^/dev/(nvme[0-9]+n[0-9]+|sd[a-z]+)$
+      #
+      # smartctl --scan returns short controller names (sda, nvme0, nvme1),
+      # NOT /dev/ paths — so the regex anchors must match short names.
+      device_include: ^(sd[a-z]+|nvme[0-9]+)$
     serviceMonitor:
       enabled: true
     prometheusRules:
