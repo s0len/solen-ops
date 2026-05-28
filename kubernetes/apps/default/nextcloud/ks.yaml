@@ -37,10 +37,12 @@ spec:
       VOLSYNC_CAPACITY: 400Gi
       VOLSYNC_CACHE_CAPACITY: 32Gi
       VOLSYNC_SCHEDULE: "0 1 * * *"
-      # Nextcloud is 385 GB; the bootstrap restore would consume ~400 GiB
-      # of Ceph for ~5h every time the RD is (re)created and fill osd.0
-      # past 95%, blocking all writes. The ReplicationSource backups (NFS
-      # kopia + R2 offsite) still run; only the auto-restore is disabled.
-      VOLSYNC_DST_PAUSED: "true"
+      # Bootstrap restore is intentionally enabled: nextcloud is the most
+      # critical app and should come back online automatically after a
+      # cluster rebuild. VolSync uses status.lastManualSync to avoid
+      # spurious re-triggers — as long as the RD object is not deleted,
+      # the restore fires exactly once on fresh deploys. If you need to
+      # do a manual `kubectl delete` of the RD for any reason, expect
+      # ~400 GiB of Ceph churn for ~5h while it rebuilds.
       GATUS_SUBDOMAIN: cloud
       GATUS_PATH: /status.php

@@ -32,6 +32,12 @@ spec:
       VOLSYNC_CAPACITY: 600Gi
       VOLSYNC_CACHE_CAPACITY: 100Gi
       VOLSYNC_SCHEDULE: "0 2 * * *"
+      # Plex live data is ~107 GiB; bootstrap restore would consume ~600 GiB
+      # of Ceph (provisioned capacity) on a fresh deploy. We don't need
+      # auto-restore for plex (library metadata is rebuildable from the
+      # NFS media files). Backups still run; to restore manually, set
+      # VOLSYNC_DST_PAUSED=false, push, wait, then set back to true.
+      VOLSYNC_DST_PAUSED: "true"
 ---
 # yaml-language-server: $schema=https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/kustomization-kustomize-v1.json
 apiVersion: kustomize.toolkit.fluxcd.io/v1
