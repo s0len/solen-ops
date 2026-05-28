@@ -8,12 +8,22 @@ spec:
   groups:
     - name: smartctl-exporter.rules
       rules:
+        - alert: SmartDeviceTemperatureWarning
+          annotations:
+            summary:
+              Drive {{ $labels.device }} on {{ $labels.instance }} has been
+              at or above 60°C for 15m — early heads-up for thermal throttling.
+          expr: smartctl_device_temperature{temperature_type="current"} >= 60
+          for: 15m
+          labels:
+            severity: warning
         - alert: SmartDeviceHighTemperature
           annotations:
             summary:
-              Mounted drive {{ $labels.device }} on device {{ $labels.instance }}
-              has a temperature higher than 65°C.
-          expr: smartctl_device_temperature > 65
+              Drive {{ $labels.device }} on {{ $labels.instance }} has been
+              at or above 65°C for 15m — likely thermal throttling, expect
+              slow I/O and Ceph BLUESTORE_SLOW_OP alerts.
+          expr: smartctl_device_temperature{temperature_type="current"} >= 65
           for: 15m
           labels:
             severity: critical

@@ -23,9 +23,10 @@ spec:
   values:
     fullnameOverride: *app
     config:
-      devices:
-        - /dev/nvme0n1
-        - /dev/sda
+      # Use regex include so we catch ALL NVMe namespaces, not just nvme0n1.
+      # Previously /dev/nvme0n1 only — that missed nvme1n1 on control-1
+      # (where osd.2 lives), so its thermal events went unmonitored.
+      device_include: ^/dev/(nvme[0-9]+n[0-9]+|sd[a-z]+)$
     serviceMonitor:
       enabled: true
     prometheusRules:
