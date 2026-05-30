@@ -22,8 +22,10 @@ machine:
   network:
     hostname: control-1
     interfaces:
-      # USB 2.5GbE adapter (stabilized via usbcore.autosuspend=-1 and quirks in schematic)
-      - interface: enp0s20f0u5
+      # Onboard 1GbE: Intel I219-LM (e1000e), MAC 90:8d:6e:8a:d3:86, PCI 0000:00:1f.6
+      # Switched from USB 2.5GbE adapter enp0s20f0u5 (RTL8156B) which kept flapping →
+      # DHCP IP drift (.41→.46) + etcd quorum churn + Ceph mon.e crashloop.
+      - interface: enp0s31f6
         mtu: 1500
         dhcp: true
         vip:
