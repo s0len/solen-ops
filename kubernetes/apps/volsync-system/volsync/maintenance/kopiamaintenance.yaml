@@ -17,6 +17,16 @@ spec:
           server: 192.168.10.98
   repository:
     repository: volsync-maintenance-secret
+  # The kopia repo on NFS is owned 568:568 (backup movers run as UID 568 via
+  # moverSecurityContext in components/volsync-kopia/replicationsource.yaml).
+  # Maintenance defaults to UID 1000, which can't read the 568-owned 0600 repo
+  # config blobs -> "open /mnt/repository/.shards: permission denied".
+  # Run maintenance as 568 to match repo ownership.
+  podSecurityContext:
+    runAsUser: 568
+    runAsGroup: 568
+    fsGroup: 568
+    runAsNonRoot: true
   resources:
     requests:
       cpu: 100m
