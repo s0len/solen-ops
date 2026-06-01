@@ -4,35 +4,35 @@ kind: ConfigMap
 metadata:
   name: nut-shutdown-ups-a-script
 data:
+  # IMPORTANT: never use ${VAR} in this script — Flux postBuild envsubst rewrites
+  # ${...} in this ConfigMap (substitutes cluster-settings vars / blanks unknowns).
+  # Use $VAR (no braces); Flux leaves those alone and the shell expands them at runtime.
   poll.sh: |
     #!/bin/sh
-    # Graceful shutdown of control-1 when its UPS (UPS A / fiber) is on battery
-    # and drops to <= SHUTDOWN_PERCENT. Runs ON control-1, reads the local
-    # nut-server-ups-a upsd over the host loopback, and calls `talosctl shutdown`
-    # against control-1's own apid. This deliberately depends on NOTHING outside
-    # control-1 (no HA, no Ceph, no etcd quorum, no cluster networking) because by
-    # the time UPS A is this low, UPS B's nodes (control-0/2) are already down and
-    # the cluster control plane has lost quorum. UPS A + control-1 is the survivor
-    # island; this is its last action before power is lost.
+    # Graceful shutdown of control-1 when its UPS (UPS A / fiber) is on battery and
+    # drops to <= SHUTDOWN_PERCENT. Runs ON control-1, reads the local nut-server-ups-a
+    # upsd over host loopback, and runs `talosctl shutdown` against control-1's OWN apid.
+    # Depends on NOTHING outside control-1 (no HA, Ceph, etcd quorum, cluster net) —
+    # by the time UPS A is this low, UPS B's nodes (control-0/2) are already down.
     set -u
-    NODE="${TALOS_NODE:-192.168.10.41}"
-    UPS="${UPS_NAME:-ups@localhost}"
-    THRESHOLD="${SHUTDOWN_PERCENT:-15}"
-    TALOSCTL="/shared/talosctl"
-    TALOSCONFIG="/talos/config"
+    NODE="$TALOS_NODE"
+    UPS="$UPS_NAME"
+    THRESHOLD="$SHUTDOWN_PERCENT"
+    TALOSCTL=/shared/talosctl
+    TALOSCONFIG=/talos/config
 
-    echo "ups-a shutdown poller: shut down ${NODE} when ${UPS} is OB and battery.charge <= ${THRESHOLD}%"
+    echo "ups-a shutdown poller: shut down $NODE when $UPS is OB and battery.charge <= $THRESHOLD%"
     while true; do
       charge="$(upsc "$UPS" battery.charge 2>/dev/null)"
       status="$(upsc "$UPS" ups.status 2>/dev/null)"
       case "$charge" in
         '' | *[!0-9]*)
-          : ;;  # read failed / not a clean integer -> skip this round, never act on garbage
+          : ;;  # read failed / not a clean integer -> skip, never act on garbage
         *)
           if [ "$charge" -le "$THRESHOLD" ] && echo "$status" | grep -q 'OB'; then
-            echo "LOWBATT: ${UPS} charge=${charge}% status='${status}' -> talosctl shutdown ${NODE}"
+            echo "LOWBATT: $UPS charge=$charge% status='$status' -> talosctl shutdown $NODE"
             # -e == -n == control-1: connect to control-1's OWN apid, never route via
-            # control-0/2 (which are already dead by the time UPS A hits 15%).
+            # control-0/2 (already dead by the time UPS A hits the threshold).
             "$TALOSCTL" shutdown --endpoints "$NODE" --nodes "$NODE" --talosconfig "$TALOSCONFIG"
             sleep 120   # node is going down; avoid a tight retry loop
           fi ;;
