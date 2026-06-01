@@ -31,7 +31,9 @@ data:
         *)
           if [ "$charge" -le "$THRESHOLD" ] && echo "$status" | grep -q 'OB'; then
             echo "LOWBATT: ${UPS} charge=${charge}% status='${status}' -> talosctl shutdown ${NODE}"
-            "$TALOSCTL" shutdown --nodes "$NODE" --talosconfig "$TALOSCONFIG"
+            # -e == -n == control-1: connect to control-1's OWN apid, never route via
+            # control-0/2 (which are already dead by the time UPS A hits 15%).
+            "$TALOSCTL" shutdown --endpoints "$NODE" --nodes "$NODE" --talosconfig "$TALOSCONFIG"
             sleep 120   # node is going down; avoid a tight retry loop
           fi ;;
       esac
