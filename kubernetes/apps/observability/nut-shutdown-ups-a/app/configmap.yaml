@@ -3,10 +3,12 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: nut-shutdown-ups-a-script
+  annotations:
+    # Flux postBuild envsubst (drone/envsubst) substitutes BOTH $VAR and ${VAR},
+    # which would blank this script's shell vars. Opt this ConfigMap out so the
+    # vars survive to runtime and are expanded by the shell / read from the env.
+    kustomize.toolkit.fluxcd.io/substitute: disabled
 data:
-  # IMPORTANT: never use ${VAR} in this script — Flux postBuild envsubst rewrites
-  # ${...} in this ConfigMap (substitutes cluster-settings vars / blanks unknowns).
-  # Use $VAR (no braces); Flux leaves those alone and the shell expands them at runtime.
   poll.sh: |
     #!/bin/sh
     # Graceful shutdown of control-1 when its UPS (UPS A / fiber) is on battery and
