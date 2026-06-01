@@ -15,6 +15,7 @@ resources:
   - ./nut-exporter/ks.yaml
   - ./nut-server/ks.yaml
   - ./nut-server-ups-a/ks.yaml
+  - ./nut-shutdown-ups-a/ks.yaml
   - ./silence-operator/ks.yaml
   - ./smartctl-exporter/ks.yaml
   - ./unpoller/ks.yaml

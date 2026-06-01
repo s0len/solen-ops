@@ -3,12 +3,12 @@
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: &app talos-shutdown
+  name: &app nut-shutdown-ups-a
 spec:
   interval: 30m
   chartRef:
     kind: OCIRepository
-    name: talos-shutdown
+    name: nut-shutdown-ups-a
   install:
     remediation:
       retries: 3
@@ -19,7 +19,7 @@ spec:
       retries: 3
   values:
     controllers:
-      talos-shutdown:
+      nut-shutdown-ups-a:
         annotations:
           reloader.stakater.com/auto: "true"
         initContainers:
@@ -30,7 +30,7 @@ spec:
             command:
               - sh
               - -c
-              - wget -qO /shared/talosctl "https://github.com/siderolabs/talos/releases/download/v1.12.4/talosctl-linux-amd64" && chmod +x /shared/talosctl
+              - wget -qO /shared/talosctl "https://github.com/siderolabs/talos/releases/download/v1.13.3/talosctl-linux-amd64" && chmod +x /shared/talosctl
             securityContext:
               allowPrivilegeEscalation: false
               capabilities:
@@ -38,14 +38,14 @@ spec:
         containers:
           app:
             image:
-              repository: python
-              tag: 3.14-alpine
-            command: [python3, /app/server.py]
+              repository: docker.io/instantlinux/nut-upsd
+              tag: 2.8.2-r0@sha256:33c4d8c1f9907f6044b1b01130b9ed191e79b954792da68276f335c976ebca20
+            command: [sh, /app/poll.sh]
             env:
-              TALOS_NODES: "192.168.10.40,192.168.10.42"
-            envFrom:
-              - secretRef:
-                  name: talos-shutdown-secret
+              TZ: ${TIMEZONE}
+              TALOS_NODE: "192.168.10.41"   # control-1 (its own apid)
+              UPS_NAME: "ups@localhost"     # nut-server-ups-a on the same node (hostNetwork)
+              SHUTDOWN_PERCENT: "15"
             securityContext:
               allowPrivilegeEscalation: false
               readOnlyRootFilesystem: true
@@ -57,26 +57,8 @@ spec:
                 memory: 32Mi
               limits:
                 memory: 64Mi
-            probes:
-              liveness:
-                enabled: true
-                custom: true
-                spec:
-                  httpGet:
-                    path: /health
-                    port: 8080
-                  periodSeconds: 30
-              readiness:
-                enabled: true
-                custom: true
-                spec:
-                  httpGet:
-                    path: /health
-                    port: 8080
     defaultPodOptions:
       hostNetwork: true
-      # Pin to control-1 (UPS A / fiber survivor): it stays up on its own UPS while
-      # UPS B drains control-0/2, so the webhook is alive to shut those two down.
       nodeSelector:
         kubernetes.io/hostname: control-1
       securityContext:
@@ -85,23 +67,17 @@ spec:
         runAsGroup: 65534
         seccompProfile:
           type: RuntimeDefault
-    service:
-      app:
-        controller: *app
-        ports:
-          http:
-            port: 8080
     persistence:
       script:
         type: configMap
-        name: talos-shutdown-script
+        name: nut-shutdown-ups-a-script
         globalMounts:
-          - path: /app/server.py
-            subPath: server.py
+          - path: /app/poll.sh
+            subPath: poll.sh
             readOnly: true
       talosconfig:
         type: secret
-        name: talos-shutdown-secret
+        name: nut-shutdown-ups-a-secret
         globalMounts:
           - path: /talos/config
             subPath: config

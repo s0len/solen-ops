@@ -7,6 +7,8 @@ data:
   ups.conf: |
     # UPS A: powers control-1 + the fiber. USB on control-1 (06da:ffff, PPC HID UPS).
     # HID Power Device Class → usbhid-ups (MGE HID subdriver), not nutdrv_qx.
+    # Graceful shutdown of control-1 at 15% is enforced by the nut-shutdown-ups-a
+    # poller (reads battery.charge directly) — no LB-flag override needed here.
     [ups]
         driver = usbhid-ups
         port = auto
@@ -14,5 +16,3 @@ data:
         vendorid = 06da
         productid = ffff
         pollinterval = 15
-        # Report LOWBATT at 30% so the local upsmon shuts control-1 down at 30% (step 4).
-        override.battery.charge.low = 30
