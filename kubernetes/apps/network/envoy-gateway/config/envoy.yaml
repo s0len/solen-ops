@@ -11,11 +11,6 @@ spec:
   provider:
     type: Kubernetes
     kubernetes:
-      # DaemonSet (not Deployment): Cilium L2 announcements don't honor
-      # externalTrafficPolicy: Local, so the announcing node and the node
-      # running the Envoy pod can drift apart, black-holing the VIP. Running
-      # one Envoy per node guarantees the announcing node always has a local
-      # endpoint while preserving the real client source IP.
       envoyDaemonSet:
         container:
           resources:
