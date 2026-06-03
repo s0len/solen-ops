@@ -84,6 +84,16 @@ spec:
       config:
         existingClaim: *app
 
+      # Writable scratch dir: the container runs readOnlyRootFilesystem, so /tmp
+      # is read-only. SQLite materializes a temp-file sorter for ORDER BY over
+      # multi-row joins (e.g. books with several authors), which fails with
+      # SQLITE_IOERR when /tmp can't be written. An emptyDir gives it (and any
+      # other temp use) a writable /tmp.
+      tmp:
+        type: emptyDir
+        globalMounts:
+          - path: /tmp
+
       media:
         type: nfs
         server: ${TRUENAS_IP}
