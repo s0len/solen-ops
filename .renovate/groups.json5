@@ -85,6 +85,15 @@
       "separateMinorPatch": false
     },
     {
+      "description": ["Rook-Ceph Group"],
+      "groupName": "rook-ceph",
+      "matchDatasources": ["docker"],
+      "matchPackageNames": ["/rook-ceph/", "/rook-ceph-cluster/"],
+      "group": {
+        "commitMessageTopic": "{{{groupName}}} group"
+      }
+    },
+    {
       "description": ["Spegel Group"],
       "groupName": "Spegel",
       "matchDatasources": ["docker"],
