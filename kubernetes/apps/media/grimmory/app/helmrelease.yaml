@@ -24,6 +24,10 @@ spec:
   values:
     controllers:
       grimmory:
+        # RWO Ceph-RBD volume can only attach to one node; Recreate releases it
+        # from the old pod before the new one starts (RollingUpdate would deadlock
+        # on a multi-attach error since both pods can't hold the volume at once).
+        strategy: Recreate
         annotations:
           reloader.stakater.com/auto: "true"
         pod:
