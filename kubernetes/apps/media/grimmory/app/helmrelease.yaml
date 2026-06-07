@@ -201,6 +201,8 @@ spec:
             grimmory:
               - path: /data
                 subPath: media/books
+              - path: /books-for-kids
+                subPath: media/books-for-kids
               - path: /bookdrop
                 subPath: torrents/books
       mysqld:
