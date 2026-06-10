@@ -280,7 +280,7 @@ def grimmory_sync(hc_lists):
         if not shelf:
             shelf = http("POST", f"{base}/api/v1/shelves", hdrs,
                          {"name": lst["name"], "icon": "bookmark",
-                          "iconType": "PRIME_NG", "publicShelf": False})
+                          "iconType": "PRIME_NG", "publicShelf": True})
         current = on_shelf.get(shelf["id"], set())
         to_add = sorted(ids - current)
         to_remove = sorted(current - ids)
