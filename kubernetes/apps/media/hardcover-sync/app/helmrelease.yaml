@@ -1,0 +1,84 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s-labs/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: &app hardcover-sync
+  namespace: media
+spec:
+  interval: 30m
+  chartRef:
+    kind: OCIRepository
+    name: app-template
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      strategy: rollback
+      retries: 3
+
+  values:
+    controllers:
+      hardcover-sync:
+        type: cronjob
+        annotations:
+          reloader.stakater.com/auto: "true"
+        cronjob:
+          schedule: "0 5 * * *"
+          timeZone: Europe/Stockholm
+          concurrencyPolicy: Forbid
+          successfulJobsHistory: 1
+          failedJobsHistory: 1
+          backoffLimit: 2
+          activeDeadlineSeconds: 1800
+        containers:
+          app:
+            image:
+              repository: docker.io/library/python
+              tag: 3.13-alpine
+            command: ["python3", "/app/sync.py"]
+            env:
+              TZ: ${TIMEZONE}
+              ABS_URL: http://audiobookshelf.media.svc.cluster.local
+              GRIMMORY_URL: https://grimmory.${SECRET_DOMAIN}
+              FLARESOLVERR_URL: http://flaresolverr.media.svc.cluster.local:8191
+            envFrom:
+              - secretRef:
+                  name: hardcover-sync-secret
+            probes:
+              liveness:
+                enabled: false
+              readiness:
+                enabled: false
+              startup:
+                enabled: false
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities: { drop: ["ALL"] }
+            resources:
+              requests:
+                cpu: 10m
+                memory: 128Mi
+              limits:
+                memory: 256Mi
+
+    defaultPodOptions:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        fsGroupChangePolicy: OnRootMismatch
+        seccompProfile: { type: RuntimeDefault }
+
+    persistence:
+      app:
+        type: configMap
+        name: hardcover-sync-configmap
+        globalMounts:
+          - path: /app/sync.py
+            subPath: sync.py
+            readOnly: true
