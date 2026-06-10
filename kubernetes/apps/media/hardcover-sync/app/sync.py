@@ -39,8 +39,11 @@ DRY_RUN = os.environ.get("DRY_RUN") == "1"
 
 def http(method, url, headers=None, body=None, timeout=60):
     data = json.dumps(body).encode() if body is not None else None
+    # Cloudflare's WAF (in front of grimmory) rejects Python-urllib's
+    # default User-Agent with error 1010; a Mozilla-prefixed UA passes.
     req = urllib.request.Request(url, data=data, method=method,
                                  headers={"Content-Type": "application/json",
+                                          "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) hardcover-sync/1.0",
                                           **(headers or {})})
     try:
         with urllib.request.urlopen(req, timeout=timeout) as resp:
