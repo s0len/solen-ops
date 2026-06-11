@@ -20,7 +20,9 @@ data:
             "scopeMaps": {
               "users": ["openid", "profile", "email", "groups"]
             },
-            "k8s": {}
+            "k8s": {
+              "imageUrl": "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/open-webui.svg"
+            }
           }
         }
       }
