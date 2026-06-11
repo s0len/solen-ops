@@ -21,7 +21,7 @@ data:
               "users": ["openid", "profile", "email", "groups"]
             },
             "k8s": {
-              "imageUrl": "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/jellyseerr.svg"
+              "imageUrl": "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/seerr.svg"
             }
           }
         }
