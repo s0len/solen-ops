@@ -38,6 +38,20 @@ spec:
             - secretRef:
                 name: nextcloud-secret
 
+      extraVolumes:
+        - name: icc-patch
+          configMap:
+            name: nextcloud-icc-patch
+            defaultMode: 493
+      extraVolumeMounts:
+        - name: icc-patch
+          mountPath: /opt/icc-patch
+          readOnly: true
+        - name: icc-patch
+          mountPath: /docker-entrypoint-hooks.d/before-starting/icc-patch.sh
+          subPath: icc-patch.sh
+          readOnly: true
+
       extraEnv:
         - name: REDIS_HOST
           value: dragonfly.database.svc.cluster.local.

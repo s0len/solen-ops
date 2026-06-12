@@ -7,3 +7,13 @@ resources:
   - ./helmrelease.yaml
   - ./helmrepository.yaml
   - ./httproute.yaml
+configMapGenerator:
+  - name: nextcloud-icc-patch
+    files:
+      - ./resources/icc-patch/icc-patch.sh
+      - ./resources/icc-patch/Image.php
+      - ./resources/icc-patch/HEIC.php
+    options:
+      disableNameSuffixHash: true
+      annotations:
+        kustomize.toolkit.fluxcd.io/substitute: disabled
