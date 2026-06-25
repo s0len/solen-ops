@@ -39,7 +39,7 @@ spec:
           app: &container_app
             image:
               repository: kometateam/kometa
-              tag: develop@sha256:8a44678ccb14ca0d53289c92a453884a1ee8a269ae8ae8f5c543f6577c77382c
+              tag: develop@sha256:c492d6d946f891316cfeda086aa67e35a0cd71b467eaab2bb31c7b147e17dbf6
             command:
               - /bin/sh
               - -c
