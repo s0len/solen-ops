@@ -43,7 +43,7 @@ spec:
           app:
             image:
               repository: ghcr.io/heavybullets8/sonarr
-              tag: 4.0.17.2952@sha256:d837a9462c3b84f5042e1448730f765b36c55cbe9ba8218d7028ee07868eb329
+              tag: 4.0.19.2979@sha256:20accaa998446d21305a7417b74ea4a4f89fedf7beb0919289168c452dfa5a44
             env:
               SONARR__AUTH__METHOD: External
               SONARR__AUTH__REQUIRED: DisabledForLocalAddresses
