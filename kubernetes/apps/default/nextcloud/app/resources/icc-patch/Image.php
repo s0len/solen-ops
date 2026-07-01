@@ -81,6 +81,7 @@ class Image implements IImage {
 	 * @psalm-assert-if-true \GdImage $this->resource
 	 * @return bool
 	 */
+	#[\Override]
 	public function valid(): bool {
 		if (is_object($this->resource) && get_class($this->resource) === \GdImage::class) {
 			return true;
@@ -94,6 +95,7 @@ class Image implements IImage {
 	 *
 	 * @return string
 	 */
+	#[\Override]
 	public function mimeType(): ?string {
 		return $this->valid() ? $this->mimeType : null;
 	}
@@ -103,6 +105,7 @@ class Image implements IImage {
 	 *
 	 * @return int
 	 */
+	#[\Override]
 	public function width(): int {
 		if ($this->valid()) {
 			return imagesx($this->resource);
@@ -115,6 +118,7 @@ class Image implements IImage {
 	 *
 	 * @return int
 	 */
+	#[\Override]
 	public function height(): int {
 		if ($this->valid()) {
 			return imagesy($this->resource);
@@ -127,6 +131,7 @@ class Image implements IImage {
 	 *
 	 * @return int
 	 */
+	#[\Override]
 	public function widthTopLeft(): int {
 		$o = $this->getOrientation();
 		$this->logger->debug('Image->widthTopLeft() Orientation: ' . $o, ['app' => 'core']);
@@ -151,6 +156,7 @@ class Image implements IImage {
 	 *
 	 * @return int
 	 */
+	#[\Override]
 	public function heightTopLeft(): int {
 		$o = $this->getOrientation();
 		$this->logger->debug('Image->heightTopLeft() Orientation: ' . $o, ['app' => 'core']);
@@ -176,6 +182,7 @@ class Image implements IImage {
 	 * @param string $mimeType
 	 * @return bool
 	 */
+	#[\Override]
 	public function show(?string $mimeType = null): bool {
 		if ($mimeType === null) {
 			$mimeType = $this->mimeType();
@@ -194,6 +201,7 @@ class Image implements IImage {
 	 * @return bool
 	 */
 
+	#[\Override]
 	public function save(?string $filePath = null, ?string $mimeType = null): bool {
 		if ($mimeType === null) {
 			$mimeType = $this->mimeType();
@@ -318,6 +326,7 @@ class Image implements IImage {
 	/**
 	 * @return false|\GdImage Returns the image resource if any
 	 */
+	#[\Override]
 	public function resource() {
 		return $this->resource;
 	}
@@ -325,6 +334,7 @@ class Image implements IImage {
 	/**
 	 * @return string Returns the mimetype of the data. Returns null if the data is not valid.
 	 */
+	#[\Override]
 	public function dataMimeType(): ?string {
 		if (!$this->valid()) {
 			return null;
@@ -344,6 +354,7 @@ class Image implements IImage {
 	/**
 	 * @return null|string Returns the raw image data.
 	 */
+	#[\Override]
 	public function data(): ?string {
 		if (!$this->valid()) {
 			return null;
@@ -604,6 +615,7 @@ class Image implements IImage {
 	 *
 	 * @return int The orientation or -1 if no EXIF data is available.
 	 */
+	#[\Override]
 	public function getOrientation(): int {
 		if ($this->exif !== null) {
 			return $this->exif['Orientation'];
@@ -633,6 +645,7 @@ class Image implements IImage {
 		return (int)$exif['Orientation'];
 	}
 
+	#[\Override]
 	public function readExif(string $data): void {
 		if (!is_callable('exif_read_data')) {
 			$this->logger->debug('Image->fixOrientation() Exif module not enabled.', ['app' => 'core']);
@@ -656,6 +669,7 @@ class Image implements IImage {
 	 *
 	 * @return bool
 	 */
+	#[\Override]
 	public function fixOrientation(): bool {
 		if (!$this->valid()) {
 			$this->logger->debug(__METHOD__ . '(): No image loaded', ['app' => 'core']);
@@ -998,6 +1012,7 @@ class Image implements IImage {
 	/**
 	 * @inheritDoc
 	 */
+	#[\Override]
 	public function loadFromData(string $str): GdImage|false {
 		if (!$this->checkImageDataSize($str)) {
 			return false;
@@ -1052,6 +1067,7 @@ class Image implements IImage {
 	 * @param int $maxSize The maximum size of either the width or height.
 	 * @return bool
 	 */
+	#[\Override]
 	public function resize(int $maxSize): bool {
 		if (!$this->valid()) {
 			$this->logger->debug(__METHOD__ . '(): No image loaded', ['app' => 'core']);
@@ -1087,6 +1103,7 @@ class Image implements IImage {
 	 * @param int $height
 	 * @return bool
 	 */
+	#[\Override]
 	public function preciseResize(int $width, int $height): bool {
 		if (!$this->valid()) {
 			$this->logger->debug(__METHOD__ . '(): No image loaded', ['app' => 'core']);
@@ -1140,6 +1157,7 @@ class Image implements IImage {
 	 * @param int $size maximum size for the result (optional)
 	 * @return bool for success or failure
 	 */
+	#[\Override]
 	public function centerCrop(int $size = 0): bool {
 		if (!$this->valid()) {
 			$this->logger->debug('Image->centerCrop, No image loaded', ['app' => 'core']);
@@ -1203,6 +1221,7 @@ class Image implements IImage {
 	 * @param int $h Height
 	 * @return bool for success or failure
 	 */
+	#[\Override]
 	public function crop(int $x, int $y, int $w, int $h): bool {
 		if (!$this->valid()) {
 			$this->logger->debug(__METHOD__ . '(): No image loaded', ['app' => 'core']);
@@ -1262,6 +1281,7 @@ class Image implements IImage {
 	 * @param int $maxHeight
 	 * @return bool
 	 */
+	#[\Override]
 	public function fitIn(int $maxWidth, int $maxHeight): bool {
 		if (!$this->valid()) {
 			$this->logger->debug(__METHOD__ . '(): No image loaded', ['app' => 'core']);
@@ -1285,6 +1305,7 @@ class Image implements IImage {
 	 * @param int $maxHeight
 	 * @return bool
 	 */
+	#[\Override]
 	public function scaleDownToFit(int $maxWidth, int $maxHeight): bool {
 		if (!$this->valid()) {
 			$this->logger->debug(__METHOD__ . '(): No image loaded', ['app' => 'core']);
@@ -1300,6 +1321,7 @@ class Image implements IImage {
 		return false;
 	}
 
+	#[\Override]
 	public function copy(): IImage {
 		$image = new self($this->logger, $this->appConfig, $this->config);
 		if (!$this->valid()) {
@@ -1326,6 +1348,7 @@ class Image implements IImage {
 		return $image;
 	}
 
+	#[\Override]
 	public function cropCopy(int $x, int $y, int $w, int $h): IImage {
 		$image = new self($this->logger, $this->appConfig, $this->config);
 		$image->imageType = $this->imageType;
@@ -1336,6 +1359,7 @@ class Image implements IImage {
 		return $image;
 	}
 
+	#[\Override]
 	public function preciseResizeCopy(int $width, int $height): IImage {
 		$image = new self($this->logger, $this->appConfig, $this->config);
 		$image->imageType = $this->imageType;
@@ -1346,6 +1370,7 @@ class Image implements IImage {
 		return $image;
 	}
 
+	#[\Override]
 	public function resizeCopy(int $maxSize): IImage {
 		$image = new self($this->logger, $this->appConfig, $this->config);
 		$image->imageType = $this->imageType;
