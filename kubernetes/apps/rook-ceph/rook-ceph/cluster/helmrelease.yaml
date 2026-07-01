@@ -74,13 +74,13 @@ spec:
             cpu: 100m
             memory: 512Mi
           limits:
-            memory: 1Gi
+            memory: 2Gi
         mgr:
           requests:
             cpu: 100m
             memory: 512Mi
           limits:
-            memory: 3Gi
+            memory: 4Gi
         osd:
           requests:
             cpu: 500m
