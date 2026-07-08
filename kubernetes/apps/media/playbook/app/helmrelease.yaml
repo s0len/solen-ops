@@ -47,6 +47,10 @@ spec:
               PLEX_URL: http://${PLEX_IP}:32400
               # GUI settings
               GUI_PORT: &port 8765
+              # NiceGUI reads this at import; point it at the writable state
+              # volume (default is ./.nicegui under /app, which the non-root
+              # user cannot create). Required for app.storage.user / GUI login.
+              NICEGUI_STORAGE_PATH: /settings/state/.nicegui
             envFrom:
               - secretRef:
                   name: playbook-secret
