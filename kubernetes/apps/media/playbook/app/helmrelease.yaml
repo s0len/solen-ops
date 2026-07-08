@@ -32,7 +32,7 @@ spec:
           app:
             image:
               repository: ghcr.io/s0len/playbook
-              tag: develop@sha256:66ad607946f5f3f0973a65ede300b247c449a87c41c0d3bc3d1c79eab4bdbd33
+              tag: develop@sha256:80cf23bc1c1c718f6ccfa350118a94b0fc4a1f4da9ebe3764a878d863c3ef943
               pullPolicy: Always
             env:
               CACHE_DIR: /settings/cache
@@ -47,10 +47,6 @@ spec:
               PLEX_URL: http://${PLEX_IP}:32400
               # GUI settings
               GUI_PORT: &port 8765
-              # NiceGUI reads this at import; point it at the writable state
-              # volume (default is ./.nicegui under /app, which the non-root
-              # user cannot create). Required for app.storage.user / GUI login.
-              NICEGUI_STORAGE_PATH: /settings/state/.nicegui
             envFrom:
               - secretRef:
                   name: playbook-secret
