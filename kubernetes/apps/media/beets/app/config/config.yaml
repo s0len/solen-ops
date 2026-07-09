@@ -1,0 +1,30 @@
+directory: /data/media/musik
+library: /config/library.db
+
+import:
+  write: no
+  copy: no
+  move: no
+  link: no
+  hardlink: yes
+  resume: yes
+  incremental: yes
+  quiet_fallback: skip
+  log: /config/import.log
+
+paths:
+  default: $albumartist/$album%aunique{} ($original_year)/$track - $title
+  singleton: $artist/Non-Album/$title
+  comp: Various Artists/$album%aunique{} ($original_year)/$track - $title
+
+per_disc_numbering: yes
+original_date: yes
+
+plugins: fromfilename fetchart chroma duplicates edit
+
+fetchart:
+  auto: yes
+  maxwidth: 1200
+
+match:
+  strong_rec_thresh: 0.10
