@@ -20,7 +20,11 @@ paths:
 per_disc_numbering: yes
 original_date: yes
 
-plugins: fromfilename fetchart chroma duplicates edit
+plugins: web fromfilename fetchart chroma duplicates edit
+
+web:
+  host: 0.0.0.0
+  port: 8337
 
 fetchart:
   auto: yes
