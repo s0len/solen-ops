@@ -58,12 +58,12 @@ spec:
               HEALTH_TARGET_ADDRESS: cloudflare.com:443
               VPN_TYPE: wireguard
               VPN_INTERFACE: tun0
-              VPN_SERVICE_PROVIDER: airvpn
+              VPN_SERVICE_PROVIDER: mullvad
               WIREGUARD_MTU: 1420
-              SERVER_NAMES: Dorado
+              SERVER_COUNTRIES: Sweden
             envFrom:
               - secretRef:
-                  name: qbittorrent-secret
+                  name: dispatcharr-secret
             probes:
               liveness:
                 enabled: true
