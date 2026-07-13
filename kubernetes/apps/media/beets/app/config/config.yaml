@@ -31,4 +31,4 @@ fetchart:
   maxwidth: 1200
 
 match:
-  strong_rec_thresh: 0.10
+  strong_rec_thresh: 0.20
