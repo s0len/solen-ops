@@ -13,9 +13,9 @@ import:
   log: /config/import.log
 
 paths:
-  default: $albumartist/$album%aunique{} ($original_year)/$track - $title
+  default: $albumartist/$album%aunique{}%if{$year, ($year)}/$track - $title
   singleton: $artist/Non-Album/$title
-  comp: Various Artists/$album%aunique{} ($original_year)/$track - $title
+  comp: Various Artists/$album%aunique{}%if{$year, ($year)}/$track - $title
 
 per_disc_numbering: yes
 original_date: yes
