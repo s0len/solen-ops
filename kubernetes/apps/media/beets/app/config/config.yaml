@@ -20,7 +20,7 @@ paths:
 per_disc_numbering: yes
 original_date: yes
 
-plugins: web fromfilename fetchart chroma duplicates edit
+plugins: musicbrainz web fromfilename fetchart chroma duplicates edit
 
 web:
   host: 0.0.0.0
