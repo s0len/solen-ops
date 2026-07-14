@@ -18,6 +18,9 @@ spec:
       name: nextcloud
     - group: gateway.networking.k8s.io
       kind: HTTPRoute
+      name: netronome
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
       name: tvsportsdb-backend
     - group: gateway.networking.k8s.io
       kind: HTTPRoute

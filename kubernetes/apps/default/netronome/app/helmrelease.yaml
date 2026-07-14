@@ -40,11 +40,42 @@ spec:
               NETRONOME__DB_TYPE: postgres
               NETRONOME__HOST: 0.0.0.0
               NETRONOME__PORT: &port 7575
+              NETRONOME__OIDC_ISSUER: "https://idm.${SECRET_DOMAIN}/oauth2/openid/netronome"
+              NETRONOME__OIDC_REDIRECT_URL: "https://speedtest.${SECRET_DOMAIN}/api/auth/oidc/callback"
+              NETRONOME__OIDC_CLIENT_ID:
+                valueFrom:
+                  secretKeyRef:
+                    name: kanidm-netronome-oidc
+                    key: client-id
+              NETRONOME__OIDC_CLIENT_SECRET:
+                valueFrom:
+                  secretKeyRef:
+                    name: kanidm-netronome-oidc
+                    key: client-secret
+              NETRONOME__IPERF_TEST_DURATION: "10"
+              NETRONOME__IPERF_PARALLEL_CONNS: "4"
+              NETRONOME__PACKETLOSS_ENABLED: "true"
+              NETRONOME__PACKETLOSS_PRIVILEGED_MODE: "true"
+              NETRONOME__PACKETLOSS_DEFAULT_INTERVAL: "3600"
+              NETRONOME__PACKETLOSS_RESTORE_MONITORS_ON_STARTUP: "true"
+              NETRONOME__MONITOR_ENABLED: "true"
             envFrom: *envFrom
+            probes:
+              liveness:
+                enabled: true
+              readiness:
+                enabled: true
+              startup:
+                enabled: true
+                spec:
+                  failureThreshold: 30
+                  periodSeconds: 5
             securityContext:
               allowPrivilegeEscalation: false
               readOnlyRootFilesystem: true
-              capabilities: { drop: ["ALL"] }
+              capabilities:
+                add: ["NET_RAW"]
+                drop: ["ALL"]
             resources:
               requests:
                 cpu: 5m
@@ -58,6 +89,8 @@ spec:
         runAsGroup: 1000
         fsGroup: 1000
         fsGroupChangePolicy: OnRootMismatch
+        seccompProfile:
+          type: RuntimeDefault
     service:
       app:
         controller: *app

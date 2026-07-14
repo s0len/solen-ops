@@ -1,0 +1,29 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kanidm-client-netronome
+  namespace: security
+  labels:
+    kanidm_config: "1"
+data:
+  targetNamespace: default
+  client.json: |
+    {
+      "systems": {
+        "oauth2": {
+          "netronome": {
+            "displayName": "Netronome",
+            "originUrl": "https://speedtest.uniflix.vip/api/auth/oidc/callback",
+            "originLanding": "https://speedtest.uniflix.vip/",
+            "preferShortUsername": true,
+            "scopeMaps": {
+              "users": ["openid", "profile", "email", "groups"]
+            },
+            "k8s": {
+              "imageUrl": "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/netronome.svg"
+            }
+          }
+        }
+      }
+    }

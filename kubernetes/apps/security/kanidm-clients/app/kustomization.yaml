@@ -8,6 +8,7 @@ resources:
   - ./paperless.yaml
   - ./autobrr.yaml
   - ./jellyfin.yaml
+  - ./netronome.yaml
   - ./nextcloud.yaml
   - ./seerr.yaml
   - ./tandoor.yaml
