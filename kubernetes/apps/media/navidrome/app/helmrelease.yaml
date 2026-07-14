@@ -32,7 +32,7 @@ spec:
               ND_MUSICFOLDER: /music
               ND_DATAFOLDER: /data
               ND_PORT: &port 4533
-              ND_SCANSCHEDULE: 1h
+              ND_SCANNER_SCHEDULE: 1h
               ND_SCANNER_PURGEMISSING: never
               ND_SESSIONTIMEOUT: 24h
               ND_ENABLESHARING: "false"
