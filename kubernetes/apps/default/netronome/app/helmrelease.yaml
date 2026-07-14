@@ -55,7 +55,7 @@ spec:
               NETRONOME__IPERF_TEST_DURATION: "10"
               NETRONOME__IPERF_PARALLEL_CONNS: "4"
               NETRONOME__PACKETLOSS_ENABLED: "true"
-              NETRONOME__PACKETLOSS_PRIVILEGED_MODE: "true"
+              NETRONOME__PACKETLOSS_PRIVILEGED_MODE: "false"
               NETRONOME__PACKETLOSS_DEFAULT_INTERVAL: "3600"
               NETRONOME__PACKETLOSS_RESTORE_MONITORS_ON_STARTUP: "true"
               NETRONOME__MONITOR_ENABLED: "true"
@@ -74,7 +74,6 @@ spec:
               allowPrivilegeEscalation: false
               readOnlyRootFilesystem: true
               capabilities:
-                add: ["NET_RAW"]
                 drop: ["ALL"]
             resources:
               requests:
