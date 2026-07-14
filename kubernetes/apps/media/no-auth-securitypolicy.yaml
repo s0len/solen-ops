@@ -28,3 +28,6 @@ spec:
     - group: gateway.networking.k8s.io
       kind: HTTPRoute
       name: jellyfin
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: navidrome
