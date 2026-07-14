@@ -32,3 +32,6 @@ fetchart:
 
 match:
   strong_rec_thresh: 0.20
+
+musicbrainz:
+  search_limit: 10
