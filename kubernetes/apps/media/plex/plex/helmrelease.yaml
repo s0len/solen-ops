@@ -42,7 +42,7 @@ spec:
               PLEX_UID: 568
               PLEX_GID: 568
             probes:
-              liveness: &probes
+              liveness:
                 enabled: true
                 custom: true
                 spec:
@@ -51,9 +51,19 @@ spec:
                     port: 32400
                   initialDelaySeconds: 0
                   periodSeconds: 10
-                  timeoutSeconds: 1
+                  timeoutSeconds: 5
+                  failureThreshold: 6
+              readiness:
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /identity
+                    port: 32400
+                  initialDelaySeconds: 0
+                  periodSeconds: 10
+                  timeoutSeconds: 5
                   failureThreshold: 3
-              readiness: *probes
               startup:
                 enabled: true
                 spec:
