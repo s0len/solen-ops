@@ -22,6 +22,26 @@ spec:
       navidrome:
         annotations:
           reloader.stakater.com/auto: "true"
+        initContainers:
+          download-plugins:
+            image:
+              repository: docker.io/curlimages/curl
+              tag: 8.11.1@sha256:c1fe1679c34d9784c1b0d1e5f62ac0a79fca01fb6377cdd33e90473c6f9f9a69
+            command:
+              - /bin/sh
+              - -c
+              - |
+                set -u
+                mkdir -p /data/plugins
+                dl() { curl -fsSL --retry 3 -o "/data/plugins/$2" "$1" && echo "ok $2" || echo "skip $2 (download failed, keeping any existing copy)"; }
+                dl https://github.com/navidrome/apple-music-plugin/releases/download/v0.2.0/apple-music.ndp apple-music.ndp
+                dl https://github.com/J0R6IT0/navidrome-lyrics-plugin/releases/download/v7.1.0/nd-lyrics.ndp nd-lyrics.ndp
+                dl https://github.com/kgarner7/navidrome-listenbrainz-daily-playlist/releases/download/v6.0.0/listenbrainz-daily-playlist.ndp listenbrainz-daily-playlist.ndp
+                dl https://github.com/NeptuneHub/AudioMuse-AI-NV-plugin/releases/download/v8/audiomuseai.ndp audiomuseai.ndp
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities: { drop: ["ALL"] }
         containers:
           app:
             image:
