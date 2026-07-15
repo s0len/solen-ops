@@ -19,6 +19,28 @@ spec:
     remediation:
       strategy: rollback
       retries: 3
+  # The zfs-localpv chart hard-bundles a cluster-wide snapshot-controller
+  # container with no values toggle. It duplicates the one in volsync-system
+  # and the two fight over every VolumeSnapshot status update (constant
+  # "object has been modified" conflicts). Drop it; the csi-snapshotter
+  # sidecar (driver-scoped, still needed for ZFS snapshots) stays.
+  postRenderers:
+    - kustomize:
+        patches:
+          - target:
+              kind: Deployment
+              name: openebs-zfs-localpv-controller
+            patch: |
+              apiVersion: apps/v1
+              kind: Deployment
+              metadata:
+                name: openebs-zfs-localpv-controller
+              spec:
+                template:
+                  spec:
+                    containers:
+                      - name: snapshot-controller
+                        $patch: delete
   values:
     engines:
       local:
