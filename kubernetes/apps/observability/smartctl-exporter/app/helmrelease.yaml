@@ -32,5 +32,12 @@ spec:
       device_include: ^(sd[a-z]+|nvme[0-9]+)$
     serviceMonitor:
       enabled: true
+      # Rewrite instance (default: pod IP:9633) to the node name so alerts
+      # say which physical node's drive is hot — the exporter is a DaemonSet
+      # on the pod network, so the scrape address is otherwise meaningless.
+      relabelings:
+        - action: replace
+          sourceLabels: ["__meta_kubernetes_pod_node_name"]
+          targetLabel: instance
     prometheusRules:
       enabled: false
