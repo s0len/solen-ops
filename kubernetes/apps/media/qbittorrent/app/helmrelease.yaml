@@ -93,18 +93,30 @@ spec:
                   name: qbittorrent-secret
 
         initContainers:
-          # Drop the link-local IPv6 route before gluetun starts: the pod has
-          # no global IPv6, but gluetun v3.41.1 counts the fe80::/64 route as
-          # "IPv6 supported" and keeps the server's unreachable IPv6 endpoints
-          # in the reconnect pool — roughly half of all reconnect attempts then
-          # stall ~6.5s each, stretching brief tunnel blips into multi-minute
-          # outages that trip the liveness probe. Runs before gluetun (map keys
-          # render alphabetically) and exits, so gluetun sees no IPv6 routes.
+          # Scrub ALL of eth0's IPv6 state before gluetun starts: the pod has
+          # no global IPv6, but gluetun's IsIPv6Supported() dumps routes from
+          # every table (main AND local), so the kernel's link-local address
+          # entry and multicast ff00::/8 route each count as "IPv6 supported"
+          # and keep the server's unreachable IPv6 endpoints in the reconnect
+          # pool — roughly half of all reconnect attempts then stall ~6.5s
+          # each, stretching brief tunnel blips into multi-minute outages that
+          # trip the liveness probe. Detection runs once at gluetun startup
+          # (cmd/gluetun/main.go:248 in v3.41.1), before tun0 exists, so
+          # cleaning eth0 here is sufficient. Runs before gluetun (map keys
+          # render alphabetically) and exits.
           disable-ipv6:
             image: &gluetun-image
               repository: ghcr.io/qdm12/gluetun
               tag: v3.41.1
-            command: ["/bin/sh", "-c", "ip -6 route del fe80::/64 dev eth0 || true"]
+            command:
+              - /bin/sh
+              - -c
+              - |
+                ip -6 addr flush dev eth0
+                ip -6 route flush dev eth0 table main
+                ip -6 route del multicast ff00::/8 dev eth0 table local
+                ip -6 route show table all
+                true
             securityContext:
               capabilities:
                 add:
@@ -124,14 +136,18 @@ spec:
               VPN_INTERFACE: tun0
               VPN_SERVICE_PROVIDER: airvpn
               WIREGUARD_MTU: 1420
-              # Pin to a single Stockholm server (Lupus, AS51815 / GlobalConnect)
-              # to keep MAM's ASN-locked session stable. SERVER_COUNTRIES=Sweden
-              # randomly rotated between Stockholm hosters with different ASNs
-              # (AltusHost, Netrouting, GlobalConnect), which is what was
-              # triggering MAM session invalidations every few weeks.
-              # NOTE: "Lupus" is an AirVPN server_name → SERVER_NAMES, NOT
+              # Pin to Stockholm servers sharing one prefix/ASN to keep MAM's
+              # ASN-locked session stable. SERVER_COUNTRIES=Sweden randomly
+              # rotated between Stockholm hosters with different ASNs, which
+              # triggered MAM session invalidations every few weeks. Lupus and
+              # Ain both sit in 128.127.104.0/23 under AS51430 (AltusHost, as
+              # of July 2026 — the pin predates AirVPN consolidating Stockholm
+              # under AltusHost), so failover between them keeps the same ASN;
+              # mamapi absorbs the exit-IP change. Ain was added after a
+              # Lupus-only outage took torrenting down entirely (2026-07-15).
+              # NOTE: these are AirVPN server_names → SERVER_NAMES, NOT
               # SERVER_HOSTNAMES (AirVPN has no hostname filter; that broke startup).
-              SERVER_NAMES: Lupus
+              SERVER_NAMES: Lupus,Ain
             envFrom:
               - secretRef:
                   name: qbittorrent-secret
