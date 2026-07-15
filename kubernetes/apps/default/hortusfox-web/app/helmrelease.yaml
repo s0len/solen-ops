@@ -55,15 +55,15 @@ spec:
                     port: &port 80
                   initialDelaySeconds: 30
                   periodSeconds: 10
-                  timeoutSeconds: 1
+                  timeoutSeconds: 5
                   failureThreshold: 3
               readiness: *probes
             resources:
               requests:
                 cpu: 100m
-                memory: 256Mi
+                memory: 512Mi
               limits:
-                memory: 1Gi
+                memory: 2Gi
 
           mariadb:
             image:
