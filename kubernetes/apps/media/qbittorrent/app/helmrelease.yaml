@@ -93,10 +93,25 @@ spec:
                   name: qbittorrent-secret
 
         initContainers:
-          gluetun:
-            image:
+          # Drop the link-local IPv6 route before gluetun starts: the pod has
+          # no global IPv6, but gluetun v3.41.1 counts the fe80::/64 route as
+          # "IPv6 supported" and keeps the server's unreachable IPv6 endpoints
+          # in the reconnect pool — roughly half of all reconnect attempts then
+          # stall ~6.5s each, stretching brief tunnel blips into multi-minute
+          # outages that trip the liveness probe. Runs before gluetun (map keys
+          # render alphabetically) and exits, so gluetun sees no IPv6 routes.
+          disable-ipv6:
+            image: &gluetun-image
               repository: ghcr.io/qdm12/gluetun
               tag: v3.41.1
+            command: ["/bin/sh", "-c", "ip -6 route del fe80::/64 dev eth0 || true"]
+            securityContext:
+              capabilities:
+                add:
+                  - NET_ADMIN
+              allowPrivilegeEscalation: false
+          gluetun:
+            image: *gluetun-image
             env:
               DNS_ADDRESS: "10.96.0.10"
               DOT: "off"
@@ -121,6 +136,10 @@ spec:
               - secretRef:
                   name: qbittorrent-secret
             probes:
+              # Loose liveness: gluetun self-heals the tunnel internally every
+              # ~6s, so a kubelet kill never fixes a down VPN server — it only
+              # tears down tun0 and adds ~2min of startup churn. Keep the probe
+              # solely as process-deadlock protection (300s tolerance).
               liveness:
                 enabled: true
                 custom: true
@@ -130,7 +149,7 @@ spec:
                     port: 9999
                   timeoutSeconds: 10
                   periodSeconds: 30
-                  failureThreshold: 5
+                  failureThreshold: 10
               startup:
                 enabled: true
                 custom: true
