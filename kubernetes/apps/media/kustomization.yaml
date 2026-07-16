@@ -8,6 +8,7 @@ components:
 resources:
   - ./no-auth-securitypolicy.yaml
   - ./audiobookshelf/ks.yaml
+  - ./audiomuse-ai/ks.yaml
   - ./autobrr/ks.yaml
   - ./bazarr/ks.yaml
   - ./beets/ks.yaml

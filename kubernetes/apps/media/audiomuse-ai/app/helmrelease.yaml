@@ -1,0 +1,119 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s-labs/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: &app audiomuse-ai
+spec:
+  interval: 30m
+  chartRef:
+    kind: OCIRepository
+    name: app-template
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      strategy: rollback
+      retries: 3
+  values:
+    controllers:
+      flask:
+        annotations:
+          reloader.stakater.com/auto: "true"
+        initContainers:
+          init-db: &initDb
+            image:
+              repository: ghcr.io/home-operations/postgres-init
+              tag: 18@sha256:ebd9d30add17acdf935d73eb004758c7dfd9388aaa605fda70ad74378ab92aec
+            envFrom: &envFrom
+              - secretRef:
+                  name: audiomuse-secret
+        containers:
+          app:
+            image: &image
+              repository: ghcr.io/neptunehub/audiomuse-ai
+              tag: 2.6.2@sha256:f9c4df0ce93a7a4bcd69d5bcd15a5cc4fdb13b37a47f84773d8a24fcd0ec2a0e
+            env:
+              SERVICE_TYPE: flask
+              TZ: ${TIMEZONE}
+            envFrom: *envFrom
+            probes:
+              liveness:
+                enabled: true
+              readiness:
+                enabled: true
+              startup:
+                enabled: true
+                spec:
+                  failureThreshold: 30
+                  periodSeconds: 10
+            securityContext: &hardening
+              allowPrivilegeEscalation: false
+              capabilities: { drop: ["ALL"] }
+            resources:
+              requests:
+                cpu: 50m
+                memory: 256Mi
+              limits:
+                memory: 1Gi
+      worker:
+        annotations:
+          reloader.stakater.com/auto: "true"
+        initContainers:
+          init-db: *initDb
+        containers:
+          app:
+            image: *image
+            env:
+              SERVICE_TYPE: worker
+              TZ: ${TIMEZONE}
+            envFrom: *envFrom
+            probes:
+              liveness:
+                enabled: false
+              readiness:
+                enabled: false
+              startup:
+                enabled: false
+            securityContext: *hardening
+            resources:
+              requests:
+                cpu: 250m
+                memory: 1Gi
+              limits:
+                cpu: "4"
+                memory: 6Gi
+    defaultPodOptions:
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
+    service:
+      flask:
+        controller: flask
+        ports:
+          http:
+            port: 8000
+    route:
+      flask:
+        hostnames:
+          - "audiomuse.${SECRET_DOMAIN}"
+        parentRefs:
+          - name: envoy-internal
+            namespace: network
+            sectionName: https
+        rules:
+          - backendRefs:
+              - identifier: flask
+                port: http
+    persistence:
+      temp-audio:
+        type: emptyDir
+        sizeLimit: 5Gi
+        globalMounts:
+          - path: /app/temp_audio
+      plugins:
+        type: emptyDir
+        globalMounts:
+          - path: /app/plugin/installed
