@@ -32,4 +32,5 @@ resources:
   - ./recyclarr/ks.yaml
   - ./prowlarr/ks.yaml
   - ./seerr/ks.yaml
+  - ./tunesynctool/ks.yaml
   - ./unpackerr/ks.yaml
