@@ -322,3 +322,36 @@ spec:
 ```sh
 sops -d cluster-secrets.sops.yaml | kubectl apply -f -
 ```
+
+## Nextcloud consistent restore (files + database)
+
+Nextcloud's file blobs (PVC `nextcloud`, backed up by VolSync/kopia onsite+offsite)
+and its database (CloudNative-PG `postgres16`, backed up by barman→R2) are captured
+by independent tools on independent schedules (~45 min apart). A naive "restore the
+latest of each" can leave the DB referencing file blobs that don't exist.
+
+**Restore ordering rule — the DB must never be *ahead* of the files:**
+
+1. Restore the **files** first, from the chosen kopia snapshot (VolSync
+   ReplicationDestination, or a manual kopia restore).
+2. Restore the **database** to a barman PITR timestamp **≥ the file-snapshot time**
+   (equal or slightly later — never older than the files). Extra on-disk files the
+   DB doesn't know about are harmless (re-indexed); files the DB references but that
+   don't exist = broken/lost objects.
+3. Bring Nextcloud up and reconcile:
+   ```
+   occ maintenance:repair --include-expensive
+   occ files:scan --all
+   occ maintenance:mode --off
+   ```
+
+**Deliberate consistent capture** (before a risky upgrade):
+```
+occ maintenance:mode --on
+# trigger an on-demand VolSync sync of the `nextcloud` PVC; wait for completion
+# trigger an on-demand CNPG backup; wait for completion
+occ maintenance:mode --off
+```
+
+Earliest barman PITR point ≈ last ~30 days (CNPG retention 30d). Deeper history
+would require a logical pg_dump backup net (not currently configured).
