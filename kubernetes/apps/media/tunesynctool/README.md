@@ -70,20 +70,25 @@ headless pod silently binds a local server on `:8888` and prints **no URL** — 
 here. Instead we prime the token cache once with `open_browser=False` (clean
 paste-back). The CLI then reuses `/work/.cache` and never prompts.
 
+Write the primer to a **file** and run it — do **not** pipe it via
+`python3 - <<'PY'`. The paste-back prompt reads the redirect URL from stdin, and a
+heredoc leaves stdin at EOF, so `input()` fails with `EOFError`.
+
 ```bash
-python3 - "$SCOPES" "$REDIRECT" <<'PY'
-import sys, os
+cat > /work/prime.py <<'PY'
+import os
 from spotipy.oauth2 import SpotifyOAuth
-scopes, redirect = sys.argv[1], sys.argv[2]
 oa = SpotifyOAuth(
     client_id=os.environ["SPOTIFY_CLIENT_ID"],
     client_secret=os.environ["SPOTIFY_CLIENT_SECRET"],
-    redirect_uri=redirect, scope=scopes,
+    redirect_uri=os.environ["REDIRECT"],
+    scope=os.environ["SCOPES"],
     open_browser=False, cache_path="/work/.cache",
 )
 oa.get_access_token(check_cache=False)
 print("OK - token cached at /work/.cache")
 PY
+python3 /work/prime.py
 ```
 
 It prints `Go to the following URL: https://accounts.spotify.com/authorize?...`.
