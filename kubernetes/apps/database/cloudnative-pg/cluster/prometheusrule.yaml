@@ -65,3 +65,21 @@ spec:
           for: 1m
           labels:
             severity: warning
+        - alert: CNPGBackupStale
+          annotations:
+            description: No successful CloudNative-PG backup in over 36h for cluster {{ $labels.cluster }} (namespace {{ $labels.namespace }}). The Postgres recovery window — including the Nextcloud DB — is going stale.
+            summary: CloudNative-PG backup is stale (>36h since last available backup).
+          expr: |-
+            (time() - max by (cluster, namespace) (cnpg_collector_last_available_backup_timestamp{namespace="database"})) > 129600
+          for: 1h
+          labels:
+            severity: warning
+        - alert: CNPGBackupFailed
+          annotations:
+            description: The most recent CloudNative-PG backup FAILED (last failed timestamp is newer than last available) for cluster {{ $labels.cluster }} (namespace {{ $labels.namespace }}).
+            summary: CloudNative-PG last backup failed.
+          expr: |-
+            (max by (cluster, namespace) (cnpg_collector_last_failed_backup_timestamp{namespace="database"}) > max by (cluster, namespace) (cnpg_collector_last_available_backup_timestamp{namespace="database"}))
+          for: 1h
+          labels:
+            severity: warning
