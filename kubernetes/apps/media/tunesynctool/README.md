@@ -15,6 +15,7 @@ different Navidrome target user.
 | --- | --- | --- |
 | `ks.yaml`, `app/kustomization.yaml`, `app/externalsecret.yaml` | Flux | Syncs 1Password item `spotify` (`CLIENT_ID`/`CLIENT_SECRET`) into Secret `tunesynctool-secret`. |
 | `pod.yaml` | **Manual only** | Throwaway pod. Lives outside `app/`, so Flux never applies it. |
+| `sync.py` | **Manual only** | Wrapper for re-syncing a playlist in place (resolves the Navidrome target by name). Outside `app/`, so Flux ignores it. See [Re-syncing](#re-syncing-an-existing-playlist-update-in-place). |
 | `README.md` | — | This runbook. |
 
 ## Prerequisites (per Spotify user)
@@ -163,8 +164,10 @@ Tips:
   `Fail: No result for ...`.
 - `--limit 0` (default) = all tracks.
 - **`transfer` is not idempotent** — it always creates a *new* target playlist, so
-  re-running duplicates it. To top up an existing playlist instead, use
-  `sync --from spotify --from-playlist <spotify_id> --to subsonic --to-playlist <navidrome_id>`.
+  **re-running `transfer` duplicates the playlist in Navidrome.** To re-run against a
+  playlist that already exists, use `sync.py` instead — see
+  [Re-syncing an existing playlist](#re-syncing-an-existing-playlist-update-in-place)
+  below. `sync.py` is the correct re-run path.
 
 ### 6. Cleanup
 
@@ -172,6 +175,53 @@ Tips:
 exit   # leave the pod shell
 kubectl delete -f kubernetes/apps/media/tunesynctool/pod.yaml
 ```
+
+## Re-syncing an existing playlist (update in place)
+
+**Do not re-run `transfer` to refresh a playlist** — `transfer` always creates a
+*new* Navidrome playlist, so a second run leaves you with two playlists of the same
+name. To pull newly-matched tracks into the playlist you already created, update it
+**in place** with `tunesynctool sync`, which needs the *Navidrome* playlist ID:
+
+```bash
+tunesynctool <global creds flags> \
+  sync --from spotify --from-playlist <spotify_id> \
+       --to subsonic --to-playlist <navidrome_playlist_id> --limit 0
+```
+
+Finding that Navidrome ID by hand is annoying, so use the committed **`sync.py`**
+wrapper. Given a Spotify playlist ID and the *target playlist name*, it:
+
+1. calls the Subsonic `getPlaylists` API and finds the Navidrome playlist whose name
+   matches (exact, then case-insensitive; errors out if the name is ambiguous);
+2. if found → runs `tunesynctool … sync … --to-playlist <id>` (update in place);
+3. if not found → runs `tunesynctool … transfer <spotify_id>` (first-time create).
+
+It reads the same env as the transfer runbook (`SPOTIFY_CLIENT_ID` /
+`SPOTIFY_CLIENT_SECRET` from the Secret, plus `ND_USER` / `ND_PASS` you set per run)
+and must run from the dir holding the primed `/work/.cache`.
+
+```bash
+# from the host: copy the wrapper into the running pod
+kubectl cp kubernetes/apps/media/tunesynctool/sync.py media/tunesync:/work/sync.py
+
+# inside the pod (steps 1–3 already done: pip install + primed /work/.cache):
+cd /work
+export ND_USER='navidrome_username_for_this_run'
+export ND_PASS='navidrome_password_for_this_run'
+
+# dry run — just resolve + print the Navidrome playlist ID, touch nothing:
+python3 sync.py <spotify_playlist_id> "Riktigt bra låtar" --resolve-only
+
+# real re-sync (update in place); add --preview to see matches without writing:
+python3 sync.py <spotify_playlist_id> "Riktigt bra låtar"
+```
+
+`sync.py` uses Subsonic **token auth** (`t=md5(pass+salt)`, `s=salt`) for
+`getPlaylists`, so the password is never placed in a URL. Navidrome accepts both
+token and plaintext (`p=`) auth; token is preferred. `getPlaylists` always returns
+HTTP 200 with a `{"subsonic-response":{…}}` envelope — check `status` (`ok` vs
+`failed` with an `error.code`), never the HTTP status.
 
 ## Next run (different Spotify user → different Navidrome user)
 
