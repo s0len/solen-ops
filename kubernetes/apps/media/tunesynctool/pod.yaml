@@ -12,7 +12,7 @@ spec:
   restartPolicy: Never
   containers:
     - name: tunesync
-      image: python:3.12-slim
+      image: python:3.14-slim
       command: ["sleep", "36000"]
       envFrom:
         - secretRef:
