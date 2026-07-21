@@ -147,7 +147,7 @@ spec:
               # Lupus-only outage took torrenting down entirely (2026-07-15).
               # NOTE: these are AirVPN server_names → SERVER_NAMES, NOT
               # SERVER_HOSTNAMES (AirVPN has no hostname filter; that broke startup).
-              SERVER_NAMES: Lupus,Ain
+              SERVER_NAMES: Lupus,Ain,Norma,Segin
             envFrom:
               - secretRef:
                   name: qbittorrent-secret
