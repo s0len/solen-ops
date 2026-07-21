@@ -29,6 +29,7 @@ Env (injected by the Deployment):
 import os
 import re
 import sys
+import time
 import unicodedata
 
 import spotipy
@@ -165,63 +166,94 @@ def spotify_tracks(sp, pid):
 
 # ---------- Plex matching ----------
 
-def find_match(section, sp_track):
-    """Return the best-matching Plex track object for a Spotify track, or None."""
-    core = strip_suffixes(sp_track["name"]).strip()
-    target_title = norm_title(sp_track["name"])
-    target_artists = {norm_artist(a) for a in sp_track["artists"] if a}
+def load_plex_index(plex, section):
+    """Pull the whole music section ONCE into an in-memory index.
 
-    queries = []
-    if core:
-        queries.append(core)
-    # Fallback: distinctive words (>=4 chars) so we still find it if the exact
-    # core substring differs (punctuation etc.).
-    for w in [w for w in re.split(r"\W+", fold(core)) if len(w) >= 4][:2]:
-        queries.append(w)
+    Returns (by_title, title_keys, count):
+      by_title   : {normalized_title -> [(ntitle, {norm_artists}, dur_ms, ratingKey)]}
+      title_keys : list of the distinct normalized titles (the keys of by_title)
+      count      : number of indexed tracks
 
-    seen, candidates = set(), []
-    for q in queries:
-        try:
-            hits = section.searchTracks(title__icontains=q, maxresults=80)
-        except Exception:
-            hits = []
-        for h in hits:
-            if h.ratingKey in seen:
+    We read the raw /library/sections/<key>/all container in big pages instead of
+    building heavy plexapi Track objects for all ~16k tracks — the listing already
+    carries title / grandparentTitle (album artist) / originalTitle (track artist,
+    only when it differs) / duration / ratingKey, which is everything matching needs.
+    Matched ratingKeys are resolved to real Track objects later, on demand.
+    """
+    key = section.key
+    by_title = {}
+    page = 2000
+    start = 0
+    total = None
+    while True:
+        data = plex.query(
+            f"/library/sections/{key}/all?type=10"
+            f"&X-Plex-Container-Start={start}&X-Plex-Container-Size={page}"
+        )
+        if total is None:
+            total = int(data.attrib.get("totalSize") or 0)
+        batch = list(data)
+        for el in batch:
+            a = el.attrib
+            rk = a.get("ratingKey")
+            nt = norm_title(a.get("title") or "")
+            if not nt or rk is None:
                 continue
-            seen.add(h.ratingKey)
-            candidates.append(h)
+            artists = set()
+            for src in (a.get("grandparentTitle"), a.get("originalTitle")):
+                if src:
+                    na = norm_artist(src)
+                    if na:
+                        artists.add(na)
+            try:
+                dur = int(a.get("duration") or 0)
+            except (TypeError, ValueError):
+                dur = 0
+            by_title.setdefault(nt, []).append((nt, artists, dur, rk))
+        if not batch or start + page >= total:
+            break
+        start += page
+    count = sum(len(v) for v in by_title.values())
+    return by_title, list(by_title.keys()), count
+
+
+def find_match(by_title, title_keys, sp_track):
+    """Return the best-matching Plex ratingKey (str) for a Spotify track, or None.
+
+    Identical acceptance semantics to the old per-track searchTracks() path, just
+    scored against the pre-loaded in-memory index instead of live API calls:
+      - title filter: candidate title == target OR either is a substring of the other
+      - artist filter: any Spotify artist vs candidate album/track artist (substring ok)
+      - rank: artist match first, then exact-title, then closest duration
+      - accept: artist confirmed, OR exact title within ~3s
+    """
+    target_title = norm_title(sp_track["name"])
+    if not target_title:
+        return None
+    target_artists = {norm_artist(a) for a in sp_track["artists"] if a}
+    target_artists.discard("")
+    sp_dur = sp_track["dur"]
+    tt = target_title
 
     best, best_score = None, None
-    for c in candidates:
-        c_title = norm_title(c.title)
-        if not c_title or not target_title:
+    for k in title_keys:
+        # title_ok: k == tt, or either is a substring of the other
+        if tt not in k and k not in tt:
             continue
-        title_ok = (c_title == target_title
-                    or target_title in c_title
-                    or c_title in target_title)
-        if not title_ok:
-            continue
-        c_album_artist = norm_artist(getattr(c, "grandparentTitle", "") or "")
-        c_track_artist = norm_artist(getattr(c, "originalTitle", "") or "")
-        artist_ok = False
-        for ta in target_artists:
-            if not ta:
-                continue
-            for ca in (c_album_artist, c_track_artist):
-                if ca and (ta == ca or ta in ca or ca in ta):
-                    artist_ok = True
+        exact_title = 1 if k == tt else 0
+        for (_nt, artists, dur, rk) in by_title[k]:
+            artist_ok = False
+            for ta in target_artists:
+                for ca in artists:
+                    if ta == ca or ta in ca or ca in ta:
+                        artist_ok = True
+                        break
+                if artist_ok:
                     break
-            if artist_ok:
-                break
-        try:
-            ddur = abs((c.duration or 0) - sp_track["dur"])
-        except Exception:
-            ddur = 10 ** 9
-        exact_title = 1 if c_title == target_title else 0
-        # rank: artist match first, then exact-title, then closest duration
-        score = (1 if artist_ok else 0, exact_title, -ddur)
-        if best_score is None or score > best_score:
-            best, best_score = c, score
+            ddur = abs(dur - sp_dur)
+            score = (1 if artist_ok else 0, exact_title, -ddur)
+            if best_score is None or score > best_score:
+                best, best_score = rk, score
 
     if best is None:
         return None
@@ -232,6 +264,15 @@ def find_match(section, sp_track):
     if exact_title and (-neg_ddur) <= 3000:
         return best
     return None
+
+
+def resolve_tracks(plex, keys):
+    """Resolve matched ratingKeys to real plexapi Track objects in one batched call."""
+    if not keys:
+        return []
+    objs = plex.fetchItems("/library/metadata/" + ",".join(keys))
+    by_rk = {str(o.ratingKey): o for o in objs}
+    return [by_rk[k] for k in keys if k in by_rk]
 
 
 def get_playlist(plex, name):
@@ -265,10 +306,10 @@ def main():
     sp = spotify_client()
     sp_name = spotify_playlist_name(sp, spotify_id)
     sp_tracks = spotify_tracks(sp, spotify_id)
-    print(f"Spotify playlist {sp_name!r}: {len(sp_tracks)} tracks")
+    print(f"Spotify playlist {sp_name!r}: {len(sp_tracks)} tracks", flush=True)
 
     try:
-        plex = PlexServer(PLEX_URL, PLEX_TOKEN)
+        plex = PlexServer(PLEX_URL, PLEX_TOKEN, timeout=30)
     except Exception as e:
         die(f"could not connect to Plex at {PLEX_URL}: {e}")
     try:
@@ -278,17 +319,30 @@ def main():
     if section.type != "artist":
         die(f"section {PLEX_LIBRARY!r} is type {section.type!r}, expected 'artist' (music)")
 
-    matched, matched_keys, missed = [], set(), []
-    for t in sp_tracks:
-        hit = find_match(section, t)
-        if hit is not None:
-            if hit.ratingKey not in matched_keys:
-                matched_keys.add(hit.ratingKey)
-                matched.append(hit)
-        else:
-            missed.append(t)
+    t0 = time.monotonic()
+    print(f"Indexing Plex library {PLEX_LIBRARY!r} ...", flush=True)
+    by_title, title_keys, indexed = load_plex_index(plex, section)
+    print(f"  indexed {indexed} tracks ({len(title_keys)} distinct titles) "
+          f"in {time.monotonic() - t0:.1f}s", flush=True)
 
-    print(f"\nMATCHED {len(matched)} / {len(sp_tracks)}   MISSED {len(missed)}")
+    total = len(sp_tracks)
+    width = len(str(total))
+    matched_keys, matched_set, missed = [], set(), []
+    t1 = time.monotonic()
+    for i, t in enumerate(sp_tracks, 1):
+        rk = find_match(by_title, title_keys, t)
+        if rk is not None:
+            mark = "✓"  # check
+            if rk not in matched_set:
+                matched_set.add(rk)
+                matched_keys.append(rk)
+        else:
+            mark = "·"  # middot
+            missed.append(t)
+        print(f"[{i:>{width}}/{total}] {mark} {label(t)}", flush=True)
+
+    print(f"\nMATCHED {len(matched_keys)} / {total}   MISSED {len(missed)} "
+          f"(matched in {time.monotonic() - t1:.1f}s)")
     if missed:
         print("\nMissed (not found in Plex):")
         for t in missed:
@@ -298,17 +352,18 @@ def main():
         print("\n--preview: no changes written.")
         return
 
-    if not matched:
+    if not matched_keys:
         print("\nNothing matched — not creating/updating the Plex playlist.")
         return
 
+    matched = resolve_tracks(plex, matched_keys)
     existing = get_playlist(plex, plex_name)
     if existing is None:
         plex.createPlaylist(plex_name, items=matched)
         print(f"\nCREATED Plex playlist {plex_name!r} with {len(matched)} tracks.")
     else:
-        present = {i.ratingKey for i in existing.items()}
-        to_add = [t for t in matched if t.ratingKey not in present]
+        present = {str(i.ratingKey) for i in existing.items()}
+        to_add = [o for o in matched if str(o.ratingKey) not in present]
         if to_add:
             existing.addItems(to_add)
             print(f"\nUPDATED Plex playlist {plex_name!r}: added {len(to_add)} "
