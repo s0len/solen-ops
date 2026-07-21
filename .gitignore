@@ -44,3 +44,7 @@ CLAUDE.md
 .worktrees/
 .security-key
 logs/security/
+
+# Python bytecode
+__pycache__/
+*.pyc
