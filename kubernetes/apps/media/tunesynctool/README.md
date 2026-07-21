@@ -1,234 +1,161 @@
-# tunesynctool — ad-hoc Spotify → Navidrome playlist import
+# tunesynctool — persistent Spotify → Navidrome / Plex playlist sync
 
-Repeatable runbook for importing a Spotify user's playlists into Navidrome
-(Subsonic API) using the [`tunesynctool`](https://github.com/WilliamNT/tunesynctool)
-CLI, run as a **throwaway pod** in the `media` namespace.
+A small, always-on utility Deployment in the `media` namespace that syncs any
+Spotify playlist into **Navidrome** (`sync.py`) or **Plex** (`plexsync.py`) with a
+single `kubectl exec` — **no new pod, no re-install, no re-auth**.
 
-This is **not** a service. Only the shared Spotify app credentials are managed by
-Flux (the `ExternalSecret` in `app/`). Every import is ad-hoc: spin up the pod,
-authorize, transfer, tear it down. Repeat later for a different Spotify user →
-different Navidrome target user.
+The trick: the Python venv **and** the primed Spotify OAuth token both live on a
+2Gi `ceph-block` PVC mounted at `/work`. You prime Spotify OAuth **once**; every
+later sync reuses the cached token (spotipy refreshes it automatically).
 
-## What's Flux-managed vs manual
+## Architecture
 
-| File | Managed by | Purpose |
-| --- | --- | --- |
-| `ks.yaml`, `app/kustomization.yaml`, `app/externalsecret.yaml` | Flux | Syncs 1Password item `spotify` (`CLIENT_ID`/`CLIENT_SECRET`) into Secret `tunesynctool-secret`. |
-| `pod.yaml` | **Manual only** | Throwaway pod. Lives outside `app/`, so Flux never applies it. |
-| `sync.py` | **Manual only** | Wrapper for re-syncing a playlist in place (resolves the Navidrome target by name). Outside `app/`, so Flux ignores it. See [Re-syncing](#re-syncing-an-existing-playlist-update-in-place). |
-| `README.md` | — | This runbook. |
+| Piece | What |
+| --- | --- |
+| Deployment `tunesynctool` | `python:3.12-slim`, runs as uid/gid **568**, idles on `sleep infinity`. On first start it builds a venv on the PVC (`python -m venv /work/venv` + `pip install tunesynctool anyio plexapi spotipy`). On restart the venv already exists → skipped. |
+| PVC `tunesynctool` (`/work`) | `ceph-block`, 2Gi, RWO. Holds `/work/venv` (deps) and `/work/.cache` (Spotify token). **No VolSync** — both are re-creatable. |
+| ConfigMap `tunesynctool-scripts` (`/scripts`, read-only) | `prime.py`, `sync.py`, `plexsync.py`. Stable name (no hash) + `reloader.stakater.com/auto` → editing a script and reconciling rolls the pod; the venv/cache on the PVC survive the roll, so **no re-auth**. |
+| Secret `tunesynctool-secret` (ExternalSecret) | `SPOTIFY_CLIENT_ID`/`SPOTIFY_CLIENT_SECRET` (1Password `spotify`), `PLEX_TOKEN` (`plex`), `ND_USER`/`ND_PASS` (`navidrome` → `SYNC_TO_USER`/`SYNC_TO_PASS`). Injected via `envFrom`. |
 
-## Prerequisites (per Spotify user)
+Non-secret config is baked into the Deployment env: `NAVIDROME_URL`
+(`http://navidrome-app.media.svc.cluster.local:4533`), `PLEX_URL`
+(`http://plex.media.svc.cluster.local:32400`), `PLEX_LIBRARY` (`Musik`), the OAuth
+`SCOPES`/`REDIRECT`, and `TUNESYNC_WORKDIR=/work`.
 
-- **Spotify Developer app** (the one behind the `spotify` 1Password item):
-  - Redirect URI must include `http://127.0.0.1:8888/callback` (already set).
-  - The app is in **development mode**, so each person whose playlists you import
-    must be added to **User Management** (allowlist). Dev-mode apps are capped
-    (~25 users) — keep the list pruned. Not added ⇒ their playlists return 403.
-  - The account being imported should be able to authorize; **Premium recommended**.
-- `tunesynctool-secret` exists in `media` (Flux-synced):
-  `kubectl get secret tunesynctool-secret -n media`
-- You know the **target Navidrome username + password** for this run.
+> Everything is invoked as `/work/venv/bin/python /scripts/<script>.py`. The
+> container's `PATH` also prepends `/work/venv/bin`, so `tunesynctool` (called by
+> `sync.py`) resolves to the venv without a full path.
 
-## Runbook
-
-Set kubeconfig first (host side):
+## First run (once, after Flux applies)
 
 ```bash
 export KUBECONFIG=/Users/solen/GitHub/solen-ops/kubeconfig
+
+# The pod bootstraps the venv on first start (~30–60s of pip). Watch it finish:
+kubectl logs -n media deploy/tunesynctool -f            # look for "bootstrapping venv ..." then quiet
+kubectl exec -n media deploy/tunesynctool -- test -x /work/venv/bin/tunesynctool && echo "venv ready"
 ```
 
-### 1. Launch the throwaway pod
+### Prime the Spotify OAuth cache (once per Spotify identity)
+
+`tunesynctool`/spotipy default to `open_browser=True`, which in a headless pod
+silently binds `:8888` and prints **no URL**. `prime.py` runs the paste-back flow
+(`open_browser=False`, `check_cache=False`) and writes the token to `/work/.cache`.
 
 ```bash
-kubectl apply -f kubernetes/apps/media/tunesynctool/pod.yaml
-kubectl wait --for=condition=Ready pod/tunesync -n media --timeout=120s
-```
-
-### 2. Install the tool and open a shell
-
-`anyio` is a missing transitive dep of `tunesynctool` and must be installed too,
-or every invocation fails with `ModuleNotFoundError: No module named 'anyio'`.
-
-```bash
-kubectl exec -n media tunesync -- pip install --quiet tunesynctool anyio
-kubectl exec -it -n media tunesync -- bash
-```
-
-Everything below runs **inside the pod**, from a fixed working dir so the OAuth
-`.cache` file is reused across all commands:
-
-```bash
-mkdir -p /work && cd /work
-export REDIRECT=http://127.0.0.1:8888/callback
-export SCOPES='user-library-read,playlist-read-private,playlist-read-collaborative,playlist-modify-public,playlist-modify-private'
-```
-
-### 3. Prime the Spotify OAuth cache (paste-back — no port-forward)
-
-`tunesynctool` uses spotipy with its default `open_browser=True`, which in a
-headless pod silently binds a local server on `:8888` and prints **no URL** — useless
-here. Instead we prime the token cache once with `open_browser=False` (clean
-paste-back). The CLI then reuses `/work/.cache` and never prompts.
-
-Write the primer to a **file** and run it — do **not** pipe it via
-`python3 - <<'PY'`. The paste-back prompt reads the redirect URL from stdin, and a
-heredoc leaves stdin at EOF, so `input()` fails with `EOFError`.
-
-```bash
-cat > /work/prime.py <<'PY'
-import os
-from spotipy.oauth2 import SpotifyOAuth
-oa = SpotifyOAuth(
-    client_id=os.environ["SPOTIFY_CLIENT_ID"],
-    client_secret=os.environ["SPOTIFY_CLIENT_SECRET"],
-    redirect_uri=os.environ["REDIRECT"],
-    scope=os.environ["SCOPES"],
-    open_browser=False, cache_path="/work/.cache",
-)
-oa.get_access_token(check_cache=False)
-print("OK - token cached at /work/.cache")
-PY
-python3 /work/prime.py
+kubectl exec -it -n media deploy/tunesynctool -- /work/venv/bin/python /scripts/prime.py
 ```
 
 It prints `Go to the following URL: https://accounts.spotify.com/authorize?...`.
-Open that URL in **your laptop browser**, log in as the target Spotify user, click
+Open that in your **laptop browser**, log in as the target Spotify user, click
 **Agree**. The browser redirects to `http://127.0.0.1:8888/callback?code=...` which
-**fails to load — that's expected** (nothing is listening). Copy the **full URL from
-the address bar** and paste it at the pod's `Enter the URL you were redirected to:`
-prompt. Success prints `OK - token cached at /work/.cache`.
+**fails to load — that's expected** (nothing is listening). Copy the **full URL
+from the address bar** and paste it at the pod's
+`Enter the URL you were redirected to:` prompt. Success prints
+`OK - token cached at /work/.cache`. Done — the token is now on the PVC.
 
-### 4. List the user's playlist IDs (reuses the cache — no re-auth)
+> Spotify dev-app: the app is in **development mode**, so each imported user's
+> Spotify email must be on the app's **User Management** allowlist (cap ~25). Not
+> added ⇒ their playlists return 403.
+
+## Find playlist IDs (reuses the cache — no re-auth)
 
 ```bash
-python3 - "$SCOPES" "$REDIRECT" <<'PY'
-import sys, os, spotipy
+kubectl exec -it -n media deploy/tunesynctool -- /work/venv/bin/python - <<'PY'
+import os, spotipy
 from spotipy.oauth2 import SpotifyOAuth
-scopes, redirect = sys.argv[1], sys.argv[2]
-oa = SpotifyOAuth(
-    client_id=os.environ["SPOTIFY_CLIENT_ID"],
-    client_secret=os.environ["SPOTIFY_CLIENT_SECRET"],
-    redirect_uri=redirect, scope=scopes,
-    open_browser=False, cache_path="/work/.cache",
-)
-sp = spotipy.Spotify(auth_manager=oa)
-me = sp.me()["id"]
-res = sp.current_user_playlists(limit=50); offset = 0; rows = []
+oa = SpotifyOAuth(client_id=os.environ["SPOTIFY_CLIENT_ID"],
+                  client_secret=os.environ["SPOTIFY_CLIENT_SECRET"],
+                  redirect_uri=os.environ["REDIRECT"], scope=os.environ["SCOPES"],
+                  open_browser=False, cache_path="/work/.cache")
+sp = spotipy.Spotify(auth_manager=oa); me = sp.me()["id"]
+res = sp.current_user_playlists(limit=50); rows = []
 while res:
     for p in res["items"]:
         own = "OWN " if p["owner"]["id"] == me else "sub "
         rows.append((p["id"], p["tracks"]["total"], own, p["name"]))
-    if res["next"]:
-        offset += 50; res = sp.current_user_playlists(limit=50, offset=offset)
-    else:
-        break
+    res = sp.next(res) if res["next"] else None
 for pid, n, own, name in rows:
     print(f"{pid}  {own} {n:>4}  {name}")
 print(f"\n{len(rows)} playlists")
 PY
 ```
 
-Pick the IDs to import (usually the `OWN` ones).
+## Sync to Navidrome — `sync.py`
 
-### 5. Transfer each playlist into Navidrome
-
-Set the per-run Navidrome target creds and loop over the chosen IDs. The Subsonic
-target is reached in-cluster; `--subsonic-base-url` is scheme+host only, port is
-separate. Navidrome uses modern token auth, so no `--subsonic-legacy-auth`.
+Idempotent by **name**: resolves the Navidrome target playlist by name via the
+Subsonic API, then `sync`-updates it in place if it exists, or `transfer`-creates
+it the first time. `ND_USER`/`ND_PASS` come from the Secret — nothing to set.
 
 ```bash
-export ND_USER='navidrome_username_for_this_run'
-export ND_PASS='navidrome_password_for_this_run'
+# preview match rate, write nothing:
+kubectl exec -it -n media deploy/tunesynctool -- \
+  /work/venv/bin/python /scripts/sync.py <spotify_playlist_id> "Riktigt bra låtar" --preview
 
-PLAYLISTS="37i9dQZF1DX... 3cEYpjA9oz... 1AbCdEf..."   # space-separated IDs from step 4
+# real sync (create-or-update in place):
+kubectl exec -it -n media deploy/tunesynctool -- \
+  /work/venv/bin/python /scripts/sync.py <spotify_playlist_id> "Riktigt bra låtar"
 
-for PID in $PLAYLISTS; do
-  echo "=== transferring $PID ==="
-  tunesynctool \
-    --spotify-client-id "$SPOTIFY_CLIENT_ID" \
-    --spotify-client-secret "$SPOTIFY_CLIENT_SECRET" \
-    --spotify-redirect-uri "$REDIRECT" \
-    --subsonic-base-url http://navidrome-app.media.svc.cluster.local \
-    --subsonic-port 4533 \
-    --subsonic-username "$ND_USER" \
-    --subsonic-password "$ND_PASS" \
-    transfer "$PID" --from spotify --to subsonic
-done
+# just resolve + print the Navidrome playlist ID, touch nothing:
+kubectl exec -it -n media deploy/tunesynctool -- \
+  /work/venv/bin/python /scripts/sync.py <spotify_playlist_id> "Riktigt bra låtar" --resolve-only
 ```
 
-Tips:
+## Sync to Plex — `plexsync.py`
 
-- Add `--preview` to see match rates without writing anything to Navidrome.
-  Matching quality depends on your FLAC library's tags — unmatched tracks print
-  `Fail: No result for ...`.
-- `--limit 0` (default) = all tracks.
-- **`transfer` is not idempotent** — it always creates a *new* target playlist, so
-  **re-running `transfer` duplicates the playlist in Navidrome.** To re-run against a
-  playlist that already exists, use `sync.py` instead — see
-  [Re-syncing an existing playlist](#re-syncing-an-existing-playlist-update-in-place)
-  below. `sync.py` is the correct re-run path.
-
-### 6. Cleanup
+Matches **smarter than tunesynctool** by normalizing Spotify's remaster/edit/feat
+noise before matching, so it catches owned-but-suffixed tracks
+(`"… - Remastered 2011"`, `"… - 2004 Remaster"`, `"(feat. …)"`, `"- Radio Edit"`, …).
+Idempotent by **name**: updates the named Plex playlist (adds only missing matched
+tracks) if it exists, else creates it.
 
 ```bash
-exit   # leave the pod shell
-kubectl delete -f kubernetes/apps/media/tunesynctool/pod.yaml
+# preview matched/missed counts, write nothing:
+kubectl exec -it -n media deploy/tunesynctool -- \
+  /work/venv/bin/python /scripts/plexsync.py <spotify_playlist_id> "Riktigt bra låtar" --preview
+
+# real sync (create-or-update the Plex playlist):
+kubectl exec -it -n media deploy/tunesynctool -- \
+  /work/venv/bin/python /scripts/plexsync.py <spotify_playlist_id> "Riktigt bra låtar"
 ```
 
-## Re-syncing an existing playlist (update in place)
+Targets the `Musik` section (`PLEX_LIBRARY`, type `artist`) via `PLEX_TOKEN` +
+`PLEX_URL` from env. The token is never printed (redacted in any echoed error).
 
-**Do not re-run `transfer` to refresh a playlist** — `transfer` always creates a
-*new* Navidrome playlist, so a second run leaves you with two playlists of the same
-name. To pull newly-matched tracks into the playlist you already created, update it
-**in place** with `tunesynctool sync`, which needs the *Navidrome* playlist ID:
+### How `plexsync.py` matches
 
-```bash
-tunesynctool <global creds flags> \
-  sync --from spotify --from-playlist <spotify_id> \
-       --to subsonic --to-playlist <navidrome_playlist_id> --limit 0
-```
+1. Strip trailing `- Remastered/Remaster/Radio Edit/Single Version/Mono/Acoustic/
+   Live/… (year)` clauses and parenthetical `(feat …)`/`(with …)`/`(… Remaster)`.
+2. Accent-fold + case-fold + strip punctuation on both title and artist.
+3. Query Plex `searchTracks(title__icontains=<cleaned core>)` (plus a distinctive
+   word as fallback), then keep candidates whose normalized title matches
+   (equal or substring either way) **and** whose album-artist or track-artist
+   matches the Spotify artist. Duration proximity (~3s) breaks ties and rescues
+   an exact-title-no-artist case.
 
-Finding that Navidrome ID by hand is annoying, so use the committed **`sync.py`**
-wrapper. Given a Spotify playlist ID and the *target playlist name*, it:
+## Adding another Spotify user later
 
-1. calls the Subsonic `getPlaylists` API and finds the Navidrome playlist whose name
-   matches (exact, then case-insensitive; errors out if the name is ambiguous);
-2. if found → runs `tunesynctool … sync … --to-playlist <id>` (update in place);
-3. if not found → runs `tunesynctool … transfer <spotify_id>` (first-time create).
+1. Add the new person's Spotify email to the dev-app **User Management** allowlist.
+2. Re-prime as the new user — `prime.py` uses `check_cache=False`, so it overwrites
+   `/work/.cache` even though a token already exists:
+   ```bash
+   kubectl exec -it -n media deploy/tunesynctool -- /work/venv/bin/python /scripts/prime.py
+   ```
+   Only **one** Spotify identity is active at a time (single shared cache). Sync
+   that user's playlists, then re-prime again to switch back.
+3. For a different Navidrome target user, update the `navidrome` 1Password item's
+   `SYNC_TO_USER`/`SYNC_TO_PASS` (or generalize the ExternalSecret) and let
+   External-Secrets resync.
 
-It reads the same env as the transfer runbook (`SPOTIFY_CLIENT_ID` /
-`SPOTIFY_CLIENT_SECRET` from the Secret, plus `ND_USER` / `ND_PASS` you set per run)
-and must run from the dir holding the primed `/work/.cache`.
+## Maintenance
 
-```bash
-# from the host: copy the wrapper into the running pod
-kubectl cp kubernetes/apps/media/tunesynctool/sync.py media/tunesync:/work/sync.py
-
-# inside the pod (steps 1–3 already done: pip install + primed /work/.cache):
-cd /work
-export ND_USER='navidrome_username_for_this_run'
-export ND_PASS='navidrome_password_for_this_run'
-
-# dry run — just resolve + print the Navidrome playlist ID, touch nothing:
-python3 sync.py <spotify_playlist_id> "Riktigt bra låtar" --resolve-only
-
-# real re-sync (update in place); add --preview to see matches without writing:
-python3 sync.py <spotify_playlist_id> "Riktigt bra låtar"
-```
-
-`sync.py` uses Subsonic **token auth** (`t=md5(pass+salt)`, `s=salt`) for
-`getPlaylists`, so the password is never placed in a URL. Navidrome accepts both
-token and plaintext (`p=`) auth; token is preferred. `getPlaylists` always returns
-HTTP 200 with a `{"subsonic-response":{…}}` envelope — check `status` (`ok` vs
-`failed` with an `error.code`), never the HTTP status.
-
-## Next run (different Spotify user → different Navidrome user)
-
-1. Add the new person's Spotify email to the app's **User Management** allowlist.
-2. New pod (steps 1–2). `tunesynctool-secret` (shared app creds) is already synced —
-   nothing to change there.
-3. Re-prime the cache (step 3) as the **new** Spotify user — each pod is fresh, so
-   `/work/.cache` starts empty.
-4. Steps 4–5 with the new `ND_USER` / `ND_PASS` for that person's Navidrome account.
-5. Cleanup.
+- **Rebuild the venv** (e.g. to pick up a newer `tunesynctool`):
+  ```bash
+  kubectl exec -n media deploy/tunesynctool -- rm -rf /work/venv
+  kubectl rollout restart deploy/tunesynctool -n media   # re-bootstraps on next start
+  ```
+  The Spotify cache at `/work/.cache` is untouched, so **no re-auth**.
+- **Editing a script** (`scripts/*.py`): commit + push; Flux updates the
+  `tunesynctool-scripts` ConfigMap and reloader rolls the pod. Venv + cache persist.
+- `transfer` (the old duplicate-on-every-run command) is **gone** — `sync.py` and
+  `plexsync.py` are both idempotent-by-name wrappers.

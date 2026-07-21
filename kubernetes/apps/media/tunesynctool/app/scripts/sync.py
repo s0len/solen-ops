@@ -11,18 +11,20 @@ Why this exists:
     - if the named playlist exists  -> runs `... sync ... --to-playlist <id>`  (update in place)
     - if it does not exist yet       -> runs `... transfer <spotify_id>`        (first-time create)
 
-Run it INSIDE the throwaway `tunesync` pod, from the same working dir that holds the
-primed OAuth cache (/work/.cache), so the Spotify token is reused without re-auth.
+Run it INSIDE the persistent `tunesynctool` pod, from the working dir that holds the
+primed OAuth cache (/work/.cache), so the Spotify token is reused without re-auth:
+
+    kubectl exec -it -n media deploy/tunesynctool -- \
+        /work/venv/bin/python /scripts/sync.py <spotify_playlist_id> "<navidrome_playlist_name>"
 
 Usage:
-    cd /work
-    python3 sync.py <spotify_playlist_id> "<navidrome_playlist_name>"
-    python3 sync.py <spotify_playlist_id> "<navidrome_playlist_name>" --resolve-only   # dry run: just print the resolved ID
-    python3 sync.py <spotify_playlist_id> "<navidrome_playlist_name>" --preview        # pass --preview to tunesynctool
+    sync.py <spotify_playlist_id> "<navidrome_playlist_name>"
+    sync.py <spotify_playlist_id> "<navidrome_playlist_name>" --resolve-only   # dry run: just print the resolved ID
+    sync.py <spotify_playlist_id> "<navidrome_playlist_name>" --preview        # pass --preview to tunesynctool
 
-Environment (identical to the transfer runbook — see README.md):
+Environment (injected by the Deployment from the tunesynctool-secret + values):
     SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET   # from the Flux-synced tunesynctool-secret
-    ND_USER, ND_PASS                           # target Navidrome username + password for this run
+    ND_USER, ND_PASS                           # target Navidrome username + password (from 1Password `navidrome`)
     REDIRECT                                   # optional; default http://127.0.0.1:8888/callback
     TUNESYNC_WORKDIR                           # optional; default /work (where .cache lives)
     NAVIDROME_URL                              # optional; default http://navidrome-app.media.svc.cluster.local
@@ -130,7 +132,7 @@ def main():
     preview = "--preview" in args
     positional = [a for a in args if not a.startswith("--")]
     if len(positional) != 2:
-        die(f"usage: python3 {os.path.basename(sys.argv[0])} "
+        die(f"usage: {os.path.basename(sys.argv[0])} "
             "<spotify_playlist_id> \"<navidrome_playlist_name>\" [--resolve-only] [--preview]")
     spotify_id, nd_name = positional
 

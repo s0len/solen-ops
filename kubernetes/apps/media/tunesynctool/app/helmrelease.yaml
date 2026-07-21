@@ -1,0 +1,114 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s-labs/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: &app tunesynctool
+spec:
+  interval: 30m
+  chartRef:
+    kind: OCIRepository
+    name: app-template
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      strategy: rollback
+      retries: 3
+
+  values:
+    controllers:
+      tunesynctool:
+        strategy: Recreate
+        annotations:
+          reloader.stakater.com/auto: "true"
+
+        containers:
+          app:
+            image:
+              repository: docker.io/library/python
+              tag: 3.12-slim
+            # Build the venv on the PVC once (deps + OAuth cache persist across
+            # restarts), then idle. On restart the venv already exists -> skip.
+            command:
+              - /bin/sh
+              - -c
+            args:
+              - |
+                if [ ! -x /work/venv/bin/tunesynctool ]; then
+                  echo "bootstrapping venv at /work/venv ...";
+                  python -m venv /work/venv \
+                    && /work/venv/bin/pip install --no-cache-dir --disable-pip-version-check -q \
+                       tunesynctool anyio plexapi spotipy \
+                    || { echo "venv bootstrap FAILED"; rm -rf /work/venv; };
+                fi
+                exec sleep infinity
+            envFrom:
+              - secretRef:
+                  name: tunesynctool-secret
+            env:
+              PATH: /work/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+              HOME: /work
+              TMPDIR: /tmp
+              PIP_NO_CACHE_DIR: "1"
+              PIP_DISABLE_PIP_VERSION_CHECK: "1"
+              PYTHONUNBUFFERED: "1"
+              TZ: ${TIMEZONE}
+              REDIRECT: http://127.0.0.1:8888/callback
+              SCOPES: user-library-read,playlist-read-private,playlist-read-collaborative,playlist-modify-public,playlist-modify-private
+              TUNESYNC_WORKDIR: /work
+              NAVIDROME_URL: http://navidrome-app.media.svc.cluster.local
+              NAVIDROME_PORT: "4533"
+              PLEX_URL: http://plex.media.svc.cluster.local:32400
+              PLEX_LIBRARY: Musik
+            probes:
+              liveness:
+                enabled: false
+              readiness:
+                enabled: false
+              startup:
+                enabled: false
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities: { drop: ["ALL"] }
+            resources:
+              requests:
+                cpu: 10m
+                memory: 64Mi
+              limits:
+                memory: 1Gi
+
+    defaultPodOptions:
+      automountServiceAccountToken: false
+      enableServiceLinks: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 568
+        runAsGroup: 568
+        fsGroup: 568
+        fsGroupChangePolicy: OnRootMismatch
+
+    persistence:
+      work:
+        type: persistentVolumeClaim
+        accessMode: ReadWriteOnce
+        size: 2Gi
+        storageClass: ceph-block
+        globalMounts:
+          - path: /work
+
+      scripts:
+        type: configMap
+        name: tunesynctool-scripts
+        defaultMode: 0555
+        globalMounts:
+          - path: /scripts
+            readOnly: true
+
+      tmp:
+        type: emptyDir
+        globalMounts:
+          - path: /tmp
