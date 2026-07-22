@@ -112,11 +112,6 @@ spec:
     service:
       app:
         controller: *app
-        ports:
-          http:
-            port: *port
-      lb:
-        controller: *app
         type: LoadBalancer
         annotations:
           lbipam.cilium.io/ips: ${NAVIDROME_IP}
