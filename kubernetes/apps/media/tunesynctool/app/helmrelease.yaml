@@ -29,20 +29,21 @@ spec:
           app:
             image:
               repository: docker.io/library/python
-              tag: 3.14-slim
-            # Build the venv on the PVC once (deps + OAuth cache persist across
-            # restarts), then idle. On restart the venv already exists -> skip.
+              tag: 3.12-slim
+            # Rebuild the venv on the PVC if it is missing or was built for a
+            # different python version; otherwise deps + OAuth cache persist.
             command:
               - /bin/sh
               - -c
             args:
               - |
-                if [ ! -x /work/venv/bin/tunesynctool ]; then
-                  echo "bootstrapping venv at /work/venv ...";
-                  python -m venv /work/venv \
+                if ! /work/venv/bin/python -c 'import spotipy, plexapi, tunesynctool, anyio' 2>/dev/null; then
+                  echo "building venv at /work/venv ...";
+                  rm -rf /work/venv \
+                    && python -m venv /work/venv \
                     && /work/venv/bin/pip install --no-cache-dir --disable-pip-version-check -q \
                        tunesynctool anyio plexapi spotipy \
-                    || { echo "venv bootstrap FAILED"; rm -rf /work/venv; };
+                    || echo "venv build FAILED";
                 fi
                 exec sleep infinity
             envFrom:

@@ -35,4 +35,11 @@
   kubernetes: {
     managerFilePatterns: ["/(^|/)kubernetes/.+\\.ya?ml$/"]
   },
+  packageRules: [
+    {
+      matchDatasources: ["docker"],
+      matchPackageNames: ["docker.io/library/python"],
+      allowedVersions: "<3.13",
+    },
+  ],
 }
