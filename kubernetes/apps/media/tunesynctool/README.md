@@ -18,7 +18,7 @@ later sync reuses the cached token (spotipy refreshes it automatically).
 | Secret `tunesynctool-secret` (ExternalSecret) | `SPOTIFY_CLIENT_ID`/`SPOTIFY_CLIENT_SECRET` (1Password `spotify`), `PLEX_TOKEN` (`plex`), `ND_USER`/`ND_PASS` (`navidrome` → `SYNC_TO_USER`/`SYNC_TO_PASS`). Injected via `envFrom`. |
 
 Non-secret config is baked into the Deployment env: `NAVIDROME_URL`
-(`http://navidrome-app.media.svc.cluster.local:4533`), `PLEX_URL`
+(`http://navidrome.media.svc.cluster.local:4533`), `PLEX_URL`
 (`http://plex.media.svc.cluster.local:32400`), `PLEX_LIBRARY` (`Musik`), the OAuth
 `SCOPES`/`REDIRECT`, and `TUNESYNC_WORKDIR=/work`.
 

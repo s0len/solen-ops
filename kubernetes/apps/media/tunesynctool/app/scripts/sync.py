@@ -27,7 +27,7 @@ Environment (injected by the Deployment from the tunesynctool-secret + values):
     ND_USER, ND_PASS                           # target Navidrome username + password (from 1Password `navidrome`)
     REDIRECT                                   # optional; default http://127.0.0.1:8888/callback
     TUNESYNC_WORKDIR                           # optional; default /work (where .cache lives)
-    NAVIDROME_URL                              # optional; default http://navidrome-app.media.svc.cluster.local
+    NAVIDROME_URL                              # optional; default http://navidrome.media.svc.cluster.local
     NAVIDROME_PORT                             # optional; default 4533
 """
 import hashlib
@@ -42,7 +42,7 @@ import urllib.request
 
 REDIRECT = os.environ.get("REDIRECT", "http://127.0.0.1:8888/callback")
 WORKDIR = os.environ.get("TUNESYNC_WORKDIR", "/work")
-NAV_URL = os.environ.get("NAVIDROME_URL", "http://navidrome-app.media.svc.cluster.local")
+NAV_URL = os.environ.get("NAVIDROME_URL", "http://navidrome.media.svc.cluster.local")
 NAV_PORT = os.environ.get("NAVIDROME_PORT", "4533")
 CLIENT = "tunesync-sync-py"
 API_VERSION = "1.16.1"

@@ -60,7 +60,7 @@ spec:
               REDIRECT: http://127.0.0.1:8888/callback
               SCOPES: user-library-read,playlist-read-private,playlist-read-collaborative,playlist-modify-public,playlist-modify-private
               TUNESYNC_WORKDIR: /work
-              NAVIDROME_URL: http://navidrome-app.media.svc.cluster.local
+              NAVIDROME_URL: http://navidrome.media.svc.cluster.local
               NAVIDROME_PORT: "4533"
               PLEX_URL: http://plex.media.svc.cluster.local:32400
               PLEX_LIBRARY: Musik
