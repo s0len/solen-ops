@@ -28,7 +28,7 @@ web:
 
 fetchart:
   auto: yes
-  maxwidth: 1200
+  maxwidth: 0
 
 match:
   strong_rec_thresh: 0.20
