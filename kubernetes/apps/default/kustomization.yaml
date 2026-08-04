@@ -9,6 +9,7 @@ resources:
   - ./no-auth-securitypolicy.yaml
   - ./authelia/ks.yaml
   - ./blueriiot2mqtt/ks.yaml
+  - ./esphome/ks.yaml
   - ./glauth/ks.yaml
   - ./go2rtc/ks.yaml
   - ./home-assistant/ks.yaml
