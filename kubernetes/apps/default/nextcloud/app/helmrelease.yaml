@@ -63,6 +63,16 @@ spec:
           value: "16G"
         - name: PHP_POST_MAX_SIZE
           value: "16G"
+        - name: OIDC_CLIENT_ID
+          valueFrom:
+            secretKeyRef:
+              name: kanidm-nextcloud-oidc
+              key: client-id
+        - name: OIDC_CLIENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: kanidm-nextcloud-oidc
+              key: client-secret
 
       existingSecret:
         enabled: true
@@ -93,6 +103,8 @@ spec:
           - |
             su -s /bin/sh www-data -c 'php occ db:add-missing-indices' || true
             su -s /bin/sh www-data -c 'php occ maintenance:repair --include-expensive' || true
+            # Ensure the OIDC login app is present + enabled (idempotent)
+            su -s /bin/sh www-data -c 'php occ app:install oidc_login' || su -s /bin/sh www-data -c 'php occ app:enable oidc_login' || true
             # File scanning is handled by the cronjob, not needed on pod start
 
       phpConfigs:
@@ -171,6 +183,25 @@ spec:
               'OC\Preview\OpenDocument',
               'OC\Preview\Krita',
               'OC\Preview\HEIC',
+            ),
+          );
+        oidc.config.php: |-
+          <?php
+          $CONFIG = array (
+            'oidc_login_provider_url'         => 'https://idm.${SECRET_DOMAIN}/oauth2/openid/nextcloud',
+            'oidc_login_client_id'            => getenv('OIDC_CLIENT_ID'),
+            'oidc_login_client_secret'        => getenv('OIDC_CLIENT_SECRET'),
+            'oidc_login_auto_redirect'        => false,
+            'oidc_login_redir_fallback'       => true,
+            'oidc_login_hide_password_form'   => false,
+            'oidc_login_disable_registration' => false,
+            'oidc_login_button_text'          => 'Logga in med Kanidm',
+            'oidc_login_scope'                => 'openid profile email groups',
+            'oidc_login_attributes'           => array(
+              'id'     => 'preferred_username',
+              'name'   => 'name',
+              'mail'   => 'email',
+              'groups' => 'groups',
             ),
           );
 
