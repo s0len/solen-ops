@@ -13,4 +13,5 @@ resources:
   - ./metrics-server/ks.yaml
   # - ./nvidia-plugin/ks.yaml
   - ./reloader/ks.yaml
+  - ./spegel/ks.yaml
   - ./talos-shutdown/ks.yaml
