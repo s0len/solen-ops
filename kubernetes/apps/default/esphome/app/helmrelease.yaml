@@ -31,6 +31,9 @@ spec:
               TZ: ${TIMEZONE}
               # mDNS does not reach the pod network; use ping for device online status
               ESPHOME_DASHBOARD_USE_PING: true
+              # HOME is /config, so the ESP-IDF toolchain (~2Gi) would land on the
+              # small backed-up config volume; keep it on the cache volume instead
+              XDG_CACHE_HOME: /cache/xdg
             probes:
               liveness:
                 enabled: true
