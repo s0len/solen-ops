@@ -20,6 +20,8 @@ spec:
   values:
     controllers:
       esphome:
+        annotations:
+          reloader.stakater.com/auto: "true"
         containers:
           app:
             image:
@@ -82,6 +84,12 @@ spec:
         existingClaim: esphome-cache
         globalMounts:
           - path: /cache
+      secrets:
+        type: secret
+        name: esphome-secret
+        globalMounts:
+          - path: /config/secrets.yaml
+            subPath: secrets.yaml
       tmp:
         type: emptyDir
         globalMounts:
