@@ -9,6 +9,7 @@ spec:
     kind: OCIRepository
     name: rook-ceph-cluster
   interval: 1h
+  timeout: 15m
   values:
     monitoring:
       enabled: true
@@ -41,6 +42,8 @@ spec:
       csi:
         readAffinity:
           enabled: true
+        cephfs:
+          kernelMountOptions: ms_mode=prefer-crc
       dashboard:
         enabled: true
         urlPrefix: /
