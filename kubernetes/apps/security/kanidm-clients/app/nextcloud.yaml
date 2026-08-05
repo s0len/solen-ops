@@ -17,6 +17,7 @@ data:
             "originUrl": "https://cloud.uniflix.vip/apps/oidc_login/oidc",
             "originLanding": "https://cloud.uniflix.vip/",
             "preferShortUsername": true,
+            "enableLegacyCrypto": true,
             "scopeMaps": {
               "users": ["openid", "profile", "email", "groups"]
             },
