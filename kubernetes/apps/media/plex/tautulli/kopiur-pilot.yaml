@@ -7,13 +7,16 @@ spec:
   repository:
     kind: ClusterRepository
     name: pilot
+  credentialProjection:
+    enabled: true
   sources:
     - pvc:
         name: tautulli
   volumeSnapshotClassName: csi-ceph-blockpool
   staging:
     storageClassName: ceph-block
-  compression: zstd-fastest
+  compression:
+    compressor: zstd-fastest
   retention:
     keepHourly: 24
     keepDaily: 14

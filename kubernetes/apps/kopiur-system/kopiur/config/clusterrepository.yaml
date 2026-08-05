@@ -20,7 +20,10 @@ spec:
     enabled: true
   allowedNamespaces:
     list:
+      - kopiur-system # managed Maintenance lands here
       - media
+  credentialProjection:
+    allowed: true
   maintenance:
     namespace: kopiur-system
   moverDefaults:
