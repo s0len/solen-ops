@@ -1,0 +1,25 @@
+---
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: ClusterRepository
+metadata:
+  name: pilot
+spec:
+  backend:
+    filesystem:
+      path: /repository
+      volume:
+        nfs:
+          server: 192.168.10.98
+          path: /mnt/rust/volsync/kopiur-pilot
+  encryption:
+    passwordSecretRef:
+      name: kopiur-pilot-secret
+      namespace: kopiur-system
+      key: KOPIA_PASSWORD
+  create:
+    enabled: true
+  allowedNamespaces:
+    list:
+      - media
+  maintenance:
+    namespace: kopiur-system

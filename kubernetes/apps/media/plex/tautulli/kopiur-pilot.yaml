@@ -1,0 +1,35 @@
+---
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: SnapshotPolicy
+metadata:
+  name: tautulli
+spec:
+  repository:
+    kind: ClusterRepository
+    name: pilot
+  sources:
+    - pvc:
+        name: tautulli
+  volumeSnapshotClassName: csi-ceph-blockpool
+  staging:
+    storageClassName: ceph-block
+  compression: zstd-fastest
+  retention:
+    keepHourly: 24
+    keepDaily: 14
+  mover:
+    podSecurityContext:
+      runAsUser: 568
+      runAsGroup: 568
+      fsGroup: 568
+---
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: SnapshotSchedule
+metadata:
+  name: tautulli
+spec:
+  policyRef:
+    name: tautulli
+  schedule:
+    cron: "H * * * *"
+    runOnCreate: false
