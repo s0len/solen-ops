@@ -58,7 +58,7 @@ spec:
         - name: REDIS_HOST_PORT
           value: "6379"
         - name: PHP_MEMORY_LIMIT
-          value: "8G"
+          value: "1G"
         - name: PHP_UPLOAD_LIMIT
           value: "16G"
         - name: PHP_POST_MAX_SIZE
@@ -196,6 +196,7 @@ spec:
             'oidc_login_redir_fallback'       => true,
             'oidc_login_hide_password_form'   => false,
             'oidc_login_disable_registration' => false,
+            'oidc_login_default_quota'        => '100 GB',
             'oidc_login_button_text'          => 'Logga in med Kanidm',
             'oidc_login_scope'                => 'openid profile email groups',
             'oidc_login_attributes'           => array(
