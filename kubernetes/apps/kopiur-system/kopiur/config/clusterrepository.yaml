@@ -23,3 +23,10 @@ spec:
       - media
   maintenance:
     namespace: kopiur-system
+  moverDefaults:
+    # NFS export is root-squashed and owned 568:568 (volsync convention)
+    podSecurityContext:
+      runAsUser: 568
+      runAsGroup: 568
+      fsGroup: 568
+      fsGroupChangePolicy: OnRootMismatch
