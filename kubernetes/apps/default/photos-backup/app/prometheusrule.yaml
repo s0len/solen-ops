@@ -1,0 +1,44 @@
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/monitoring.coreos.com/prometheusrule_v1.json
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: photos-backup
+spec:
+  groups:
+    - name: photos-backup.rules
+      rules:
+        # The photos are irreplaceable — a silently missing backup is worse
+        # than a failing one. Alert if the ReplicationSource itself vanishes
+        # (accidental prune/delete), not just if syncs fail.
+        - alert: PhotosOffsiteBackupAbsent
+          expr: |
+            absent(volsync_volume_out_of_sync{obj_name="photos-r2", role="source"})
+          annotations:
+            summary: >-
+              The photos-r2 ReplicationSource has disappeared — the photos
+              have NO offsite backup schedule right now
+          for: 1h
+          labels:
+            severity: critical
+
+        - alert: PhotosOffsiteBackupMissedInterval
+          expr: |
+            increase(volsync_missed_intervals_total{obj_name="photos-r2"}[1d]) > 0
+          annotations:
+            summary: >-
+              photos-r2 missed its scheduled offsite sync — last successful
+              snapshot is going stale
+          for: 15m
+          labels:
+            severity: critical
+
+        - alert: PhotosOffsiteRepositoryDisconnected
+          expr: |
+            volsync_kopia_repository_connectivity{obj_name="photos-r2"} == 0
+          annotations:
+            summary: >-
+              photos-r2 cannot reach the R2 kopia repository
+          for: 1h
+          labels:
+            severity: critical

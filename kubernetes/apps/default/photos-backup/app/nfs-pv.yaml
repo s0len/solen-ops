@@ -1,0 +1,31 @@
+---
+# Static read-only NFS PV for the photos dataset. readOnly is enforced at
+# the mount level: nothing that binds this claim can write to the photos.
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: photos-nfs
+spec:
+  capacity:
+    storage: 1Ti
+  accessModes:
+    - ReadOnlyMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: ""
+  nfs:
+    server: ${TRUENAS_IP}
+    path: /mnt/rust/photos
+    readOnly: true
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: photos-nfs
+spec:
+  accessModes:
+    - ReadOnlyMany
+  storageClassName: ""
+  volumeName: photos-nfs
+  resources:
+    requests:
+      storage: 1Ti

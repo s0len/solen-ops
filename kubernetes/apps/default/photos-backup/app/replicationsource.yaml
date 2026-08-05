@@ -1,0 +1,31 @@
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/volsync.backube/replicationsource_v1alpha1.json
+apiVersion: volsync.backube/v1alpha1
+kind: ReplicationSource
+metadata:
+  name: photos-r2
+spec:
+  sourcePVC: photos-nfs
+  trigger:
+    # After the 04:00 offsite wave; the NAS-side ZFS snapshots are the
+    # local/point-in-time layer, this is the offsite layer.
+    schedule: "0 5 * * *"
+  kopia:
+    accessModes:
+      - ReadOnlyMany
+    cacheAccessModes:
+      - ReadWriteOnce
+    cacheCapacity: 8Gi
+    cacheStorageClassName: ceph-block
+    compression: zstd-fastest
+    # Direct: NFS has no CSI snapshots; the source is mounted ro as-is.
+    copyMethod: Direct
+    moverSecurityContext:
+      runAsUser: 568
+      runAsGroup: 568
+      fsGroup: 568
+    parallelism: 2
+    repository: ${APP}-volsync-kopia-r2-secret
+    retain:
+      daily: 30
+      monthly: 12
