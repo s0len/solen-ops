@@ -191,6 +191,7 @@ spec:
             'oidc_login_provider_url'         => 'https://idm.${SECRET_DOMAIN}/oauth2/openid/nextcloud',
             'oidc_login_client_id'            => getenv('OIDC_CLIENT_ID'),
             'oidc_login_client_secret'        => getenv('OIDC_CLIENT_SECRET'),
+            'oidc_login_code_challenge_method' => 'S256',
             'oidc_login_auto_redirect'        => false,
             'oidc_login_redir_fallback'       => true,
             'oidc_login_hide_password_form'   => false,
