@@ -31,6 +31,10 @@ servers:
           fallthrough in-addr.arpa ip6.arpa
       - name: autopath
         parameters: "@kubernetes"
+      - name: template
+        parameters: ANY AAAA
+        configBlock: |-
+          rcode NOERROR
       - name: forward
         parameters: ". tls://1.1.1.1 tls://1.0.0.1"
         configBlock: |-
