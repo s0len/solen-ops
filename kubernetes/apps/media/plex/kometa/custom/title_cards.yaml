@@ -7135,7 +7135,7 @@ metadata:
           10:
             url_poster: https://api.mediux.pro/assets/a945826d-aaaa-45b6-83b0-b26aebfc3cfc
 
-  null: # TVDB id for Star City. Set by willtong93 on MediUX. https://mediux.pro/sets/47463
+  449146: # TVDB id for Star City. Set by willtong93 on MediUX. https://mediux.pro/sets/47463
     url_poster: https://api.mediux.pro/assets/96b891e0-c07a-47f4-94c9-dfcfe72f9839
     url_background: https://api.mediux.pro/assets/95278c0f-0e80-4ee7-a212-d6210469fdec
     seasons:

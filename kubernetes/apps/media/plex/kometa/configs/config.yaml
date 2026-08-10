@@ -130,6 +130,8 @@ libraries:
       - default: resolution
         template_variables:
           url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/overlays/resolution-top-left-45deg/<<overlay_name>>.png
+          use_576p: false
+          use_hlg: false
           horizontal_align: left
           horizontal_offset: 0
           vertical_offset: 0
@@ -177,11 +179,11 @@ libraries:
     schedule_overlays: daily
 
     metadata_files:
-      url: "https://github.com/s0len/solen-ops/raw/refs/heads/main/kubernetes/apps/media/plex/kometa/custom/title_cards.yaml"
+      - url: "https://github.com/s0len/solen-ops/raw/refs/heads/main/kubernetes/apps/media/plex/kometa/custom/title_cards.yaml"
 
     collection_files:
       - file: config/series_collections.yaml
-      - url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/collection_files/better_new_and_old_tv_shows_releases.yml
+      - url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/collection_files/better_new_and_old_tv_shows_releases.yaml
       - default: network
         template_variables:
           use_separator: false
@@ -270,6 +272,14 @@ libraries:
           back_height: 1500
           url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/overlays/network-top-left/<<key_encoded>>.png
           back_color: 00
+          "use_U": false
+          "use_U&Alibi": false
+          "use_U&Dave": false
+          "use_U&Drama": false
+          "use_U&Eden": false
+          "use_U&Gold": false
+          "use_U&W": false
+          "use_U&Yesterday": false
 
     operations:
       assets_for_all: true
@@ -291,7 +301,7 @@ libraries:
 
     collection_files:
       - file: config/movies_collections.yaml
-      - url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/collection_files/better_new_and_old_movie_releases.yml
+      - url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/collection_files/better_new_and_old_movie_releases.yaml
       - default: franchise
       - default: universe
         template_variables:
@@ -428,7 +438,7 @@ libraries:
     schedule_overlays: daily
     collection_files:
       - file: config/series_collections.yaml
-      - url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/collection_files/better_new_and_old_tv_shows_releases.yml
+      - url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/collection_files/better_new_and_old_tv_shows_releases.yaml
       - default: streaming
         template_variables:
           collection_mode: hide
@@ -558,7 +568,7 @@ libraries:
     schedule_overlays: daily
     collection_files:
       - default: franchise
-      - url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/collection_files/better_new_and_old_movie_releases.yml
+      - url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/collection_files/better_new_and_old_movie_releases.yaml
       - default: streaming
         template_variables:
           collection_mode: hide
@@ -595,6 +605,17 @@ libraries:
           back_height: 1500
           url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/overlays/studio-top-left/<<key>>.png
           back_color: 00
+          "use_Disney Television Animation": false
+          "use_DisneyToon Studios": false
+          "use_Dynamic Planning": false
+          "use_Film4 Productions": false
+          "use_Golden Harvest": false
+          "use_Hungry Man": false
+          "use_Max": false
+          "use_Screen Gems": false
+          "use_Shaw Brothers": false
+          "use_Studio Live": false
+          "use_The Stone Quarry": false
     # - default: ribbon
     #   template_variables:
     #     use_common: false
@@ -635,7 +656,7 @@ libraries:
     #reset_overlays: false
     schedule_overlays: daily
     collection_files:
-      - url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/collection_files/better_new_and_old_tv_shows_releases.yml
+      - url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/collection_files/better_new_and_old_tv_shows_releases.yaml
       - default: studio
         template_variables:
           use_separator: false
@@ -670,6 +691,17 @@ libraries:
           back_height: 1500
           url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/overlays/studio-top-left/<<key>>.png
           back_color: 00
+          "use_Disney Television Animation": false
+          "use_DisneyToon Studios": false
+          "use_Dynamic Planning": false
+          "use_Film4 Productions": false
+          "use_Golden Harvest": false
+          "use_Hungry Man": false
+          "use_Max": false
+          "use_Screen Gems": false
+          "use_Shaw Brothers": false
+          "use_Studio Live": false
+          "use_The Stone Quarry": false
       - default: status
         template_variables:
           text_airing: .
@@ -773,7 +805,7 @@ settings:
   asset_depth: 2
   asset_directory: config/assets
   asset_folders: true
-  cache: false
+  cache: true
   cache_expiration: 5
   check_nightly: false
   create_asset_folders: true
@@ -874,7 +906,7 @@ radarr:
   plex_path: /data/media/filmer
   monitor: false
   availability: announced
-  quality_profile: SQP-3
+  quality_profile: "[SQP] SQP-3 (Audio)"
 
 trakt:
   client_id: <<TRAKT_CLIENT_ID>>
