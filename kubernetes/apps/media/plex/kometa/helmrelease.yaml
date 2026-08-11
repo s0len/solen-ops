@@ -48,7 +48,7 @@ spec:
                 python3 kometa.py --run --read-only-config
             env:
               TZ: *timeZone
-              KOMETA_CONFIG: /config/config.yaml
+              KOMETA_CONFIG: /config/config-main.yaml
             envFrom:
               - secretRef:
                   name: kometa-secret
@@ -72,6 +72,9 @@ spec:
             args:
               - |
                 python3 kometa.py --run --read-only-config --overlays-only --run-libraries "Serier"
+            env:
+              TZ: *timeZone
+              KOMETA_CONFIG: /config/config-standard-series.yaml
 
       standard-movies:
         type: *type
@@ -84,6 +87,9 @@ spec:
             args:
               - |
                 python3 kometa.py --run --read-only-config --overlays-only --run-libraries "Filmer"
+            env:
+              TZ: *timeZone
+              KOMETA_CONFIG: /config/config-standard-movies.yaml
 
       anime-series:
         type: *type
@@ -96,6 +102,9 @@ spec:
             args:
               - |
                 python3 kometa.py --run --read-only-config --overlays-only --run-libraries "Animeserier"
+            env:
+              TZ: *timeZone
+              KOMETA_CONFIG: /config/config-anime-series.yaml
 
       anime-movies:
         type: *type
@@ -108,6 +117,9 @@ spec:
             args:
               - |
                 python3 kometa.py --run --read-only-config --overlays-only --run-libraries "Animefilmer"
+            env:
+              TZ: *timeZone
+              KOMETA_CONFIG: /config/config-anime-movies.yaml
 
       # sport:
       #   type: *type
@@ -132,6 +144,9 @@ spec:
               - sleep
             args:
               - infinity
+            env:
+              TZ: *timeZone
+              KOMETA_CONFIG: /config/config.yaml
 
     defaultPodOptions:
       securityContext:
@@ -153,10 +168,37 @@ spec:
       config-file:
         type: configMap
         name: kometa-configmap
-        globalMounts:
-          - path: /config/config.yaml
-            subPath: config.yaml
-            readOnly: true
+        advancedMounts:
+          main:
+            app:
+              - path: /config/config-main.yaml
+                subPath: config.yaml
+                readOnly: true
+          standard-series:
+            app:
+              - path: /config/config-standard-series.yaml
+                subPath: config.yaml
+                readOnly: true
+          standard-movies:
+            app:
+              - path: /config/config-standard-movies.yaml
+                subPath: config.yaml
+                readOnly: true
+          anime-series:
+            app:
+              - path: /config/config-anime-series.yaml
+                subPath: config.yaml
+                readOnly: true
+          anime-movies:
+            app:
+              - path: /config/config-anime-movies.yaml
+                subPath: config.yaml
+                readOnly: true
+          asset-shell:
+            app:
+              - path: /config/config.yaml
+                subPath: config.yaml
+                readOnly: true
 
       logs:
         type: emptyDir
