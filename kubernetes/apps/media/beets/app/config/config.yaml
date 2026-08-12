@@ -2,11 +2,11 @@ directory: /data/media/musik
 library: /config/library.db
 
 import:
-  write: no
-  copy: no
+  write: yes
+  copy: yes
   move: no
   link: no
-  hardlink: yes
+  hardlink: no
   resume: yes
   incremental: yes
   quiet_fallback: skip
