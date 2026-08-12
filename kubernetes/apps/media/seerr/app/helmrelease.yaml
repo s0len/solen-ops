@@ -39,19 +39,13 @@ spec:
             envFrom: &envFrom
               - secretRef:
                   name: seerr-secret
-          # Guards the MediaSubscriber.js override below: fails the rollout if an
-          # image bump changed the upstream file we patch (see resources/MediaSubscriber.js)
-          check-subscriber-patch:
-            image: &seerrImage
-              repository: ghcr.io/seerr-team/seerr
-              tag: v3.4.1@sha256:f4768de5f616248d723e05891f3345a1402123775d03bf0890dbfedc0831bda1
-            command:
-              - /bin/sh
-              - -c
-              - echo '53fc6b30e0f7e7238c673a8782ac68e2d6fbd1f56cb2e32815b058e6da520b16  /app/dist/subscriber/MediaSubscriber.js' | sha256sum -c
         containers:
           app:
-            image: *seerrImage
+            image:
+              repository: ghcr.io/seerr-team/seerr
+              # Testing upstream PR #3366 (fixes seerr-team/seerr#3374 + #3365); back to
+              # regular tags once it lands in a release
+              tag: preview-pgsql-starvation-fix@sha256:afcf0495363b011ef642063d966a79bd2879d0fc4f01627cb352d343db6263cc
             env:
               TZ: ${TIMEZONE}
               LOG_LEVEL: "debug"
@@ -117,18 +111,6 @@ spec:
         existingClaim: seerr-cache
         globalMounts:
           - path: /app/config/cache
-
-      # Patched MediaSubscriber: defers request-completion to afterTransactionCommit
-      # so MEDIA_AVAILABLE notifications survive Postgres READ COMMITTED visibility
-      patched-subscriber:
-        type: configMap
-        name: seerr-patched-subscriber
-        advancedMounts:
-          seerr:
-            app:
-              - path: /app/dist/subscriber/MediaSubscriber.js
-                subPath: MediaSubscriber.js
-                readOnly: true
 
       logs:
         type: emptyDir

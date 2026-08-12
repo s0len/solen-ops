@@ -7,10 +7,4 @@ resources:
   - ./externalsecret.yaml
   - ./ocirepository.yaml
   - ./helmrelease.yaml
-configMapGenerator:
-  - name: seerr-patched-subscriber
-    files:
-      - ./resources/MediaSubscriber.js
-generatorOptions:
-  disableNameSuffixHash: true
 
