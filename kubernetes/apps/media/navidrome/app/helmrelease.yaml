@@ -60,6 +60,7 @@ spec:
               ND_TRANSCODINGCACHESIZE: "5GB"
               ND_IMAGECACHESIZE: "500MB"
               ND_ENABLEINSIGHTSCOLLECTOR: "false"
+              ND_AGENTS: audiomuseai,apple-music,lastfm
               ND_LASTFM_ENABLED: "true"
               ND_LISTENBRAINZ_ENABLED: "true"
               ND_BACKUP_PATH: /data/backup
