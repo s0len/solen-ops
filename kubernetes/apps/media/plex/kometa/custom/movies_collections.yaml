@@ -86,8 +86,8 @@ collections:
         label: <<smart_label>>
     summary: General recommendation to watch this one. Though maybe not twice.
     visible_library: true
-    visible_home: true
-    visible_shared: true
+    visible_home: false
+    visible_shared: false
     sort_title: "!023_Average_Aces"
 
   ⭐⭐ - Mediocre Misses:
@@ -102,8 +102,8 @@ collections:
         label: <<smart_label>>
     summary: Only for those with a special interest in the genre, actor or similar.
     visible_library: true
-    visible_home: true
-    visible_shared: true
+    visible_home: false
+    visible_shared: false
     sort_title: "!024_Mediocre_Misses"
   ⭐ - Dreadful Duds:
     trakt_list: https://trakt.tv/users/solentankar/lists/uniflix-1-star
@@ -115,8 +115,8 @@ collections:
         label: <<smart_label>>
     summary: Should be avoided at any cost.
     visible_library: true
-    visible_home: true
-    visible_shared: true
+    visible_home: false
+    visible_shared: false
     sort_title: "!025_Dreadful_Duds"
 
   True Crime Documentaries:

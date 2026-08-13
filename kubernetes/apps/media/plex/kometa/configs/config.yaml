@@ -17,6 +17,12 @@ libraries:
             ending: latest
       - file: config/tag_dv_mel_fel.yaml
       - url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/collection_files/better_new_and_old_movie_releases.yaml
+      # Sofa Picks: Hidden Gems + Quick Watch Tonight (unwatched-only discovery)
+      - url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/collection_files/sofa_picks_movies.yaml
+      - default: decade
+        template_variables:
+          use_separator: false
+          collection_section: "045"
 
       - default: franchise
         template_variables:
@@ -184,31 +190,12 @@ libraries:
     collection_files:
       - file: config/series_collections.yaml
       - url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/collection_files/better_new_and_old_tv_shows_releases.yaml
+      # Sofa Picks: Binge-Ready + Limited Series (unwatched-only discovery)
+      - url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/collection_files/sofa_picks_series.yaml
       - default: network
         template_variables:
           use_separator: false
           collection_section: "090"
-      - default: streaming
-        template_variables:
-          collection_mode: hide
-          use_separator: false
-          use_all4: false
-          use_now: false
-          visible_library_appletv: true
-          visible_library_bet: true
-          visible_library_britbox: true
-          visible_library_disney: true
-          visible_library_max: true
-          visible_library_hulu: true
-          visible_library_netflix: true
-          visible_library_paramount: true
-          visible_library_peacock: true
-          visible_library_amazon: true
-          visible_library_showtime: true
-          visible_library_hayu: true
-          visible_library_crunchyroll: true
-          collection_section: "070"
-          sort_by: random
       - default: tautulli
         template_variables:
           name_popular: A Cosmic Series Collection of Uniflix Favorites

@@ -20,10 +20,3 @@ collections:
     collection_mode: hide
     sync_mode: sync
     limit: 50
-
-  Trending:
-    mdblist_list: https://mdblist.com/lists/solentankar/trending-movies
-    sort_title: 012-Trending
-    collection_mode: hide
-    sync_mode: sync
-    limit: 50

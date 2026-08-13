@@ -61,7 +61,8 @@ collections:
 
   Top Rated Anime:
     template: {name: MAL, summary_text: "the top rated", cover: "MAL-Top-Rated.jpg"}
-    mal_rated: 20
+    # patched: upstream uses mal_rated, which is not a valid Kometa builder (mal_all = MAL top-rated ranking)
+    mal_all: 20
 
   Most Popular Anime:
     template: {name: MAL, summary_text: "most popular", cover: "MAL-Popular.jpg"}
@@ -110,7 +111,7 @@ collections:
     template: {name: Anime, mal_id: 8, cover: "Drama.png"}
   Donghua:
     template: {name: Special, cover: "Donghua.png"}
-    sonarr_taglist: anime
+    # patched: upstream also uses sonarr_taglist: anime, which needs Sonarr configured in Kometa
     plex_search:
       all:
         audio_language: zh

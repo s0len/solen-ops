@@ -30,7 +30,8 @@ spec:
       main:
         type: &type cronjob
         cronjob: &cronjob
-          schedule: "23 0 * * *"
+          # after midnight UTC so the MDBList daily quota is fresh for the whole run
+          schedule: "23 2 * * *"
           timeZone: &timeZone ${TIMEZONE}
           concurrencyPolicy: Forbid
           successfulJobsHistory: 1

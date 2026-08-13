@@ -6,7 +6,7 @@ collections:
     collection_mode: show_items
     collection_order: release
     sync_mode: sync
-    sort_title: "!015_Dolby_Vision_FEL"
+    sort_title: "!030_Dolby_Vision_FEL"
   MEL:
     libraries: Filmer
     radarr_taglist: mel
@@ -14,4 +14,4 @@ collections:
     collection_mode: show_items
     collection_order: release
     sync_mode: sync
-    sort_title: "!015_Dolby_Vision_MEL"
+    sort_title: "!030_Dolby_Vision_MEL"
