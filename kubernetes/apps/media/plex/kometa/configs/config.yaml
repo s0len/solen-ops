@@ -569,26 +569,8 @@ libraries:
     collection_files:
       - default: franchise
       - url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/collection_files/better_new_and_old_movie_releases.yaml
-      - default: streaming
-        template_variables:
-          collection_mode: hide
-          use_separator: false
-          use_crunchyroll: true
-          use_hayu: false
-          use_max: false
-          use_all4: false
-          use_now: false
-          visible_library_appletv: false
-          visible_library_bet: false
-          visible_library_disney: false
-          visible_library_max: false
-          visible_library_hulu: false
-          visible_library_netflix: false
-          visible_library_paramount: false
-          visible_library_peacock: false
-          visible_library_amazon: false
-          visible_library_showtime: false
-          sort_by: random
+      # KAC anime genre collections (vendored from KenWeTech/KAC-Files)
+      - file: config/anime_genres.yaml
       - default: studio
         template_variables:
           collection_mode: hide
@@ -657,29 +639,12 @@ libraries:
     schedule_overlays: daily
     collection_files:
       - url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/collection_files/better_new_and_old_tv_shows_releases.yaml
+      # KAC anime genre + season collections (vendored from KenWeTech/KAC-Files)
+      - file: config/anime_genres.yaml
+      - file: config/anime_seasons.yaml
       - default: studio
         template_variables:
           use_separator: false
-      - default: streaming
-        template_variables:
-          collection_mode: hide
-          use_separator: false
-          use_all4: false
-          use_now: false
-          visible_library_appletv: false
-          visible_library_bet: false
-          visible_library_britbox: false
-          visible_library_disney: false
-          visible_library_max: false
-          visible_library_hulu: false
-          visible_library_netflix: false
-          visible_library_paramount: false
-          visible_library_peacock: false
-          visible_library_amazon: false
-          visible_library_showtime: false
-          visible_library_hayu: false
-          visible_library_crunchyroll: false
-          sort_by: random
     overlay_files:
       - default: studio
         template_variables:

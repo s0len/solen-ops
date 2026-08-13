@@ -217,6 +217,12 @@ spec:
         type: configMap
         name: kometa-custom-configs
         globalMounts:
+          - path: /config/anime_genres.yaml
+            subPath: anime_genres.yaml
+            readOnly: true
+          - path: /config/anime_seasons.yaml
+            subPath: anime_seasons.yaml
+            readOnly: true
           - path: /config/best-of.yaml
             subPath: best-of.yaml
             readOnly: true
