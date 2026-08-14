@@ -185,7 +185,7 @@ libraries:
     schedule_overlays: daily
 
     metadata_files:
-      - url: "https://github.com/s0len/solen-ops/raw/refs/heads/main/kubernetes/apps/media/plex/kometa/custom/title_cards.yaml"
+      - url: "https://raw.githubusercontent.com/s0len/meta-manager-config/main/metadata/series/title_cards.yaml"
 
     collection_files:
       - file: config/series_collections.yaml
