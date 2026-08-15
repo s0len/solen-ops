@@ -45,7 +45,7 @@ spec:
               repository: ghcr.io/seerr-team/seerr
               # Testing upstream PR #3366 (fixes seerr-team/seerr#3374 + #3365); back to
               # regular tags once it lands in a release
-              tag: preview-pgsql-starvation-fix@sha256:afcf0495363b011ef642063d966a79bd2879d0fc4f01627cb352d343db6263cc
+              tag: preview-pgsql-starvation-fix@sha256:a96b0bca4c70ecf6f8eea16d93e1f3400107c52248ade1c8df64667f0ebdee53
             env:
               TZ: ${TIMEZONE}
               LOG_LEVEL: "debug"
