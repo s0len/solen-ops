@@ -79,7 +79,9 @@ spec:
               VPN_SERVICE_PROVIDER: airvpn
               WIREGUARD_MTU: 1420
               # Zurich only — must stay disjoint from qbittorrent's Stockholm
-              # set, both share one AirVPN peer key
+              # set, both share one AirVPN peer key. SERVER_CITIES is declared
+              # to overwrite untracked drift left on the live Deployment.
+              SERVER_CITIES: Zurich
               SERVER_NAMES: Dorado,Sirrah,Toliman
             envFrom:
               - secretRef:
