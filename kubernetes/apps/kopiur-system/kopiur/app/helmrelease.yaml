@@ -9,6 +9,10 @@ spec:
     kind: OCIRepository
     name: kopiur
   interval: 1h
+  install:
+    crds: CreateReplace
+  upgrade:
+    crds: CreateReplace
   values:
     features:
       credentialProjection:
