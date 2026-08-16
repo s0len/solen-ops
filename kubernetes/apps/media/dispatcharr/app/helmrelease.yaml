@@ -30,6 +30,26 @@ spec:
             - name: gpu
               resourceClaimTemplateName: dispatcharr-gpu
         initContainers:
+          # Strip eth0's IPv6 state so gluetun stops keeping unreachable v6
+          # endpoints in its reconnect pool (renders before gluetun)
+          disable-ipv6:
+            image: &gluetun-image
+              repository: ghcr.io/qdm12/gluetun
+              tag: v3.41.3
+            command:
+              - /bin/sh
+              - -c
+              - |
+                ip -6 addr flush dev eth0
+                ip -6 route flush dev eth0 table main
+                ip -6 route del multicast ff00::/8 dev eth0 table local
+                ip -6 route show table all
+                true
+            securityContext:
+              capabilities:
+                add:
+                  - NET_ADMIN
+              allowPrivilegeEscalation: false
           init-db:
             image:
               repository: ghcr.io/home-operations/postgres-init
@@ -46,9 +66,7 @@ spec:
               - -c
               - mkdir -p /data/db && chmod 0700 /data/db && chown 1000:1000 /data/db
           gluetun:
-            image:
-              repository: ghcr.io/qdm12/gluetun
-              tag: v3.41.3
+            image: *gluetun-image
             env:
               DNS_ADDRESS: "10.96.0.10"
               DOT: "off"
@@ -58,13 +76,17 @@ spec:
               HEALTH_TARGET_ADDRESS: cloudflare.com:443
               VPN_TYPE: wireguard
               VPN_INTERFACE: tun0
-              VPN_SERVICE_PROVIDER: mullvad
+              VPN_SERVICE_PROVIDER: airvpn
               WIREGUARD_MTU: 1420
-              SERVER_COUNTRIES: Sweden
+              # Zurich only — must stay disjoint from qbittorrent's Stockholm
+              # set, both share one AirVPN peer key
+              SERVER_NAMES: Dorado,Sirrah,Toliman
             envFrom:
               - secretRef:
                   name: dispatcharr-secret
             probes:
+              # Deadlock protection only — gluetun self-heals the tunnel every
+              # ~6s, a kubelet kill just adds startup churn
               liveness:
                 enabled: true
                 custom: true
@@ -74,7 +96,7 @@ spec:
                     port: 9999
                   timeoutSeconds: 10
                   periodSeconds: 30
-                  failureThreshold: 5
+                  failureThreshold: 10
               startup:
                 enabled: true
                 custom: true
@@ -84,7 +106,7 @@ spec:
                     port: 9999
                   initialDelaySeconds: 10
                   periodSeconds: 10
-                  failureThreshold: 10
+                  failureThreshold: 30
             restartPolicy: Always
             securityContext:
               capabilities:
