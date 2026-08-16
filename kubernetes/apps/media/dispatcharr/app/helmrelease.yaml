@@ -6,6 +6,8 @@ metadata:
   name: &app dispatcharr
 spec:
   interval: 30m
+  # gluetun's startup probe alone allows ~5m10s, over the default 5m
+  timeout: 15m
   chartRef:
     kind: OCIRepository
     name: app-template
