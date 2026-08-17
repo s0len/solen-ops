@@ -3,12 +3,12 @@
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: &app nut-server
+  name: &app nut-server-garderob
 spec:
   interval: 30m
   chartRef:
     kind: OCIRepository
-    name: nut-server
+    name: nut-server-garderob
   install:
     remediation:
       retries: 3
@@ -19,7 +19,7 @@ spec:
       retries: 3
   values:
     controllers:
-      nut-server:
+      nut-server-garderob:
         annotations:
           reloader.stakater.com/auto: "true"
         containers:
@@ -31,7 +31,7 @@ spec:
               TZ: ${TIMEZONE}
             envFrom:
               - secretRef:
-                  name: nut-server-secret
+                  name: nut-server-garderob-secret
             probes:
               liveness:
                 enabled: true
@@ -65,13 +65,13 @@ spec:
     defaultPodOptions:
       hostNetwork: true
       nodeSelector:
-        kubernetes.io/hostname: control-0
+        kubernetes.io/hostname: control-1
     service:
       app:
-        controller: nut-server
+        controller: nut-server-garderob
         type: LoadBalancer
         annotations:
-          lbipam.cilium.io/ips: ${NUT_SERVER_LB_IP}
+          lbipam.cilium.io/ips: ${NUT_SERVER_GARDEROB_LB_IP}
         externalTrafficPolicy: Cluster
         ports:
           server:
@@ -87,18 +87,18 @@ spec:
             readOnly: false
       config:
         type: configMap
-        name: nut-server-config
+        name: nut-server-garderob-config
         advancedMounts:
-          nut-server:
+          nut-server-garderob:
             app:
               - path: /etc/nut/local/ups.conf
                 subPath: ups.conf
                 readOnly: true
       users:
         type: secret
-        name: nut-server-secret
+        name: nut-server-garderob-secret
         advancedMounts:
-          nut-server:
+          nut-server-garderob:
             app:
               - path: /etc/nut/local/upsd.users
                 subPath: upsd.users

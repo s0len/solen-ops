@@ -2,17 +2,18 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: nut-server-ups-a-config
+  name: nut-server-garderob-config
 data:
   ups.conf: |
-    # UPS A: powers control-1 + the fiber. USB on control-1 (06da:ffff, PPC HID UPS).
+    # Garderob-UPS (PPC 1500VA): powers control-1 + the fiber.
+    # USB on control-1 (06da:ffff, PPC HID UPS).
     # HID Power Device Class → usbhid-ups (MGE HID subdriver), not nutdrv_qx.
-    # Graceful shutdown of control-1 at 15% is enforced by the nut-shutdown-ups-a
+    # Graceful shutdown of control-1 at 15% is enforced by the nut-shutdown-garderob
     # poller (reads battery.charge directly) — no LB-flag override needed here.
     [ups]
         driver = usbhid-ups
         port = auto
-        desc = "UPS A - control-1 + fiber"
+        desc = "Garderob - control-1 + fiber"
         vendorid = 06da
         productid = ffff
         pollinterval = 15

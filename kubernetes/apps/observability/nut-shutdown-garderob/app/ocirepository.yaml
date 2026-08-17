@@ -3,7 +3,7 @@
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: OCIRepository
 metadata:
-  name: nut-server-ups-a
+  name: nut-shutdown-garderob
 spec:
   interval: 15m
   layerSelector:

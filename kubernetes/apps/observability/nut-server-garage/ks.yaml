@@ -3,7 +3,7 @@
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: &app nut-server-ups-a
+  name: &app nut-server-garage
   namespace: &namespace observability
 spec:
   targetNamespace: *namespace
@@ -13,7 +13,7 @@ spec:
   dependsOn:
     - name: onepassword
       namespace: external-secrets
-  path: ./kubernetes/apps/observability/nut-server-ups-a/app
+  path: ./kubernetes/apps/observability/nut-server-garage/app
   prune: true
   retryInterval: 2m
   sourceRef:

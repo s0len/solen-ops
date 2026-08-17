@@ -3,12 +3,12 @@
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: &app nut-server-ups-a
+  name: &app nut-server-garage
 spec:
   interval: 30m
   chartRef:
     kind: OCIRepository
-    name: nut-server-ups-a
+    name: nut-server-garage
   install:
     remediation:
       retries: 3
@@ -19,7 +19,7 @@ spec:
       retries: 3
   values:
     controllers:
-      nut-server-ups-a:
+      nut-server-garage:
         annotations:
           reloader.stakater.com/auto: "true"
         containers:
@@ -31,7 +31,7 @@ spec:
               TZ: ${TIMEZONE}
             envFrom:
               - secretRef:
-                  name: nut-server-ups-a-secret
+                  name: nut-server-garage-secret
             probes:
               liveness:
                 enabled: true
@@ -65,13 +65,13 @@ spec:
     defaultPodOptions:
       hostNetwork: true
       nodeSelector:
-        kubernetes.io/hostname: control-1
+        kubernetes.io/hostname: control-0
     service:
       app:
-        controller: nut-server-ups-a
+        controller: nut-server-garage
         type: LoadBalancer
         annotations:
-          lbipam.cilium.io/ips: ${NUT_SERVER_A_LB_IP}
+          lbipam.cilium.io/ips: ${NUT_SERVER_GARAGE_LB_IP}
         externalTrafficPolicy: Cluster
         ports:
           server:
@@ -87,18 +87,18 @@ spec:
             readOnly: false
       config:
         type: configMap
-        name: nut-server-ups-a-config
+        name: nut-server-garage-config
         advancedMounts:
-          nut-server-ups-a:
+          nut-server-garage:
             app:
               - path: /etc/nut/local/ups.conf
                 subPath: ups.conf
                 readOnly: true
       users:
         type: secret
-        name: nut-server-ups-a-secret
+        name: nut-server-garage-secret
         advancedMounts:
-          nut-server-ups-a:
+          nut-server-garage:
             app:
               - path: /etc/nut/local/upsd.users
                 subPath: upsd.users

@@ -75,8 +75,8 @@ spec:
                     port: 8080
     defaultPodOptions:
       hostNetwork: true
-      # Pin to control-1 (UPS A / fiber survivor): it stays up on its own UPS while
-      # UPS B drains control-0/2, so the webhook is alive to shut those two down.
+      # Pin to control-1 (garderob / fiber survivor): it stays up on its own UPS while
+      # the garage UPS drains control-0/2, so the webhook is alive to shut those two down.
       nodeSelector:
         kubernetes.io/hostname: control-1
       securityContext:

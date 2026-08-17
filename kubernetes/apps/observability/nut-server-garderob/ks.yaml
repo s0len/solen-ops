@@ -3,7 +3,7 @@
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: &app nut-shutdown-ups-a
+  name: &app nut-server-garderob
   namespace: &namespace observability
 spec:
   targetNamespace: *namespace
@@ -13,9 +13,7 @@ spec:
   dependsOn:
     - name: onepassword
       namespace: external-secrets
-    - name: nut-server-ups-a
-      namespace: observability
-  path: ./kubernetes/apps/observability/nut-shutdown-ups-a/app
+  path: ./kubernetes/apps/observability/nut-server-garderob/app
   prune: true
   retryInterval: 2m
   sourceRef:

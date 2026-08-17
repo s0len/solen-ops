@@ -2,13 +2,13 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: nut-server-config
+  name: nut-server-garage-config
 data:
   ups.conf: |
     [ups]
         driver = nutdrv_qx
         port = auto
-        desc = "Allnet USV 3000VA"
+        desc = "Garage - Allnet USV 3000VA"
         vendorid = 06DA
         pollinterval = 15
         default.battery.voltage.high = 82.0

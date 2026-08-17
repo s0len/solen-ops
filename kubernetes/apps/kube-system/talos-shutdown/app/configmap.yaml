@@ -32,7 +32,7 @@ data:
             results = []
             for node in NODES.split(","):
                 node = node.strip()
-                # Route via control-1 (UPS A survivor, where this webhook runs) so the
+                # Route via control-1 (garderob survivor, where this webhook runs) so the
                 # connection never depends on the node being shut down answering as endpoint.
                 cmd = ["/shared/talosctl", "shutdown", "--endpoints", "192.168.10.41",
                        "--nodes", node, "--talosconfig", "/talos/config"]

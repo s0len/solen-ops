@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: nut-shutdown-ups-a-script
+  name: nut-shutdown-garderob-script
   annotations:
     # Flux postBuild envsubst (drone/envsubst) substitutes BOTH $VAR and ${VAR},
     # which would blank this script's shell vars. Opt this ConfigMap out so the
@@ -11,11 +11,12 @@ metadata:
 data:
   poll.sh: |
     #!/bin/sh
-    # Graceful shutdown of control-1 when its UPS (UPS A / fiber) is on battery and
-    # drops to <= SHUTDOWN_PERCENT. Runs ON control-1, reads the local nut-server-ups-a
+    # Graceful shutdown of control-1 when its UPS (garderob / fiber) is on battery and
+    # drops to <= SHUTDOWN_PERCENT. Runs ON control-1, reads the local nut-server-garderob
     # upsd over host loopback, and runs `talosctl shutdown` against control-1's OWN apid.
     # Depends on NOTHING outside control-1 (no HA, Ceph, etcd quorum, cluster net) —
-    # by the time UPS A is this low, UPS B's nodes (control-0/2) are already down.
+    # by the time the garderob UPS is this low, the garage UPS's nodes (control-0/2)
+    # are already down.
     set -u
     NODE="$TALOS_NODE"
     UPS="$UPS_NAME"
@@ -23,7 +24,7 @@ data:
     TALOSCTL=/shared/talosctl
     TALOSCONFIG=/talos/config
 
-    echo "ups-a shutdown poller: shut down $NODE when $UPS is OB and battery.charge <= $THRESHOLD%"
+    echo "garderob shutdown poller: shut down $NODE when $UPS is OB and battery.charge <= $THRESHOLD%"
     while true; do
       charge="$(upsc "$UPS" battery.charge 2>/dev/null)"
       status="$(upsc "$UPS" ups.status 2>/dev/null)"
@@ -34,7 +35,7 @@ data:
           if [ "$charge" -le "$THRESHOLD" ] && echo "$status" | grep -q 'OB'; then
             echo "LOWBATT: $UPS charge=$charge% status='$status' -> talosctl shutdown $NODE"
             # -e == -n == control-1: connect to control-1's OWN apid, never route via
-            # control-0/2 (already dead by the time UPS A hits the threshold).
+            # control-0/2 (already dead by the time the garderob UPS hits the threshold).
             "$TALOSCTL" shutdown --endpoints "$NODE" --nodes "$NODE" --talosconfig "$TALOSCONFIG"
             sleep 120   # node is going down; avoid a tight retry loop
           fi ;;

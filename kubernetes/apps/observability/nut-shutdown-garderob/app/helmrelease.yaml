@@ -3,12 +3,12 @@
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: &app nut-shutdown-ups-a
+  name: &app nut-shutdown-garderob
 spec:
   interval: 30m
   chartRef:
     kind: OCIRepository
-    name: nut-shutdown-ups-a
+    name: nut-shutdown-garderob
   install:
     remediation:
       retries: 3
@@ -19,7 +19,7 @@ spec:
       retries: 3
   values:
     controllers:
-      nut-shutdown-ups-a:
+      nut-shutdown-garderob:
         annotations:
           reloader.stakater.com/auto: "true"
         initContainers:
@@ -44,7 +44,7 @@ spec:
             env:
               TZ: ${TIMEZONE}
               TALOS_NODE: "192.168.10.41"   # control-1 (its own apid)
-              UPS_NAME: "ups@localhost"     # nut-server-ups-a on the same node (hostNetwork)
+              UPS_NAME: "ups@localhost"     # nut-server-garderob on the same node (hostNetwork)
               SHUTDOWN_PERCENT: "15"
             securityContext:
               allowPrivilegeEscalation: false
@@ -70,14 +70,14 @@ spec:
     persistence:
       script:
         type: configMap
-        name: nut-shutdown-ups-a-script
+        name: nut-shutdown-garderob-script
         globalMounts:
           - path: /app/poll.sh
             subPath: poll.sh
             readOnly: true
       talosconfig:
         type: secret
-        name: nut-shutdown-ups-a-secret
+        name: nut-shutdown-garderob-secret
         globalMounts:
           - path: /talos/config
             subPath: config
