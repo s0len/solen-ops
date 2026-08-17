@@ -11,7 +11,7 @@ spec:
     labels:
       app.kubernetes.io/name: *app
   dependsOn:
-    - name: nut-server
+    - name: nut-server-garage
       namespace: observability
     - name: kube-prometheus-stack
       namespace: observability
