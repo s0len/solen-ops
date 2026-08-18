@@ -5,22 +5,46 @@ SRC=${BEETS_IMPORT_SRC:-/data/torrents/music}
 OVERLAY=${BEETS_IMPORT_OVERLAY:-/config/import-overlay.yaml}
 BEET=/lsiopy/bin/beet
 VERBOSE_LOG=/config/nightly-import.log
+IMPORT_LOG=/config/import.log
+UNMATCHED=/config/unmatched-latest.txt
 
 # A torrent arrives in /data/torrents/music by being moved out of
 # /data/torrents/temp. The move is atomic per file, not per directory, so give
 # anything recently touched time to settle rather than importing half an album.
 QUIET_MINUTES=30
 
-IMPORT_LOG=/config/import.log
-UNMATCHED=/config/unmatched-latest.txt
+SUMMARY=""
 
 log() { printf '%s  %s\n' "$(date '+%F %T')" "$*"; }
+say() {
+    log "$*"
+    SUMMARY="${SUMMARY}$*"$'\n'
+}
 tracks() { "$BEET" stats 2>/dev/null | awk '/^Tracks:/{print $2}'; }
+
+notify() {
+    local title=$1 priority=$2 body=$3
+    if [[ -z ${PUSHOVER_USER_KEY:-} || -z ${PUSHOVER_API_TOKEN:-} ]]; then
+        log "pushover: hoppar över (saknar USER_KEY/API_TOKEN)"
+        return 0
+    fi
+    # Pushover truncates past 1024 characters, so send the head of the summary.
+    curl -sf -m 20 --output /dev/null \
+        --form-string "token=$PUSHOVER_API_TOKEN" \
+        --form-string "user=$PUSHOVER_USER_KEY" \
+        --form-string "title=$title" \
+        --form-string "priority=$priority" \
+        --form-string "message=${body:0:1000}" \
+        https://api.pushover.net/1/messages.json &&
+        log "pushover: notis skickad" ||
+        log "pushover: kunde inte skicka notis"
+}
 
 log "nightly import startad"
 
 if [[ ! -d $SRC ]]; then
     log "AVBRYTER: $SRC finns inte"
+    notify "beets: import misslyckades" 1 "Källkatalogen $SRC finns inte."
     exit 1
 fi
 
@@ -62,23 +86,27 @@ for dir in "$SRC"/*/; do
 done
 
 after_tracks=$(tracks)
+added=$(( ${after_tracks:-0} - ${before_tracks:-0} ))
 
 tail -n "+$((before_lines + 1))" "$IMPORT_LOG" 2>/dev/null |
     grep "^skip $SRC" | cut -d' ' -f2- | sort -u >"$UNMATCHED" || : >"$UNMATCHED"
 unmatched=$(wc -l <"$UNMATCHED")
 
-log "klart: $total mappar, $processed behandlade, $settling väntar, $failed fel"
-log "nya spår i biblioteket: $(( ${after_tracks:-0} - ${before_tracks:-0} ))"
-log "detaljerad utdata: $VERBOSE_LOG"
+say "$added nya spår, biblioteket har nu ${after_tracks:-?}"
+say "$total mappar: $processed behandlade, $settling väntar, $failed fel"
 
 if [[ $unmatched -gt 0 ]]; then
-    log "$unmatched album matchade inte MusicBrainz och ligger kvar i $SRC:"
-    while IFS= read -r p; do log "    $p"; done <"$UNMATCHED"
-    log "importera ett av dem interaktivt med:"
-    log "    kubectl -n media exec -it deploy/beets -- s6-setuidgid abc beet import \"<sökväg>\""
-else
-    log "alla behandlade album matchade MusicBrainz"
+    say "$unmatched album matchade inte MusicBrainz:"
+    while IFS= read -r p; do say "  ${p#"$SRC"/}"; done <"$UNMATCHED"
+    say "importera manuellt: kubectl -n media exec -it deploy/beets -- s6-setuidgid abc beet import \"<sökväg>\""
 fi
 
-[[ $failed -gt 0 ]] && exit 1
+log "detaljerad utdata: $VERBOSE_LOG, omatchade i $UNMATCHED"
+
+if [[ $failed -gt 0 ]]; then
+    notify "beets: $failed mappar failade" 1 "$SUMMARY"
+    exit 1
+fi
+
+notify "beets: $added nya spår" 0 "$SUMMARY"
 exit 0

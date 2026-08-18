@@ -53,14 +53,15 @@ spec:
           reloader.stakater.com/auto: "true"
 
         cronjob:
-          schedule: "0 22 * * *"
+          # Early enough that the Pushover summary is waiting at breakfast, late
+          # enough to clear the 03:45 volsync snapshot of this same claim.
+          schedule: "0 6 * * *"
           timeZone: ${TIMEZONE}
           concurrencyPolicy: Forbid
           successfulJobsHistory: 1
           failedJobsHistory: 1
           backoffLimit: 0
-          # Must be finished before volsync snapshots this same PVC at 03:45.
-          activeDeadlineSeconds: 17700
+          activeDeadlineSeconds: 18000
 
         pod:
           # The image ships abc as uid 911; only the s6 init remaps it to PUID,
@@ -95,6 +96,12 @@ spec:
               BEETSDIR: /config
               HOME: /config
               TZ: ${TIMEZONE}
+            envFrom:
+              # optional so the job still runs before BEETS_TOKEN exists in the
+              # pushover item; the script just skips the notification.
+              - secretRef:
+                  name: beets-secret
+                  optional: true
             resources:
               requests:
                 cpu: 50m
