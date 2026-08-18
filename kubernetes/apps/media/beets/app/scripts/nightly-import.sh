@@ -11,9 +11,11 @@ VERBOSE_LOG=/config/nightly-import.log
 # anything recently touched time to settle rather than importing half an album.
 QUIET_MINUTES=30
 
+IMPORT_LOG=/config/import.log
+UNMATCHED=/config/unmatched-latest.txt
+
 log() { printf '%s  %s\n' "$(date '+%F %T')" "$*"; }
 tracks() { "$BEET" stats 2>/dev/null | awk '/^Tracks:/{print $2}'; }
-skips() { grep -c '^skip ' /config/import.log 2>/dev/null || printf '0'; }
 
 log "nightly import startad"
 
@@ -25,7 +27,9 @@ fi
 : >"$VERBOSE_LOG"
 
 before_tracks=$(tracks)
-before_skips=$(skips)
+# beets appends to import.log forever and it already holds thousands of entries
+# from unrelated jobs, so anchor on its length to read back only this run.
+before_lines=$(wc -l <"$IMPORT_LOG" 2>/dev/null || printf '0')
 log "bibliotek före: ${before_tracks:-?} spår"
 
 total=0
@@ -58,12 +62,23 @@ for dir in "$SRC"/*/; do
 done
 
 after_tracks=$(tracks)
-after_skips=$(skips)
+
+tail -n "+$((before_lines + 1))" "$IMPORT_LOG" 2>/dev/null |
+    grep "^skip $SRC" | cut -d' ' -f2- | sort -u >"$UNMATCHED" || : >"$UNMATCHED"
+unmatched=$(wc -l <"$UNMATCHED")
 
 log "klart: $total mappar, $processed behandlade, $settling väntar, $failed fel"
 log "nya spår i biblioteket: $(( ${after_tracks:-0} - ${before_tracks:-0} ))"
-log "album utan MusicBrainz-match, ej importerade: $(( after_skips - before_skips )) (totalt $after_skips i /config/import.log)"
 log "detaljerad utdata: $VERBOSE_LOG"
+
+if [[ $unmatched -gt 0 ]]; then
+    log "$unmatched album matchade inte MusicBrainz och ligger kvar i $SRC:"
+    while IFS= read -r p; do log "    $p"; done <"$UNMATCHED"
+    log "importera ett av dem interaktivt med:"
+    log "    kubectl -n media exec -it deploy/beets -- s6-setuidgid abc beet import \"<sökväg>\""
+else
+    log "alla behandlade album matchade MusicBrainz"
+fi
 
 [[ $failed -gt 0 ]] && exit 1
 exit 0

@@ -63,6 +63,15 @@ spec:
           activeDeadlineSeconds: 17700
 
         pod:
+          # The image ships abc as uid 911; only the s6 init remaps it to PUID,
+          # and overriding the command skips that. Set the ids here instead, or
+          # everything under /config is unwritable.
+          securityContext:
+            runAsUser: 568
+            runAsGroup: 568
+            fsGroup: 568
+            fsGroupChangePolicy: OnRootMismatch
+
           # library.db lives on the RWO beets claim, so this has to land on the
           # node already running the deployment or it will never schedule.
           affinity:
@@ -79,12 +88,9 @@ spec:
             image:
               repository: lscr.io/linuxserver/beets
               tag: 2.12.0-ls339@sha256:1da97d79bc39a002ca32099ddf9e3a94a3f6809c9a661e079691701ecc1bf67e
-            # Overriding the command bypasses the s6 init that would normally drop
-            # privileges, so do it explicitly or beets writes files as root.
             command:
               - /bin/bash
-              - -c
-              - exec s6-setuidgid abc /bin/bash /scripts/nightly-import.sh
+              - /scripts/nightly-import.sh
             env:
               BEETSDIR: /config
               HOME: /config
