@@ -1,0 +1,13 @@
+---
+import:
+  # copy/write are inherited from config.yaml deliberately: imports get their own
+  # inodes and written tags, so the library survives qbittorrent cleanup. Moving
+  # or symlinking the payload instead would break seeding, so pin those off here
+  # regardless of what the base config becomes.
+  move: no
+  link: no
+
+  # An unattended run must never wait for input: leave anything MusicBrainz
+  # cannot match in place, and never touch an album the library already has.
+  quiet_fallback: skip
+  duplicate_action: skip

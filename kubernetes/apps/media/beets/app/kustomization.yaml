@@ -8,6 +8,10 @@ configMapGenerator:
   - name: beets-configmap
     files:
       - ./config/config.yaml
+  - name: beets-import-configmap
+    files:
+      - ./config/import-overlay.yaml
+      - nightly-import.sh=./scripts/nightly-import.sh
 generatorOptions:
   disableNameSuffixHash: true
   annotations:

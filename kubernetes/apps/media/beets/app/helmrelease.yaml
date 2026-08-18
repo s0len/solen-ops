@@ -47,6 +47,55 @@ spec:
               limits:
                 memory: 6Gi
 
+      import:
+        type: cronjob
+        annotations:
+          reloader.stakater.com/auto: "true"
+
+        cronjob:
+          schedule: "0 22 * * *"
+          timeZone: ${TIMEZONE}
+          concurrencyPolicy: Forbid
+          successfulJobsHistory: 1
+          failedJobsHistory: 1
+          backoffLimit: 0
+          # Must be finished before volsync snapshots this same PVC at 03:45.
+          activeDeadlineSeconds: 17700
+
+        pod:
+          # library.db lives on the RWO beets claim, so this has to land on the
+          # node already running the deployment or it will never schedule.
+          affinity:
+            podAffinity:
+              requiredDuringSchedulingIgnoredDuringExecution:
+                - labelSelector:
+                    matchLabels:
+                      app.kubernetes.io/name: beets
+                      app.kubernetes.io/controller: beets
+                  topologyKey: kubernetes.io/hostname
+
+        containers:
+          app:
+            image:
+              repository: lscr.io/linuxserver/beets
+              tag: 2.12.0-ls339@sha256:1da97d79bc39a002ca32099ddf9e3a94a3f6809c9a661e079691701ecc1bf67e
+            # Overriding the command bypasses the s6 init that would normally drop
+            # privileges, so do it explicitly or beets writes files as root.
+            command:
+              - /bin/bash
+              - -c
+              - exec s6-setuidgid abc /bin/bash /scripts/nightly-import.sh
+            env:
+              BEETSDIR: /config
+              HOME: /config
+              TZ: ${TIMEZONE}
+            resources:
+              requests:
+                cpu: 50m
+                memory: 256Mi
+              limits:
+                memory: 4Gi
+
     defaultPodOptions:
       automountServiceAccountToken: false
       enableServiceLinks: false
@@ -66,6 +115,17 @@ spec:
         globalMounts:
           - path: /config/config.yaml
             subPath: config.yaml
+            readOnly: true
+
+      import-files:
+        type: configMap
+        name: beets-import-configmap
+        globalMounts:
+          - path: /config/import-overlay.yaml
+            subPath: import-overlay.yaml
+            readOnly: true
+          - path: /scripts/nightly-import.sh
+            subPath: nightly-import.sh
             readOnly: true
 
       data:
