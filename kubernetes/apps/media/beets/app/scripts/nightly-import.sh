@@ -51,8 +51,8 @@ fi
 : >"$VERBOSE_LOG"
 
 before_tracks=$(tracks)
-# beets appends to import.log forever and it already holds thousands of entries
-# from unrelated jobs, so anchor on its length to read back only this run.
+# import.log is append-only and already holds thousands of entries from
+# unrelated jobs, so anchor on its length to read back only this run.
 before_lines=$(wc -l <"$IMPORT_LOG" 2>/dev/null || printf '0')
 log "bibliotek före: ${before_tracks:-?} spår"
 
@@ -91,14 +91,11 @@ done
 after_tracks=$(tracks)
 added=$(( ${after_tracks:-0} - ${before_tracks:-0} ))
 
-# The whole backlog, not just this run: the last action logged for a path wins,
-# so an album imported by hand after being skipped drops off the list by itself.
-awk -v src="$SRC/" '
-    { action = $1; sub(/^[^ ]+ /, "") }
-    { n = split($0, paths, "; ")
-      for (i = 1; i <= n; i++) if (index(paths[i], src) == 1) last[paths[i]] = action }
-    END { for (p in last) if (last[p] == "skip") print p }
-' "$IMPORT_LOG" 2>/dev/null | sort >"$UNMATCHED" || : >"$UNMATCHED"
+# This run's skips are the whole outstanding queue, not just its tail: -R keeps
+# skipped albums out of the incremental state, so every one of them is retried
+# on every run. An album that finally matches simply stops appearing here.
+tail -n "+$((before_lines + 1))" "$IMPORT_LOG" 2>/dev/null |
+    grep "^skip $SRC" | cut -d' ' -f2- | tr ';' '\n' | sed 's/^ //' | sort -u >"$UNMATCHED" || : >"$UNMATCHED"
 unmatched=$(wc -l <"$UNMATCHED")
 
 say "$added nya spår, biblioteket har nu ${after_tracks:-?}"
