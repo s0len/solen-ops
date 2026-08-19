@@ -2,6 +2,8 @@
 """plexsync.py — sync a Spotify playlist into a Plex playlist, matching SMARTER
 than tunesynctool by normalizing remaster / edit / feat suffixes before matching.
 
+The matching itself lives in matcher.py, shared with filesync.py.
+
 This catches the tracks tunesynctool misses because Spotify tags them with noise
 your local library does not carry, e.g.:
     "Bohemian Rhapsody - Remastered 2011"      -> "Bohemian Rhapsody"
@@ -27,14 +29,15 @@ Env (injected by the Deployment):
     TUNESYNC_WORKDIR                           # default /work (holds .cache)
 """
 import os
-import re
 import sys
 import time
-import unicodedata
 
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
 from plexapi.server import PlexServer
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from matcher import add_to_index, find_match  # noqa: E402
 
 WORKDIR = os.environ.get("TUNESYNC_WORKDIR", "/work")
 CACHE = os.path.join(WORKDIR, ".cache")
@@ -48,34 +51,6 @@ PLEX_URL = os.environ.get("PLEX_URL", "http://plex.media.svc.cluster.local:32400
 PLEX_LIBRARY = os.environ.get("PLEX_LIBRARY", "Musik")
 PLEX_TOKEN = os.environ.get("PLEX_TOKEN", "")
 
-# Trailing "- <noise>" clauses (optionally wrapping a year): "- Remastered 2011",
-# "- 2004 Remaster", "- Radio Edit", "- Single Version", "- Live", "- Mono", ...
-_DASH_SUFFIX = re.compile(
-    r"\s*-\s*(?:\d{4}\s+)?"
-    r"(?:remaster(?:ed)?(?:\s+version)?|mono(?:\s+version)?|stereo(?:\s+version)?|"
-    r"radio\s+edit|single\s+version|album\s+version|re-?recorded|"
-    r"acoustic(?:\s+version)?|live(?:\b.*)?|demo|edit|version|"
-    r"deluxe(?:\b.*)?|bonus\s+track|explicit|clean)"
-    r"(?:\s+\d{4})?\s*$",
-    re.IGNORECASE,
-)
-# Parenthetical / bracketed "(feat. X)" / "(with X)".
-_PAREN_FEAT = re.compile(
-    r"\s*[\(\[]\s*(?:feat|ft|featuring|with)\.?\s+[^)\]]*[\)\]]",
-    re.IGNORECASE,
-)
-# Parenthetical / bracketed remaster/version noise "(2011 Remaster)", "(Radio Edit)".
-_PAREN_NOISE = re.compile(
-    r"\s*[\(\[][^)\]]*?"
-    r"(?:remaster(?:ed)?|mono|stereo|radio\s+edit|single\s+version|album\s+version|"
-    r"acoustic|live|demo|version|deluxe|bonus)"
-    r"[^)\]]*[\)\]]",
-    re.IGNORECASE,
-)
-# Leading "feat"/"with" split points inside an artist string.
-_ARTIST_SPLIT = re.compile(r"\bfeat\.?|\bft\.?|\bfeaturing\b|\bwith\b|,|&|/", re.IGNORECASE)
-
-
 def die(msg, code=1):
     print("ERROR: " + scrub(str(msg)), file=sys.stderr)
     sys.exit(code)
@@ -86,35 +61,6 @@ def scrub(msg):
     if PLEX_TOKEN:
         return msg.replace(PLEX_TOKEN, "***")
     return msg
-
-
-def fold(s):
-    s = unicodedata.normalize("NFKD", s or "")
-    return "".join(c for c in s if not unicodedata.combining(c))
-
-
-def strip_suffixes(title):
-    t = title or ""
-    prev = None
-    while prev != t:
-        prev = t
-        t = _PAREN_FEAT.sub("", t)
-        t = _PAREN_NOISE.sub("", t)
-        t = _DASH_SUFFIX.sub("", t)
-    return t.strip()
-
-
-def norm_title(s):
-    s = fold(strip_suffixes(s)).lower()
-    s = re.sub(r"[^a-z0-9]+", " ", s)
-    return re.sub(r"\s+", " ", s).strip()
-
-
-def norm_artist(s):
-    s = fold(s or "").lower()
-    s = _ARTIST_SPLIT.split(s)[0]
-    s = re.sub(r"[^a-z0-9]+", " ", s)
-    return re.sub(r"\s+", " ", s).strip()
 
 
 # ---------- Spotify ----------
@@ -195,75 +141,18 @@ def load_plex_index(plex, section):
         batch = list(data)
         for el in batch:
             a = el.attrib
-            rk = a.get("ratingKey")
-            nt = norm_title(a.get("title") or "")
-            if not nt or rk is None:
-                continue
-            artists = set()
-            for src in (a.get("grandparentTitle"), a.get("originalTitle")):
-                if src:
-                    na = norm_artist(src)
-                    if na:
-                        artists.add(na)
             try:
                 dur = int(a.get("duration") or 0)
             except (TypeError, ValueError):
                 dur = 0
-            by_title.setdefault(nt, []).append((nt, artists, dur, rk))
+            add_to_index(by_title, a.get("title"),
+                         (a.get("grandparentTitle"), a.get("originalTitle")),
+                         dur, a.get("ratingKey"))
         if not batch or start + page >= total:
             break
         start += page
     count = sum(len(v) for v in by_title.values())
     return by_title, list(by_title.keys()), count
-
-
-def find_match(by_title, title_keys, sp_track):
-    """Return the best-matching Plex ratingKey (str) for a Spotify track, or None.
-
-    Identical acceptance semantics to the old per-track searchTracks() path, just
-    scored against the pre-loaded in-memory index instead of live API calls:
-      - title filter: candidate title == target OR either is a substring of the other
-      - artist filter: any Spotify artist vs candidate album/track artist (substring ok)
-      - rank: artist match first, then exact-title, then closest duration
-      - accept: artist confirmed, OR exact title within ~3s
-    """
-    target_title = norm_title(sp_track["name"])
-    if not target_title:
-        return None
-    target_artists = {norm_artist(a) for a in sp_track["artists"] if a}
-    target_artists.discard("")
-    sp_dur = sp_track["dur"]
-    tt = target_title
-
-    best, best_score = None, None
-    for k in title_keys:
-        # title_ok: k == tt, or either is a substring of the other
-        if tt not in k and k not in tt:
-            continue
-        exact_title = 1 if k == tt else 0
-        for (_nt, artists, dur, rk) in by_title[k]:
-            artist_ok = False
-            for ta in target_artists:
-                for ca in artists:
-                    if ta == ca or ta in ca or ca in ta:
-                        artist_ok = True
-                        break
-                if artist_ok:
-                    break
-            ddur = abs(dur - sp_dur)
-            score = (1 if artist_ok else 0, exact_title, -ddur)
-            if best_score is None or score > best_score:
-                best, best_score = rk, score
-
-    if best is None:
-        return None
-    artist_ok, exact_title, neg_ddur = best_score
-    # Accept only a real match: artist confirmed, OR exact title within ~3s.
-    if artist_ok:
-        return best
-    if exact_title and (-neg_ddur) <= 3000:
-        return best
-    return None
 
 
 def resolve_tracks(plex, keys):

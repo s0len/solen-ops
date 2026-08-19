@@ -8,9 +8,11 @@ resources:
 configMapGenerator:
   - name: tunesynctool-scripts
     files:
+      - ./scripts/matcher.py
       - ./scripts/prime.py
       - ./scripts/sync.py
       - ./scripts/plexsync.py
+      - ./scripts/filesync.py
 generatorOptions:
   disableNameSuffixHash: true
   annotations:

@@ -1,4 +1,4 @@
-# tunesynctool — persistent Spotify → Navidrome / Plex playlist sync
+# tunesynctool — persistent playlist sync (Spotify or playlist FILES → Navidrome / Plex)
 
 A small, always-on utility Deployment in the `media` namespace that syncs any
 Spotify playlist into **Navidrome** (`sync.py`) or **Plex** (`plexsync.py`) with a
@@ -14,7 +14,7 @@ later sync reuses the cached token (spotipy refreshes it automatically).
 | --- | --- |
 | Deployment `tunesynctool` | `python:3.12-slim`, runs as uid/gid **568**, idles on `sleep infinity`. On first start it builds a venv on the PVC (`python -m venv /work/venv` + `pip install tunesynctool anyio plexapi spotipy`). On restart the venv already exists → skipped. |
 | PVC `tunesynctool` (`/work`) | `ceph-block`, 2Gi, RWO. Holds `/work/venv` (deps) and `/work/.cache` (Spotify token). **No VolSync** — both are re-creatable. |
-| ConfigMap `tunesynctool-scripts` (`/scripts`, read-only) | `prime.py`, `sync.py`, `plexsync.py`. Stable name (no hash) + `reloader.stakater.com/auto` → editing a script and reconciling rolls the pod; the venv/cache on the PVC survive the roll, so **no re-auth**. |
+| ConfigMap `tunesynctool-scripts` (`/scripts`, read-only) | `matcher.py`, `prime.py`, `sync.py`, `plexsync.py`, `filesync.py`. Stable name (no hash) + `reloader.stakater.com/auto` → editing a script and reconciling rolls the pod; the venv/cache on the PVC survive the roll, so **no re-auth**. |
 | Secret `tunesynctool-secret` (ExternalSecret) | `SPOTIFY_CLIENT_ID`/`SPOTIFY_CLIENT_SECRET` (1Password `spotify`), `PLEX_TOKEN` (`plex`), `ND_USER`/`ND_PASS` (`navidrome` → `SYNC_TO_USER`/`SYNC_TO_PASS`). Injected via `envFrom`. |
 
 Non-secret config is baked into the Deployment env: `NAVIDROME_URL`
@@ -133,6 +133,70 @@ Targets the `Musik` section (`PLEX_LIBRARY`, type `artist`) via `PLEX_TOKEN` +
    matches the Spotify artist. Duration proximity (~3s) breaks ties and rescues
    an exact-title-no-artist case.
 
+## Import playlist FILES — `filesync.py` (no Spotify, no OAuth)
+
+For playlists that arrive as **files** instead of a Spotify link — someone exports
+their iTunes/Music playlist and shares it with you. Targets **Navidrome**, reuses the
+same matcher as `plexsync.py` (both import `matcher.py`), and needs no Spotify
+credentials at all.
+
+```bash
+POD=$(kubectl get pod -n media -l app.kubernetes.io/name=tunesynctool -o jsonpath='{.items[0].metadata.name}')
+
+# 1. put the playlist file(s) on the PVC
+kubectl exec -n media $POD -- mkdir -p /work/import
+kubectl cp "./Karlskrona 2026.txt" "media/$POD:/work/import/Karlskrona 2026.txt"
+
+# 2. preview: prints the match rate, WHAT each track matched to, and every miss
+kubectl exec -n media $POD -- /work/venv/bin/python /scripts/filesync.py /work/import --preview
+
+# 3. for real
+kubectl exec -n media $POD -- /work/venv/bin/python /scripts/filesync.py /work/import
+```
+
+### Input formats — pick the richest one
+
+| Format | Completeness |
+| --- | --- |
+| `.txt` | iTunes "Export Playlist…" tab-separated. **Best** — has every track, streaming-only included. UTF-8 and UTF-16 both handled. |
+| `.xml` | iTunes plist. Also complete, and may hold **several** playlists — each is imported under its own name. |
+| `.m3u` / `.m3u8` | Only tracks that exist as local **files** on the sender's disk. An iTunes .m3u silently omits every Apple-Music-streamed track — Silvercheek's 26-track playlist came through as 4. Use only when there is no .txt/.xml. |
+
+Point it at a **directory** and the same playlist exported in several formats is
+imported **once** — richest format per basename wins (txt > xml > m3u8 > m3u) — so
+dropping in all four iTunes exports does not create four playlists.
+
+### Flags
+
+| Flag | Effect |
+| --- | --- |
+| `--preview` | Match only, write nothing. Prints `OK <source> -> <library track>` per hit so you can spot a wrong match, plus every `MISS`. |
+| `--name "X"` | Override the playlist name (single-playlist input only; default is the filename stem, or the plist's own playlist name for `.xml`). |
+| `--prefix "X "` | Prepend to every imported name, e.g. `--prefix "Silvercheek — "`. |
+| `--private` | Keep the playlist to `ND_USER` only. **Default is public.** |
+| `--mirror` | Make the playlist EXACTLY the file, removing tracks that are not in it. Default is additive: only missing tracks are added, so manual additions survive a re-run. |
+
+Idempotent by **name**, like the other two wrappers: an existing playlist owned by
+`ND_USER` is updated in place, otherwise it is created.
+
+### Ownership — why imported playlists are public
+
+Subsonic's `createPlaylist` always creates the playlist owned by the **authenticated**
+user (`ND_USER`, currently `solen`), and Navidrome has no admin-impersonation call. So
+a playlist someone else sent you cannot be created *as* them without their password.
+`filesync.py` therefore creates it as `ND_USER` and sets `public=true`, which makes it
+visible and playable for every Navidrome user — including the person who sent it.
+Pass `--private` if you do not want that.
+
+### Match rate is about your LIBRARY, not the tool
+
+A miss almost always means you do not own the track. Before assuming the matcher is
+at fault, search Navidrome for the title — the misses on Silvercheek's first playlist
+were 15 genuine gaps (mostly **covers** where only the original is on the shelf:
+Sator's `Ring Ring`, Clutch's `Fortunate Son`, Def Leppard's `Personal Jesus`, Jay
+Smith's `Like a Prayer`, Dirty Honey's `Let's Go Crazy`) against exactly one real
+matcher gap (`Pt. 2` vs `Part 2`, since fixed in `matcher.py`).
+
 ## Adding another Spotify user later
 
 1. Add the new person's Spotify email to the dev-app **User Management** allowlist.
@@ -157,5 +221,9 @@ Targets the `Musik` section (`PLEX_LIBRARY`, type `artist`) via `PLEX_TOKEN` +
   The Spotify cache at `/work/.cache` is untouched, so **no re-auth**.
 - **Editing a script** (`scripts/*.py`): commit + push; Flux updates the
   `tunesynctool-scripts` ConfigMap and reloader rolls the pod. Venv + cache persist.
+- **`matcher.py` is shared by `plexsync.py` and `filesync.py`.** Change the
+  normalization there and BOTH get it — that is the point, so they cannot drift.
+  Verify a change by diffing `norm_title` over a corpus before/after; the regexes are
+  order-sensitive and `strip_suffixes` loops until stable.
 - `transfer` (the old duplicate-on-every-run command) is **gone** — `sync.py` and
   `plexsync.py` are both idempotent-by-name wrappers.
