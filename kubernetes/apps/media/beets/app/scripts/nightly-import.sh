@@ -76,7 +76,10 @@ for dir in "$SRC"/*/; do
         continue
     fi
 
-    if "$BEET" -c "$OVERLAY" import -q "$dir" >>"$VERBOSE_LOG" 2>&1; then
+    # -R keeps skipped albums out of the incremental state, so anything
+    # MusicBrainz cannot match yet is retried on later runs and imports itself
+    # once the release shows up there.
+    if "$BEET" -c "$OVERLAY" import -q -R "$dir" >>"$VERBOSE_LOG" 2>&1; then
         processed=$((processed + 1))
     else
         rc=$?
@@ -88,17 +91,23 @@ done
 after_tracks=$(tracks)
 added=$(( ${after_tracks:-0} - ${before_tracks:-0} ))
 
-tail -n "+$((before_lines + 1))" "$IMPORT_LOG" 2>/dev/null |
-    grep "^skip $SRC" | cut -d' ' -f2- | sort -u >"$UNMATCHED" || : >"$UNMATCHED"
+# The whole backlog, not just this run: the last action logged for a path wins,
+# so an album imported by hand after being skipped drops off the list by itself.
+awk -v src="$SRC/" '
+    { action = $1; sub(/^[^ ]+ /, "") }
+    { n = split($0, paths, "; ")
+      for (i = 1; i <= n; i++) if (index(paths[i], src) == 1) last[paths[i]] = action }
+    END { for (p in last) if (last[p] == "skip") print p }
+' "$IMPORT_LOG" 2>/dev/null | sort >"$UNMATCHED" || : >"$UNMATCHED"
 unmatched=$(wc -l <"$UNMATCHED")
 
 say "$added nya spår, biblioteket har nu ${after_tracks:-?}"
 say "$total mappar: $processed behandlade, $settling väntar, $failed fel"
 
 if [[ $unmatched -gt 0 ]]; then
-    say "$unmatched album matchade inte MusicBrainz:"
-    while IFS= read -r p; do say "  ${p#"$SRC"/}"; done <"$UNMATCHED"
-    say "importera manuellt: kubectl -n media exec -it deploy/beets -- s6-setuidgid abc beet import \"<sökväg>\""
+    say "$unmatched album väntar på MusicBrainz-match (återförsöks varje natt):"
+    head -12 "$UNMATCHED" | while IFS= read -r p; do say "  ${p#"$SRC"/}"; done
+    [[ $unmatched -gt 12 ]] && say "  ... och $((unmatched - 12)) till, hela listan i $UNMATCHED"
 fi
 
 log "detaljerad utdata: $VERBOSE_LOG, omatchade i $UNMATCHED"
