@@ -53,7 +53,7 @@ def page(title, body, *, footer="", refresh=None, back=None):
 
 # ---------- 1. login ----------
 
-def login(csrf_note=None, error=None, locked_seconds=None):
+def login(csrf="", error=None, locked_seconds=None):
     if locked_seconds:
         minutes = max(1, round(locked_seconds / 60))
         note = (f'<p class="warn">För många försök. Vänta {minutes}'
@@ -67,6 +67,7 @@ def login(csrf_note=None, error=None, locked_seconds=None):
 <p class="lead">Logga in med samma namn och lösenord som du använder i Symfonium.</p>
 {note}
 <form method="post" action="/logga-in" autocomplete="on">
+  <input type="hidden" name="csrf" value="{esc(csrf)}">
   <label class="field">
     <span>Användarnamn</span>
     <input name="anvandarnamn" type="text" autocomplete="username"

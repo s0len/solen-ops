@@ -144,10 +144,21 @@ write to the exact preview he was shown.
 The route is exempt from the gateway's OIDC policy — it has to be, he has no account
 there — so the in-app controls are **not optional**.
 
-- **CSRF**: a multipart POST is a CORS-simple request, so `Origin` must equal
-  `TRUSTED_ORIGIN` (falling back to `Referer`), plus a per-session token compared
-  with `hmac.compare_digest`. Verified: no Origin → 403, wrong Origin → 403, bad
-  token → 403.
+- **CSRF**: a token the attacker cannot read is the control — the per-session token
+  on authenticated POSTs, and a **double-submit cookie** on the login form (the one
+  POST with no session yet: the value is in a cookie *and* a hidden field, and a
+  cross-site page can forge the field but never read the cookie). Both compared with
+  `hmac.compare_digest`. `Origin`/`Referer` are checked **when present** but their
+  absence is not treated as an attack.
+
+  That last clause is the fix for a real outage on first use. The original version
+  *required* Origin-or-Referer and the login form carried no token, so Origin was the
+  only gate — while this app's own `Referrer-Policy: no-referrer` guaranteed no
+  Referer. Every real browser login got a 403 ("Sidan kunde inte skicka formuläret"),
+  and the curl tests passed only because they set the header by hand. Origin and
+  Referer are both optional on a same-origin form POST; never make either load-bearing.
+  `Referrer-Policy` is now `same-origin`. Verified: no Origin at all → works, wrong
+  Origin → 403, forged token → refused.
 - **Login throttle**: per-username sliding window (5 per 15 min) reported as a
   concrete wait, a global brake (20/hour → 429), and a flat 400 ms delay on *every*
   attempt so timing reveals nothing. Identical message for a wrong password and a

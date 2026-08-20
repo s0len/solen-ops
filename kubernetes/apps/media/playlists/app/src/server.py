@@ -48,11 +48,15 @@ WEB_DIR = os.environ.get("WEB_DIR", "/web")
 # never sent back. Never set it to 0 in the Deployment.
 COOKIE_SECURE = os.environ.get("COOKIE_SECURE", "1") != "0"
 
-def _cookie(value, max_age):
-    parts = [f"sid={value}", "Path=/", f"Max-Age={max_age}", "HttpOnly", "SameSite=Lax"]
+def _named_cookie(name, value, max_age):
+    parts = [f"{name}={value}", "Path=/", f"Max-Age={max_age}", "HttpOnly", "SameSite=Lax"]
     if COOKIE_SECURE:
         parts.append("Secure")
     return "; ".join(parts)
+
+
+def _cookie(value, max_age):
+    return _named_cookie("sid", value, max_age)
 
 
 CSP = ("default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'; "
@@ -203,7 +207,7 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header("Content-Length", str(len(body)))
         self.send_header("Cache-Control", "no-store")
         self.send_header("X-Content-Type-Options", "nosniff")
-        self.send_header("Referrer-Policy", "no-referrer")
+        self.send_header("Referrer-Policy", "same-origin")
         self.send_header("Content-Security-Policy", CSP)
         for k, v in (headers or {}).items():
             self.send_header(k, v)
@@ -231,6 +235,23 @@ class Handler(BaseHTTPRequestHandler):
                 out[k.strip()] = v.strip()
         return out
 
+    def _pre_csrf(self):
+        """Double-submit token for the one POST that has no session yet.
+
+        The value is in a cookie AND in a hidden field; a cross-site attacker can
+        forge the field but cannot read the cookie, so the two only agree on a form
+        this app actually served. Returns (value, set_cookie_or_None).
+        """
+        existing = self._cookies().get("csrf0")
+        if existing and len(existing) >= 20:
+            return existing, None
+        fresh = secrets.token_urlsafe(32)
+        return fresh, _named_cookie("csrf0", fresh, 3600)
+
+    def _pre_csrf_ok(self, supplied):
+        cookie = self._cookies().get("csrf0") or ""
+        return bool(cookie) and bool(supplied) and hmac.compare_digest(cookie, supplied)
+
     def _session(self):
         return jobs.get_session(self._cookies().get("sid"))
 
@@ -244,13 +265,25 @@ class Handler(BaseHTTPRequestHandler):
         return self.rfile.read(size)
 
     def _origin_ok(self):
+        """Reject a MISMATCHED Origin/Referer, but never require one to be present.
+
+        Origin and Referer are both optional on a same-origin form POST — browsers
+        differ, and this app sets Referrer-Policy itself — so treating their absence
+        as an attack just locks real people out. It did exactly that: the login form
+        carried no token of its own, so this was the only gate and every real browser
+        POST got a 403.
+
+        The actual CSRF control is a token the attacker cannot read: the session
+        token on authenticated POSTs, and a double-submit cookie on the login form.
+        This stays as defence in depth for the case where a header IS sent.
+        """
         origin = (self.headers.get("Origin") or "").rstrip("/")
-        if origin:
+        if origin and origin.lower() != "null":
             return bool(TRUSTED_ORIGIN) and origin == TRUSTED_ORIGIN
         referer = self.headers.get("Referer") or ""
         if referer:
             return bool(TRUSTED_ORIGIN) and referer.startswith(TRUSTED_ORIGIN + "/")
-        return False
+        return True
 
     def _csrf_ok(self, session, supplied):
         return bool(session) and bool(supplied) and hmac.compare_digest(
@@ -311,7 +344,12 @@ class Handler(BaseHTTPRequestHandler):
             if session:
                 self._redirect("/ny")
             else:
-                self._send(200, ui.login())
+                token, set_cookie = self._pre_csrf()
+                self._send(200, ui.login(csrf=token),
+                           headers=({"Set-Cookie": set_cookie} if set_cookie else None))
+            return
+        if path == "/favicon.ico":
+            self._send(404, b"", ctype="text/plain; charset=utf-8")
             return
         if not session:
             self._redirect("/")
@@ -394,9 +432,18 @@ class Handler(BaseHTTPRequestHandler):
     def _login(self):
         raw = self._read_body(MAX_FORM)
         if raw is None or raw == b"":
-            self._send(400, ui.login(error="Något blev fel med formuläret. Försök igen."))
+            self._send(400, ui.login(csrf=self._cookies().get("csrf0", ""),
+                                 error="Något blev fel med formuläret. Försök igen."))
             return
         form = parse_qs(raw.decode("utf-8", "replace"))
+        if not self._pre_csrf_ok((form.get("csrf") or [""])[0]):
+            # A stale tab or a cookie-less client, not necessarily an attack.
+            token, set_cookie = self._pre_csrf()
+            self._send(200, ui.login(
+                csrf=token,
+                error="Sidan hade blivit gammal. Fyll i uppgifterna igen."),
+                headers=({"Set-Cookie": set_cookie} if set_cookie else None))
+            return
         username = (form.get("anvandarnamn") or [""])[0].strip()
         secret = Secret((form.get("losenord") or [""])[0])
         # Overwrite the parsed structures that still hold the cleartext.
@@ -405,12 +452,12 @@ class Handler(BaseHTTPRequestHandler):
 
         try:
             if not username or not secret.reveal():
-                self._send(200, ui.login(error="Fyll i både användarnamn och lösenord."))
+                self._send(200, ui.login(csrf=self._cookies().get("csrf0", ""), error="Fyll i både användarnamn och lösenord."))
                 return
 
             state, wait = _throttle_state(username)
             if state == "locked":
-                self._send(429, ui.login(locked_seconds=wait))
+                self._send(429, ui.login(csrf=self._cookies().get("csrf0", ""), locked_seconds=wait))
                 return
             if state == "global":
                 self._send(429, ui.login(
