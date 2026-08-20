@@ -261,6 +261,12 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         self._dispatch("GET")
 
+    def do_HEAD(self):
+        # Without this BaseHTTPRequestHandler answers 501, which makes any uptime
+        # check or tool that probes with HEAD look like an outage. _send() already
+        # suppresses the body for HEAD.
+        self._dispatch("GET")
+
     def do_POST(self):
         self._dispatch("POST")
 
