@@ -179,7 +179,7 @@ dropping in all four iTunes exports does not create four playlists.
 Idempotent by **name**, like the other two wrappers: an existing playlist owned by
 `ND_USER` is updated in place, otherwise it is created.
 
-### Ownership — why imported playlists are public
+### Ownership — why filesync's imports are public, and when to use `playlists` instead
 
 Subsonic's `createPlaylist` always creates the playlist owned by the **authenticated**
 user (`ND_USER`, currently `solen`), and Navidrome has no admin-impersonation call. So
@@ -187,6 +187,13 @@ a playlist someone else sent you cannot be created *as* them without their passw
 `filesync.py` therefore creates it as `ND_USER` and sets `public=true`, which makes it
 visible and playable for every Navidrome user — including the person who sent it.
 Pass `--private` if you do not want that.
+
+**If the person can log in themselves, use the `playlists` app instead**
+(`kubernetes/apps/media/playlists`, `https://playlists.${SECRET_DOMAIN}`). They upload
+the file, authenticate with their own Navidrome credentials, and the playlist comes
+out **owned by them and private** — because their login is the authorization, so no
+workaround is needed. `filesync.py` remains the right tool for an operator-driven
+import where the other person is not involved.
 
 ### Match rate is about your LIBRARY, not the tool
 
@@ -221,9 +228,16 @@ matcher gap (`Pt. 2` vs `Part 2`, since fixed in `matcher.py`).
   The Spotify cache at `/work/.cache` is untouched, so **no re-auth**.
 - **Editing a script** (`scripts/*.py`): commit + push; Flux updates the
   `tunesynctool-scripts` ConfigMap and reloader rolls the pod. Venv + cache persist.
-- **`matcher.py` is shared by `plexsync.py` and `filesync.py`.** Change the
-  normalization there and BOTH get it — that is the point, so they cannot drift.
-  Verify a change by diffing `norm_title` over a corpus before/after; the regexes are
-  order-sensitive and `strip_suffixes` loops until stable.
+- **`matcher.py` is shared by `plexsync.py`, `filesync.py` AND the `playlists` app.**
+  Change the normalization there and all three get it — that is the point, so they
+  cannot drift. Verify a change by diffing `norm_title` over a corpus before/after;
+  the regexes are order-sensitive and `strip_suffixes` loops until stable.
+- **This app's ConfigMap is mounted by another app.** `kubernetes/apps/media/playlists`
+  mounts `tunesynctool-scripts` read-only at `/shared` and imports `matcher` and
+  `filesync` from it, so **editing a script here rolls that pod too** and must be
+  verified against both. `filesync.py`'s `parse_itunes_txt` / `parse_itunes_xml` /
+  `parse_m3u`, `pick()` and the `COL_*` tables are now an API — do not change their
+  signatures without checking `playlists/app/src/jobs.py`. Deleting this app breaks
+  that one loudly (ImportError at startup).
 - `transfer` (the old duplicate-on-every-run command) is **gone** — `sync.py` and
   `plexsync.py` are both idempotent-by-name wrappers.

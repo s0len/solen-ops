@@ -1,0 +1,43 @@
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/cilium.io/ciliumnetworkpolicy_v2.json
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: playlists
+spec:
+  # This pod handles another person's Navidrome password, so pinning egress to
+  # exactly one service is the cheapest high-value control available: there is no
+  # exfiltration path and nothing to pivot to.
+  #
+  # EGRESS ONLY, deliberately. Adding any ingress rule makes ingress default-deny
+  # for this endpoint and would then also require an explicit allowance for kubelet
+  # probes. Cilium leaves ingress open when only egress rules are present, so
+  # gateway traffic and the probes are untouched.
+  #
+  # Failure mode to recognise: if navidrome's pod labels ever change, this policy
+  # stops matching and every login fails with a connection error while Navidrome is
+  # perfectly healthy. Check with
+  #   kubectl -n media get pods -l app.kubernetes.io/name=navidrome --show-labels
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/name: playlists
+      app.kubernetes.io/instance: playlists
+  egress:
+    - toEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: kube-system
+            k8s-app: kube-dns
+      toPorts:
+        - ports:
+            - port: "53"
+              protocol: UDP
+            - port: "53"
+              protocol: TCP
+    - toEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: media
+            app.kubernetes.io/name: navidrome
+      toPorts:
+        - ports:
+            - port: "4533"
+              protocol: TCP

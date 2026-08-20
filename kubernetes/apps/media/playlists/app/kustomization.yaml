@@ -1,0 +1,28 @@
+---
+# yaml-language-server: $schema=https://json.schemastore.org/kustomization
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ./helmrelease.yaml
+  - ./httproute.yaml
+  - ./ciliumnetworkpolicy.yaml
+configMapGenerator:
+  - name: playlists-src
+    files:
+      - ./src/server.py
+      - ./src/subsonic.py
+      - ./src/library.py
+      - ./src/jobs.py
+      - ./src/ui.py
+  - name: playlists-web
+    files:
+      - ./web/style.css
+      - ./web/app.js
+generatorOptions:
+  disableNameSuffixHash: true
+  annotations:
+    # MANDATORY. Flux patches substituteFrom onto every app Kustomization and its
+    # envsubst rewrites BOTH $VAR and ${VAR} inside ConfigMap data. Without this the
+    # Python f-strings and regexes are silently mangled into a SyntaxError at pod
+    # start, with no error anywhere in the Flux reconcile.
+    kustomize.toolkit.fluxcd.io/substitute: disabled

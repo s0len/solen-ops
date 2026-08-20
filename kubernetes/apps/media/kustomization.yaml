@@ -21,6 +21,7 @@ resources:
   - ./maintainerr/ks.yaml
   - ./navidrome/ks.yaml
   - ./notifiarr/ks.yaml
+  - ./playlists/ks.yaml
   - ./plex/ks.yaml
   - ./qbittorrent/ks.yaml
   - ./qui/ks.yaml
