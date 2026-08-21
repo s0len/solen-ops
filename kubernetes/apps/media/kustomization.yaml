@@ -16,7 +16,6 @@ resources:
   - ./dispatcharr/ks.yaml  # testing: PR #878 + #879 fixes
   - ./flaresolverr/ks.yaml
   - ./grimmory/ks.yaml
-  - ./hardcover-sync/ks.yaml
   - ./jellyfin/ks.yaml
   - ./maintainerr/ks.yaml
   - ./navidrome/ks.yaml
