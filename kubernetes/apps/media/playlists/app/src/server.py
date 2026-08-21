@@ -22,6 +22,7 @@ import logging
 import os
 import re
 import secrets
+import signal
 import sys
 import threading
 import time
@@ -703,7 +704,20 @@ def main():
     srv = ThreadingHTTPServer(("", PORT), Handler)
     srv.daemon_threads = True
     srv.timeout = 30
-    srv.serve_forever()
+
+    # Without this, SIGTERM kills serve_forever() mid-call and the container exits
+    # non-zero, so every rollout leaves a pod behind in Failed/Terminated. shutdown()
+    # has to be called from another thread — it blocks until serve_forever returns.
+    def _stop(_signum, _frame):
+        threading.Thread(target=srv.shutdown, daemon=True).start()
+
+    signal.signal(signal.SIGTERM, _stop)
+    signal.signal(signal.SIGINT, _stop)
+    try:
+        srv.serve_forever()
+    finally:
+        srv.server_close()
+        log.info(json.dumps({"event": "stop"}))
 
 
 if __name__ == "__main__":
