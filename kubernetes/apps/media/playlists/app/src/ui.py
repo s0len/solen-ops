@@ -64,7 +64,7 @@ def login(csrf="", error=None, locked_seconds=None):
         note = ""
     return page("Logga in", f"""
 <h1>Lägg in en spellista i musiksamlingen</h1>
-<p class="lead">Logga in med samma namn och lösenord som du använder i Symfonium.</p>
+<p class="lead">Logga in med samma namn och lösenord som du använder i Navidrome.</p>
 {note}
 <form method="post" action="/logga-in" autocomplete="on">
   <input type="hidden" name="csrf" value="{esc(csrf)}">

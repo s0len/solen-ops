@@ -505,7 +505,7 @@ class Handler(BaseHTTPRequestHandler):
                 # Identical text for a wrong password and a nonexistent user, so the
                 # form cannot be used to discover who has an account.
                 self._send(200, ui.login(
-                    error="Fel användarnamn eller lösenord. Det är samma som i Symfonium."),
+                    error="Fel användarnamn eller lösenord. Det är samma som i Navidrome."),
                     extra_log={"user": username, "action": "login-denied"})
                 return
             self._send(200, ui.login(
