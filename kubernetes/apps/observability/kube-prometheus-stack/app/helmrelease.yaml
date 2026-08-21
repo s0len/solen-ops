@@ -142,6 +142,44 @@ spec:
         - pods=[*]
         - deployments=[*]
         - persistentvolumeclaims=[*]
+      rbac:
+        extraRules:
+          - apiGroups: ["volsync.backube"]
+            resources: ["replicationsources"]
+            verbs: ["list", "watch"]
+      customResourceState:
+        enabled: true
+        config:
+          kind: CustomResourceStateMetrics
+          spec:
+            resources:
+              - groupVersionKind:
+                  group: volsync.backube
+                  version: v1alpha1
+                  kind: ReplicationSource
+                metricNamePrefix: volsync_rs
+                labelsFromPath:
+                  name: [metadata, name]
+                  namespace: [metadata, namespace]
+                metrics:
+                  - name: created_timestamp_seconds
+                    help: Unix creation timestamp of the ReplicationSource
+                    each:
+                      type: Gauge
+                      gauge:
+                        path: [metadata, creationTimestamp]
+                  - name: last_sync_timestamp_seconds
+                    help: Unix timestamp of the last completed sync
+                    each:
+                      type: Gauge
+                      gauge:
+                        path: [status, lastSyncTime]
+                  - name: next_sync_timestamp_seconds
+                    help: Unix timestamp at which the next sync is due to start
+                    each:
+                      type: Gauge
+                      gauge:
+                        path: [status, nextSyncTime]
       prometheus:
         monitor:
           enabled: true

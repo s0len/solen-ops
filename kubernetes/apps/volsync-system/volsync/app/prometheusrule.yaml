@@ -18,15 +18,64 @@ spec:
           labels:
             severity: critical
 
-        # ReplicationDestinations are restore-only (manual trigger, no
-        # schedule) — they don't have a meaningful "out of sync" concept.
-        # Restrict the alert to ReplicationSources only.
-        - alert: VolSyncVolumeOutOfSync
+        # volsync_rs_* come from a kube-state-metrics customResourceState config,
+        # not from the VolSync exporter. Without this guard, losing that config or
+        # its RBAC would make the staleness rules below go quiet rather than fire.
+        - alert: VolSyncStalenessMetricsAbsent
           expr: |
-            volsync_volume_out_of_sync{role="source"} == 1
+            absent(volsync_rs_next_sync_timestamp_seconds)
           annotations:
             summary: >-
-              {{ $labels.obj_namespace }}/{{ $labels.obj_name }} volume is out of sync
+              VolSync staleness metrics are missing — backup staleness is unmonitored
           for: 15m
           labels:
             severity: critical
+
+        # .status.nextSyncTime is the controller's own cronNext(lastSyncTime) and is
+        # advanced only when a sync COMPLETES, so "now - nextSyncTime" is overdue-ness
+        # expressed in each source's own schedule — one threshold fits hourly and
+        # daily alike. The benign ceiling is a source's own sync duration (worst
+        # observed 80 min), which is what sizes the 2h grace.
+        # Never quiet a broken source with spec.paused: the kopia mover returns
+        # mover.Complete() immediately when paused, which advances lastSyncTime and
+        # nextSyncTime as if the sync had succeeded, so a paused source looks healthy
+        # here forever while taking zero backups.
+        - alert: VolSyncBackupStale
+          expr: |
+            time() - max by (namespace, name) (volsync_rs_next_sync_timestamp_seconds) > 7200
+          annotations:
+            summary: >-
+              {{ $labels.namespace }}/{{ $labels.name }} backup is
+              {{ $value | humanizeDuration }} past its scheduled sync time
+          for: 15m
+          labels:
+            severity: critical
+
+        - alert: VolSyncBackupNeverCompleted
+          expr: |
+            (time() - max by (namespace, name) (volsync_rs_created_timestamp_seconds) > 86400)
+            unless on (namespace, name) volsync_rs_last_sync_timestamp_seconds
+          annotations:
+            summary: >-
+              {{ $labels.namespace }}/{{ $labels.name }} has never completed a sync
+          for: 1h
+          labels:
+            severity: critical
+
+        # Mover Jobs never reach a Failed condition — VolSync deletes and recreates
+        # them roughly every 36 min, before the Job controller finalises one — so
+        # kube_job_failed has no series for them and KubeJobFailed cannot fire.
+        # reason="" selects the shape whose value is the failed-pod count; a job that
+        # does acquire a condition switches to three boolean reason-series instead,
+        # and KubeJobFailed covers that case. The lookback exceeds the recreation
+        # cycle so the count does not reset out from under the alert.
+        - alert: VolSyncMoverFailing
+          expr: |
+            max_over_time(kube_job_status_failed{job_name=~"volsync-src-.*", reason=""}[45m]) > 3
+          annotations:
+            summary: >-
+              VolSync mover Job {{ $labels.namespace }}/{{ $labels.job_name }} has
+              {{ $value }} failed pods and is not completing
+          for: 15m
+          labels:
+            severity: warning
