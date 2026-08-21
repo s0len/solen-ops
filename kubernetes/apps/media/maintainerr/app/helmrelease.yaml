@@ -38,7 +38,7 @@ spec:
           app:
             image:
               repository: docker.io/jorenn92/maintainerr
-              tag: 3.22.1
+              tag: 3.24.0
             env:
               # Cap V8 heap below the container limit so Node GCs instead of aborting
               NODE_OPTIONS: --max-old-space-size=1536
