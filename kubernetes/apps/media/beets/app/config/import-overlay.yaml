@@ -1,5 +1,10 @@
 ---
+# Its own verb log. The web-UI container writes to /config/import.log from the
+# same PVC, which made the nightly report's "lines added since I started"
+# arithmetic race against it.
 import:
+  log: /config/nightly-verbs.log
+
   # copy/write are inherited from config.yaml deliberately: imports get their own
   # inodes and written tags, so the library survives qbittorrent cleanup. Moving
   # or symlinking the payload instead would break seeding, so pin those off here
@@ -11,3 +16,19 @@ import:
   # cannot match in place, and never touch an album the library already has.
   quiet_fallback: skip
   duplicate_action: skip
+
+# Chart/playlist packs are handled by scripts/chartpack-import.py, not here: each
+# folder holds ~50-90 tracks from as many different releases, so album matching
+# always fails, and it failed expensively -- one Apple Music pack was 36 of the
+# 109 minutes of the 2026-08-20 run.
+#
+# beets globs this on the BASENAME only (util.sorted_walk), it does apply to
+# directories, and setting it REPLACES the built-in list rather than extending
+# it, so the defaults have to be repeated.
+ignore:
+  - ".*"
+  - "*~"
+  - "System Volume Information"
+  - "lost+found"
+  - "Top Song *"
+  - "Top Songs - *"

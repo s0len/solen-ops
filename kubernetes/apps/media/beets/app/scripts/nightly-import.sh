@@ -5,13 +5,22 @@ SRC=${BEETS_IMPORT_SRC:-/data/torrents/music}
 OVERLAY=${BEETS_IMPORT_OVERLAY:-/config/import-overlay.yaml}
 BEET=/lsiopy/bin/beet
 VERBOSE_LOG=/config/nightly-import.log
-IMPORT_LOG=/config/import.log
+IMPORT_LOG=/config/nightly-verbs.log
 UNMATCHED=/config/unmatched-latest.txt
 
 # A torrent arrives in /data/torrents/music by being moved out of
 # /data/torrents/temp. The move is atomic per file, not per directory, so give
 # anything recently touched time to settle rather than importing half an album.
 QUIET_MINUTES=30
+
+# How long a directory stays in the retry set. -R keeps a skipped album out of
+# beets' incremental state so it is retried on later runs -- which is what lets a
+# release MusicBrainz has not indexed yet import itself once it appears. The cost
+# is that the album is re-searched every single night forever: measured 46s per
+# night with -R versus 0.28s once recorded. Torrent directories are immutable
+# once seeded, so a directory this old can never yield new content and there is
+# nothing left to wait for.
+RETRY_DAYS=14
 
 SUMMARY=""
 
@@ -48,6 +57,9 @@ if [[ ! -d $SRC ]]; then
     exit 1
 fi
 
+TIMINGS=$(mktemp)
+trap 'rm -f "$TIMINGS"' EXIT
+
 : >"$VERBOSE_LOG"
 
 before_tracks=$(tracks)
@@ -76,16 +88,21 @@ for dir in "$SRC"/*/; do
         continue
     fi
 
-    # -R keeps skipped albums out of the incremental state, so anything
-    # MusicBrainz cannot match yet is retried on later runs and imports itself
-    # once the release shows up there.
-    if "$BEET" -c "$OVERLAY" import -q -R "$dir" >>"$VERBOSE_LOG" 2>&1; then
+    if [[ -n $(find "$dir" -maxdepth 0 -mtime "-$RETRY_DAYS" 2>/dev/null) ]]; then
+        retry_flag=(-R)   # recent arrival: keep it in the retry set
+    else
+        retry_flag=()     # settled: record the outcome and stop re-searching it
+    fi
+
+    started=$SECONDS
+    if "$BEET" -c "$OVERLAY" import -q "${retry_flag[@]}" "$dir" >>"$VERBOSE_LOG" 2>&1; then
         processed=$((processed + 1))
     else
         rc=$?
         log "FEL      $name (beet avslutade med $rc)"
         failed=$((failed + 1))
     fi
+    printf '%s\t%s\n' "$((SECONDS - started))" "$name" >>"$TIMINGS"
 done
 
 after_tracks=$(tracks)
@@ -101,10 +118,22 @@ unmatched=$(wc -l <"$UNMATCHED")
 say "$added nya spår, biblioteket har nu ${after_tracks:-?}"
 say "$total mappar: $processed behandlade, $settling väntar, $failed fel"
 
+# The slowest directories are the only line a human can act on: one of them in
+# the overlay's ignore list, or handed to chartpack-import.py, is the whole fix.
+if [[ -s $TIMINGS ]]; then
+    say "långsammaste:"
+    sort -rn "$TIMINGS" | head -3 | while IFS=$'\t' read -r secs name; do
+        say "  $((secs / 60))m$((secs % 60))s  $name"
+    done
+fi
+
 if [[ $unmatched -gt 0 ]]; then
-    say "$unmatched album väntar på MusicBrainz-match (återförsöks varje natt):"
-    head -12 "$UNMATCHED" | while IFS= read -r p; do say "  ${p#"$SRC"/}"; done
-    [[ $unmatched -gt 12 ]] && say "  ... och $((unmatched - 12)) till, hela listan i $UNMATCHED"
+    # Deliberately not "waiting for MusicBrainz": a triage of one night's 95
+    # entries found 5 genuinely missing from MB, 8 already in the library under
+    # other tags, and 21 that MB does hold but cannot match as-shaped.
+    say "$unmatched utan säker MusicBrainz-match (kan redan finnas i biblioteket):"
+    head -8 "$UNMATCHED" | while IFS= read -r p; do say "  ${p#"$SRC"/}"; done
+    [[ $unmatched -gt 8 ]] && say "  ... och $((unmatched - 8)) till, hela listan i $UNMATCHED"
 fi
 
 log "detaljerad utdata: $VERBOSE_LOG, omatchade i $UNMATCHED"
