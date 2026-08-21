@@ -48,6 +48,10 @@ _ABBREV = (
     (re.compile(r"\bvol\s+(\d+)"), r"volume \1"),
 )
 
+# A candidate that is an instrumental / karaoke / acapella cut when the source is
+# not one is never what the person asked for, even if every other signal ties.
+_UNWANTED_CUT = re.compile(r"\b(instrumental|karaoke|acapella|a cappella)\b", re.IGNORECASE)
+
 # Leading "feat"/"with" split points inside an artist string.
 _ARTIST_SPLIT = re.compile(r"\bfeat\.?|\bft\.?|\bfeaturing\b|\bwith\b|,|&|/", re.IGNORECASE)
 
@@ -126,7 +130,9 @@ def find_match(by_title, title_keys, track):
     sp_dur = track["dur"]
     tt = target_title
 
-    best, best_score = None, None
+    source_is_cut = bool(_UNWANTED_CUT.search(track["name"] or ""))
+
+    best, best_score, best_had_artists = None, None, False
     for k in title_keys:
         # title_ok: k == tt, or either is a substring of the other
         if tt not in k and k not in tt:
@@ -141,17 +147,28 @@ def find_match(by_title, title_keys, track):
                         break
                 if artist_ok:
                     break
+            # An instrumental/karaoke cut loses to anything else, but still beats
+            # nothing at all if it is the only thing in the library.
+            wanted_cut = 0 if (not source_is_cut and _UNWANTED_CUT.search(k)) else 1
             ddur = abs(dur - sp_dur)
-            score = (1 if artist_ok else 0, exact_title, -ddur)
+            score = (1 if artist_ok else 0, wanted_cut, exact_title, -ddur)
             if best_score is None or score > best_score:
                 best, best_score = ident, score
+                best_had_artists = bool(artists)
 
     if best is None:
         return None
-    artist_ok, exact_title, neg_ddur = best_score
-    # Accept only a real match: artist confirmed, OR exact title within ~3s.
+    artist_ok, _wanted_cut, exact_title, neg_ddur = best_score
     if artist_ok:
         return best
+    # The artist-less rescue exists for the case where one SIDE has no artist to
+    # compare — a bare "Title" line in an m3u, or a library file with no artist tag.
+    # It must not fire when both sides name an artist and they disagree: that is a
+    # different recording by someone else, and a short generic title plus a
+    # coincidental duration is all it takes. ("Arvingarna – I Do" matched
+    # "Felix Jaehn – I Do", 183s vs 184s, and Arvingarna is not in the library.)
+    if target_artists and best_had_artists:
+        return None
     if exact_title and (-neg_ddur) <= 3000:
         return best
     return None
