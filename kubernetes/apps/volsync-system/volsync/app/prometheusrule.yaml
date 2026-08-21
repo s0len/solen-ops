@@ -68,10 +68,14 @@ spec:
         # reason="" selects the shape whose value is the failed-pod count; a job that
         # does acquire a condition switches to three boolean reason-series instead,
         # and KubeJobFailed covers that case. The lookback exceeds the recreation
-        # cycle so the count does not reset out from under the alert.
+        # cycle so the count does not reset out from under the alert, which also
+        # means a kube-state-metrics restart leaves the retired replica's series
+        # inside the window — hence aggregating away its pod and instance labels.
         - alert: VolSyncMoverFailing
           expr: |
-            max_over_time(kube_job_status_failed{job_name=~"volsync-src-.*", reason=""}[45m]) > 3
+            max by (namespace, job_name) (
+              max_over_time(kube_job_status_failed{job_name=~"volsync-src-.*", reason=""}[45m])
+            ) > 3
           annotations:
             summary: >-
               VolSync mover Job {{ $labels.namespace }}/{{ $labels.job_name }} has
