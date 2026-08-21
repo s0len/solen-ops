@@ -90,8 +90,10 @@ def login(csrf="", error=None, locked_seconds=None):
 def choose(session, csrf, suggestion=""):
     return page("Välj spellista", f"""
 <h1>Hej {esc(session.username)}, välj din spellista</h1>
-<p class="lead">Exportera spellistan från Musik på datorn och välj filen här.
-Välj <strong>Vanlig text</strong> när du exporterar — då följer alla låtar med.</p>
+<p class="lead">Välj filen med din spellista här.</p>
+<p class="hint">Från Musik på datorn: exportera och välj <strong>Vanlig text</strong>
+— då följer alla låtar med. Från Spotify: en <strong>.csv</strong> från
+exportify.net fungerar också.</p>
 
 <form method="post" action="/ladda-upp" enctype="multipart/form-data" id="upform">
   <input type="hidden" name="csrf" value="{esc(csrf)}">
@@ -173,9 +175,12 @@ def preview(job, csrf, filename=""):
             '<a class="primary" href="/ny">Välj en annan fil</a>'), back="/ny")
 
     reason = ""
-    if missing_n:
-        reason = (f'<p class="lead">{n(missing_n)} '
-                  f'{"låt" if missing_n == 1 else "låtar"} finns inte i '
+    if missing_n == 1:
+        reason = ('<p class="lead">En låt finns inte i musiksamlingen, så den kan '
+                  "inte läggas till. Det går bra att skapa spellistan med de "
+                  f"{n(found_n)} som finns.</p>")
+    elif missing_n:
+        reason = (f'<p class="lead">{n(missing_n)} låtar finns inte i '
                   "musiksamlingen, så de kan inte läggas till. Det går bra att "
                   f"skapa spellistan med de {n(found_n)} som finns.</p>")
     else:
@@ -198,8 +203,10 @@ def preview(job, csrf, filename=""):
 
     misses_block = ""
     if missing_n:
+        heading = ("Visa låten som saknas" if missing_n == 1
+                   else f"Visa de {n(missing_n)} låtar som saknas")
         misses_block = f"""
-<details><summary>Visa de {n(missing_n)} låtar som saknas</summary>
+<details><summary>{heading}</summary>
 <ul class="tracks">{''.join(_miss_row(m) for m in job.misses)}</ul></details>"""
 
     body = f"""
@@ -207,7 +214,7 @@ def preview(job, csrf, filename=""):
 {reason}
 {hint}
 {consequence}
-<details open><summary>Låtar som läggs in ({n(found_n)})</summary>
+<details open><summary>{"Låten som läggs in" if found_n == 1 else f"Låtar som läggs in ({n(found_n)})"}</summary>
 <ul class="tracks">{''.join(_pair_row(s, f) for s, f, _ in job.pairs)}</ul></details>
 {misses_block}
 """
@@ -245,6 +252,34 @@ def done(job):
 
 
 # ---------- 6. problems ----------
+
+def session_gone(csrf=""):
+    """Shown when a POST arrives with a dead session — most often a second tab
+    that was left open, or an hour of thinking time. It carries the login form so
+    he is one step from continuing rather than hunting for the way back."""
+    return page("Logga in igen", f"""
+<h1>Du behöver logga in igen</h1>
+<p class="lead">Inloggningen hade gått ut, så filen kom inte fram. Ingenting har
+ändrats i musiksamlingen.</p>
+<p>Logga in och välj filen en gång till.</p>
+<form method="post" action="/logga-in" autocomplete="on">
+  <input type="hidden" name="csrf" value="{esc(csrf)}">
+  <label class="field">
+    <span>Användarnamn</span>
+    <input name="anvandarnamn" type="text" autocomplete="username"
+           autocapitalize="none" autocorrect="off" spellcheck="false" required autofocus>
+  </label>
+  <label class="field">
+    <span>Lösenord</span>
+    <input name="losenord" type="password" id="pw" autocomplete="current-password" required>
+  </label>
+  <label class="check">
+    <input type="checkbox" id="showpw"> Visa lösenordet
+  </label>
+  <button class="primary" type="submit">Logga in</button>
+</form>
+""")
+
 
 def problem(message, *, back="/ny", title="Det gick inte"):
     return page(title, f"""

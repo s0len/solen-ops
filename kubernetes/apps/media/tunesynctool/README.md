@@ -160,10 +160,11 @@ kubectl exec -n media $POD -- /work/venv/bin/python /scripts/filesync.py /work/i
 | --- | --- |
 | `.txt` | iTunes "Export Playlist…" tab-separated. **Best** — has every track, streaming-only included. UTF-8 and UTF-16 both handled. |
 | `.xml` | iTunes plist. Also complete, and may hold **several** playlists — each is imported under its own name. |
+| `.csv` | Spotify exports from **exportify.net**, and most other CSV exporters. Columns are matched by NAME (not position) and the delimiter is sniffed — exportify localises its headers (`Låtens namn` in Swedish vs `Track Name` in English) and Excel in a Swedish locale writes `;`. Duration is ms when the header says so, otherwise seconds. |
 | `.m3u` / `.m3u8` | Only tracks that exist as local **files** on the sender's disk. An iTunes .m3u silently omits every Apple-Music-streamed track — Silvercheek's 26-track playlist came through as 4. Use only when there is no .txt/.xml. |
 
 Point it at a **directory** and the same playlist exported in several formats is
-imported **once** — richest format per basename wins (txt > xml > m3u8 > m3u) — so
+imported **once** — richest format per basename wins (txt > csv > xml > m3u8 > m3u) — so
 dropping in all four iTunes exports does not create four playlists.
 
 ### Flags

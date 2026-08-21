@@ -14,9 +14,14 @@ Supported inputs (pass files, directories, or both):
     *.m3u/.m3u8   #EXTINF playlists. NOTE: an iTunes .m3u only lists tracks that
                   exist as local FILES, so streaming-only tracks are silently
                   missing from it. Prefer the .txt/.xml when you have one.
+    *.csv         Spotify exports from exportify.net (and most other CSV
+                  exporters). Columns are matched by NAME, not position, and the
+                  delimiter is sniffed — exportify localises its headers, so a
+                  Swedish export says "Låtens namn" where an English one says
+                  "Track Name", and Excel in a Swedish locale writes ; not ,.
 
 Given a DIRECTORY, the same playlist exported in several formats is imported ONCE:
-the richest available format per basename wins (txt > xml > m3u8 > m3u).
+the richest available format per basename wins (txt > csv > xml > m3u8 > m3u).
 
 Usage (inside the persistent tunesynctool pod, venv python):
     kubectl exec -i -n media deploy/tunesynctool -- \
@@ -67,7 +72,7 @@ COL_ALBUM_ARTIST = ("Album Artist", "Albumartist", "Albumartist")
 COL_ALBUM = ("Album",)
 COL_TIME = ("Time", "Tid")
 
-FORMAT_RANK = {".txt": 0, ".xml": 1, ".m3u8": 2, ".m3u": 3}
+FORMAT_RANK = {".txt": 0, ".csv": 1, ".xml": 2, ".m3u8": 3, ".m3u": 4}
 
 
 def die(msg, code=1):
@@ -262,8 +267,116 @@ def parse_m3u(path):
     return [(os.path.splitext(os.path.basename(path))[0], tracks)]
 
 
+# CSV column names, in the order they are tried. exportify.net localises its
+# headers, so the Swedish and English variants both have to be recognised. Kept as
+# lowercase for casefolded comparison.
+_CSV_TITLE = ("track name", "låtens namn", "title", "titel", "name", "namn", "song", "låt")
+_CSV_ARTIST = ("artist name(s)", "artistens namn", "artist name", "artist(s)",
+               "artist", "artists", "artister", "artistnamn")
+_CSV_ALBUM_ARTIST = ("album artist name(s)", "albumartistens namn", "album artist",
+                     "albumartist")
+_CSV_ALBUM = ("album name", "albumets namn", "album")
+_CSV_DUR = ("track duration (ms)", "låtlängd (ms)", "duration (ms)", "duration_ms",
+            "duration", "längd", "time", "tid")
+
+
+def _sniff_delimiter(header_line):
+    """Comma, semicolon or tab — whichever the header row actually uses.
+
+    Excel in a Swedish locale writes ; and calls it CSV, so this cannot be assumed.
+    """
+    counts = {d: header_line.count(d) for d in (",", ";", "\t")}
+    best = max(counts, key=lambda d: counts[d])
+    return best if counts[best] else ","
+
+
+def _resolve_column(headers, candidates, claimed):
+    """Pick the column for one field: exact match first, then a prefix match.
+
+    Two-pass and claim-aware on purpose. A Swedish exportify export has BOTH
+    "Låtens namn" and "Artistens namn", so a naive substring match on "namn" would
+    hand the artist column to the title field.
+    """
+    normed = {i: (h or "").strip().casefold() for i, h in enumerate(headers)}
+    for cand in candidates:
+        for i, h in normed.items():
+            if i not in claimed and h == cand:
+                claimed.add(i)
+                return headers[i]
+    for cand in candidates:
+        for i, h in normed.items():
+            if i not in claimed and h and (h.startswith(cand) or cand in h):
+                claimed.add(i)
+                return headers[i]
+    return None
+
+
+def parse_csv(path):
+    """Spotify/exportify-style CSV. Columns matched by NAME, never by position."""
+    raw = open(path, "rb").read()
+    text = None
+    for enc in ("utf-8-sig", "utf-16", "utf-16-le", "utf-16-be", "latin-1"):
+        try:
+            candidate = raw.decode(enc)
+        except (UnicodeDecodeError, UnicodeError):
+            continue
+        first = candidate.split("\n", 1)[0]
+        if any(d in first for d in (",", ";", "\t")):
+            text = candidate
+            break
+    if text is None:
+        die(f"{path}: could not read as CSV")
+
+    delimiter = _sniff_delimiter(text.split("\n", 1)[0])
+    rows = list(csv.reader(io.StringIO(text), delimiter=delimiter))
+    if not rows:
+        die(f"{path}: empty CSV")
+    headers = rows[0]
+
+    claimed = set()
+    col_title = _resolve_column(headers, _CSV_TITLE, claimed)
+    col_artist = _resolve_column(headers, _CSV_ARTIST, claimed)
+    col_album_artist = _resolve_column(headers, _CSV_ALBUM_ARTIST, claimed)
+    col_album = _resolve_column(headers, _CSV_ALBUM, claimed)
+    col_dur = _resolve_column(headers, _CSV_DUR, claimed)
+    if not col_title:
+        die(f"{path}: no recognisable track-title column in {headers[:8]}")
+
+    idx = {h: i for i, h in enumerate(headers)}
+    # "(ms)" in the header is exportify's own unit marker; iTunes-style columns are
+    # seconds. Guessing from the magnitude would break on very long tracks.
+    dur_in_ms = bool(col_dur) and "ms" in col_dur.strip().casefold()
+
+    tracks = []
+    for row in rows[1:]:
+        if not row or len(row) <= idx[col_title]:
+            continue
+
+        def cell(col):
+            if not col:
+                return ""
+            i = idx[col]
+            return row[i].strip() if i < len(row) else ""
+
+        name = cell(col_title)
+        if not name:
+            continue
+        try:
+            dur_raw = float(cell(col_dur) or 0)
+        except ValueError:
+            dur_raw = 0
+        dur = int(dur_raw) if dur_in_ms else int(dur_raw) * 1000
+        artists = [a for a in (cell(col_artist), cell(col_album_artist)) if a]
+        tracks.append({"name": name, "artists": artists,
+                       "album": cell(col_album), "dur": dur})
+    if not tracks:
+        die(f"{path}: found the columns but no rows with a track title")
+    return [(os.path.splitext(os.path.basename(path))[0], tracks)]
+
+
 PARSERS = {".txt": parse_itunes_txt, ".xml": parse_itunes_xml,
-           ".m3u": parse_m3u, ".m3u8": parse_m3u}
+           ".m3u": parse_m3u, ".m3u8": parse_m3u,
+           ".csv": parse_csv}
 
 
 def collect_inputs(paths):

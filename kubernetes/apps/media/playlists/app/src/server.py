@@ -29,6 +29,8 @@ import unicodedata
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs, urlparse
 
+import filesync
+
 import jobs
 import library
 import subsonic
@@ -166,7 +168,7 @@ def sniff_playlist(data):
             continue
         if "\x00" in text:
             continue
-        stripped = text.lstrip("﻿ \t\r\n")
+        stripped = text.lstrip("\ufeff \t\r\n")
         first = stripped.split("\n", 1)[0]
         low = stripped[:200].lower()
         if "\t" in first:
@@ -175,7 +177,24 @@ def sniff_playlist(data):
             return True
         if stripped.startswith("#EXTM3U") or "#EXTINF" in stripped[:400]:
             return True
+        if _looks_like_csv(first):
+            return True
     return False
+
+
+def _looks_like_csv(header_line):
+    """A delimiter alone is not enough — require a column we can actually use.
+
+    Otherwise any prose containing a comma would pass the sniff and then fail
+    deeper in, with a worse message. The candidate names come from filesync so the
+    sniff and the parser can never disagree about what is supported.
+    """
+    if not any(d in header_line for d in (",", ";", "\t")):
+        return False
+    cells = [c.strip().strip('"').casefold()
+             for c in re.split(r"[,;\t]", header_line)]
+    known = set(filesync._CSV_TITLE) | set(filesync._CSV_ARTIST)
+    return any(c == k or (c and k in c) for c in cells for k in known)
 
 
 # ---------- handler ----------
@@ -393,7 +412,14 @@ class Handler(BaseHTTPRequestHandler):
             return
         session = self._session()
         if not session:
-            self._redirect("/")
+            # Bouncing straight to the login page is what a dead session used to
+            # do, and it looked exactly like the app swallowing the upload: he
+            # picked a file, app.js submitted it, and he landed on a login screen
+            # with no explanation and his file gone. Say what happened instead.
+            token, set_cookie = self._pre_csrf()
+            self._send(200, ui.session_gone(csrf=token),
+                       headers=({"Set-Cookie": set_cookie} if set_cookie else None),
+                       extra_log={"action": "session-expired"})
             return
         if path == "/logga-ut":
             body = parse_qs((self._read_body(MAX_FORM) or b"").decode("utf-8", "replace"))

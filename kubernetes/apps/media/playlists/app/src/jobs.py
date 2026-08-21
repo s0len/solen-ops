@@ -192,6 +192,7 @@ _PARSERS = {
     ".xml": "parse_itunes_xml",
     ".m3u": "parse_m3u",
     ".m3u8": "parse_m3u",
+    ".csv": "parse_csv",      # exportify.net and other CSV exporters
 }
 
 
@@ -207,8 +208,8 @@ def parse_upload(data, filename):
     fn_name = _PARSERS.get(ext)
     if not fn_name:
         raise ParseProblem(
-            "Den filtypen känner jag inte igen. Exportera spellistan som "
-            "„Vanlig text”, eller välj en .xml- eller .m3u-fil.")
+            "Den filtypen känner jag inte igen. Jag kan ta emot .txt och .xml "
+            "från Musik, .csv från exportify.net, och .m3u.")
     parser = getattr(filesync, fn_name)
 
     fd, path = tempfile.mkstemp(prefix="upload-", suffix=ext, dir=os.environ.get("TMPDIR", "/tmp"))

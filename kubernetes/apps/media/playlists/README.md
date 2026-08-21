@@ -109,7 +109,8 @@ Consequences to know:
    behind the shared gateway IP). Derives `(salt, token)`, burns the password, and
    **kicks the library crawl immediately** — he is still hunting for the file, so he
    waits for nothing later.
-3. `GET /ny` — pick a file, or paste `Artist - Låt` lines.
+3. `GET /ny` — pick a file, or paste `Artist - Låt` lines. Accepted: iTunes/Music
+   `.txt` and `.xml`, **`.csv` from exportify.net** (Spotify), and `.m3u`/`.m3u8`.
 4. `POST /ladda-upp` — size-capped read, content sniff, parse, then a 303. No HTTP
    request is ever held open for the real work, which is what makes Cloudflare's
    ~100 s origin timeout and Envoy's 60 s idle timeout structurally unreachable.
@@ -196,6 +197,22 @@ directly on the LAN — and adding hand-written Lua to a production route that c
 be tested before it is pushed was the riskiest part of this change for the least
 benefit. Cloudflare's 100 MB is the only other cap in the path. Add it later if a cap
 above 8 MiB ever proves necessary.
+
+## exportify.net CSV
+
+Spotify playlists arrive as CSV from exportify, and its headers are **localised** —
+a Swedish export writes `Låtens namn` / `Artistens namn` / `Låtlängd (ms)` where an
+English one writes `Track Name` / `Artist Name(s)` / `Track Duration (ms)`. So
+`filesync.parse_csv` matches columns **by name, never by position**, tries exact
+matches before prefix matches, and claims each column so the two-pass fallback
+cannot hand `Artistens namn` to the title field. The delimiter is sniffed because
+Excel in a Swedish locale writes `;` and still calls it CSV. Duration is taken as
+milliseconds when the header says `ms` and as seconds otherwise — iTunes columns are
+seconds, exportify's are milliseconds, and guessing from the magnitude would break on
+long tracks.
+
+The sniffer requires a delimiter **and** a recognisable column name, so prose with a
+comma in it is still refused rather than failing deeper in with a worse message.
 
 ## Match rate is about the library, not the app
 
