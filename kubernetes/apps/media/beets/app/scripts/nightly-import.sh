@@ -63,9 +63,12 @@ trap 'rm -f "$TIMINGS"' EXIT
 : >"$VERBOSE_LOG"
 
 before_tracks=$(tracks)
-# import.log is append-only and already holds thousands of entries from
-# unrelated jobs, so anchor on its length to read back only this run.
-before_lines=$(wc -l <"$IMPORT_LOG" 2>/dev/null || printf '0')
+# Create it without truncating: beets appends its verbs here, and the report
+# reads back only the lines added after this point. bash applies the input
+# redirection before stderr is silenced, so a missing file would print an error
+# no matter how the redirections are ordered.
+: >>"$IMPORT_LOG"
+before_lines=$(wc -l <"$IMPORT_LOG")
 log "bibliotek före: ${before_tracks:-?} spår"
 
 total=0
