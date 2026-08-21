@@ -272,6 +272,11 @@ def main():
                 canon = canonical.get(key_artist, prim) if key_artist else prim
                 if canon != prim:
                     renamed += 1
+                elif key_artist:
+                    # An artist new to the library still has to be spelled one way:
+                    # the packs themselves carry both "SQUASH" and "Squash", and
+                    # without this the first spelling does not bind the rest.
+                    canonical[key_artist] = canon
 
                 album = tags["album"] or tags["title"]
                 if (norm(canon), norm(album)) in lib_albums:
@@ -280,19 +285,28 @@ def main():
 
                 dest_dir = os.path.join(args.staging, safe(canon), safe(album))
                 dest = os.path.join(dest_dir, n)
-                staged += 1
-                per_pack[os.path.basename(pack)] += 1
 
-                manifest.append((path, dest, canon, album, tags["title"], f"{tags['length']:.1f}"))
                 if not args.apply:
+                    staged += 1
+                    per_pack[os.path.basename(pack)] += 1
+                    manifest.append(
+                        (path, dest, canon, album, tags["title"], f"{tags['length']:.1f}")
+                    )
                     continue
+
                 os.makedirs(dest_dir, exist_ok=True)
                 if os.path.exists(dest):
-                    # copy2 would overwrite silently; a leftover staging tree from
-                    # an interrupted run must not be clobbered.
-                    print(f"  HOPPAR ÖVER befintlig staging-fil: {dest}")
+                    # Same song, same filename, from another country folder, with
+                    # durations too far apart for the intra-pack window to catch.
+                    # copy2 would overwrite it silently.
+                    in_pack += 1
                     continue
                 shutil.copy2(path, dest)
+                staged += 1
+                per_pack[os.path.basename(pack)] += 1
+                manifest.append(
+                    (path, dest, canon, album, tags["title"], f"{tags['length']:.1f}")
+                )
                 # Write the corrected album artist onto the COPY only.
                 try:
                     ez = mutagen.File(dest, easy=True)
