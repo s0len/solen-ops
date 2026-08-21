@@ -1,0 +1,53 @@
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/monitoring.coreos.com/prometheusrule_v1.json
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: storage-readonly-rules
+spec:
+  groups:
+    - name: storage-readonly.rules
+      rules:
+        # Talos mounts /.extra, /etc/extensions.yaml and /usr/lib/firmware
+        # read-only by design (fstype "rootfs", three per node); excluding them is
+        # load-bearing, otherwise this alert can never clear.
+        # Deduplicated per device because every CSI volume is mounted twice — once
+        # at the plugin's globalmount and once into the pod — and the Talos
+        # ephemeral partition appears at over a hundred mountpoints.
+        - alert: NodeFilesystemRemountedReadOnly
+          expr: |
+            count by (kubernetes_node, job) (
+              max by (kubernetes_node, job, device) (
+                node_filesystem_readonly{job="node-exporter", fstype!="rootfs"} == 1
+              )
+            ) > 0
+          annotations:
+            summary: >-
+              {{ $value }} volume(s) on {{ $labels.kubernetes_node }} are mounted
+              read-only — ext4 errors=remount-ro has tripped. Every pod holding a
+              volume on this node is silently unable to write and may still report
+              Ready, and Ceph will keep reporting HEALTH_OK. Rebooting the node is
+              normally the only recovery; never force-delete the pods.
+          for: 5m
+          labels:
+            severity: critical
+
+        # The right-hand side of the join is deduplicated because two
+        # kube-state-metrics replicas overlap during a rollover, and a duplicate
+        # match group makes the rule error out — yielding no data — instead of firing.
+        # One alert is emitted per affected volume and Alertmanager truncates the
+        # Pushover message at 1024 runes, so this summary stays at bare identity:
+        # anything repeated here costs another volume its place in the notification.
+        - alert: PersistentVolumeRemountedReadOnly
+          expr: |
+            max by (kubernetes_node, claim_namespace, name, device, job) (
+              label_replace(
+                node_filesystem_readonly{job="node-exporter", mountpoint=~".+/kubernetes.io~csi/pvc-.+"} == 1,
+                "persistentvolume", "$1", "mountpoint", ".*/(pvc-[^/]+)/mount"
+              )
+              * on (persistentvolume) group_left (claim_namespace, name)
+              max by (persistentvolume, claim_namespace, name) (kube_persistentvolume_claim_ref)
+            )
+          for: 5m
+          labels:
+            severity: critical

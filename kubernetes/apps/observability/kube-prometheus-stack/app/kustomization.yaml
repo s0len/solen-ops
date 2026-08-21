@@ -10,3 +10,4 @@ resources:
   - ./helmrelease.yaml
   - ./helmrepository.yaml
   - ./httproutes.yaml
+  - ./prometheusrule.yaml
