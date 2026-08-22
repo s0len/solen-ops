@@ -1,0 +1,33 @@
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/volsync.backube/kopiamaintenance_v1alpha1.json
+apiVersion: volsync.backube/v1alpha1
+kind: KopiaMaintenance
+metadata:
+  name: r2
+spec:
+  enabled: true
+  suspend: false
+  # 06:00 keeps clear of the 04:00-05:15 offsite herd and the NFS
+  # maintenance at 03:30/15:30. `kubectl get kopiamaintenance` prints a
+  # defaulted SCHEDULE of "0 2 * * *" that is ignored; trigger.schedule
+  # is the honoured field, so do not add spec.schedule to "correct" it.
+  trigger:
+    schedule: "0 6 * * *"
+  repository:
+    repository: volsync-maintenance-r2-secret
+  podSecurityContext:
+    runAsUser: 568
+    runAsGroup: 568
+    fsGroup: 568
+    runAsNonRoot: true
+  # The first run has to compact ~7800 epoch-0 index blobs over a remote
+  # S3 endpoint, which does not fit the 10800s default.
+  activeDeadlineSeconds: 21600
+  resources:
+    requests:
+      cpu: 100m
+      memory: 1Gi
+    limits:
+      memory: 12Gi
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 1
