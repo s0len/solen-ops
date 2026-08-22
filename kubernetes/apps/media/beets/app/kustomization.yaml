@@ -13,6 +13,7 @@ configMapGenerator:
     files:
       - ./config/import-overlay.yaml
       - nightly-import.sh=./scripts/nightly-import.sh
+      - chartpack-import.py=./scripts/chartpack-import.py
 generatorOptions:
   disableNameSuffixHash: true
   annotations:

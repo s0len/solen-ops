@@ -4,6 +4,11 @@ set -uo pipefail
 SRC=${BEETS_IMPORT_SRC:-/data/torrents/music}
 OVERLAY=${BEETS_IMPORT_OVERLAY:-/config/import-overlay.yaml}
 BEET=/lsiopy/bin/beet
+PYTHON=/lsiopy/bin/python3
+CHARTPACK=${BEETS_CHARTPACK:-/scripts/chartpack-import.py}
+CHARTPACK_STATE=${BEETS_CHARTPACK_STATE:-/config/chartpack-state.json}
+CHARTPACK_LOG=/config/chartpack-latest.log
+STAGING=${BEETS_CHARTPACK_STAGING:-/data/staging/chartpack-import}
 VERBOSE_LOG=/config/nightly-import.log
 IMPORT_LOG=/config/nightly-verbs.log
 UNMATCHED=/config/unmatched-latest.txt
@@ -71,10 +76,63 @@ before_tracks=$(tracks)
 before_lines=$(wc -l <"$IMPORT_LOG")
 log "bibliotek före: ${before_tracks:-?} spår"
 
+# Chart packs first, because this step is what refreshes the classification the
+# album loop below reads. A pack is not an album: 50-90 tracks from as many
+# releases, so album matching cannot succeed and used to fail expensively -- one
+# Apple Music pack was 36 of the 109 minutes of the 2026-08-20 run.
+chart_new=0
+chart_upgraded=0
+chart_packs=0
+if [[ -x $CHARTPACK ]] || [[ -f $CHARTPACK ]]; then
+    log "chartpaket: letar och stagear"
+    # Straight to a file, unbuffered. The first sweep of this tree takes the best
+    # part of an hour, and holding the output in a variable means a run killed by
+    # the job deadline leaves nothing behind to explain how far it got.
+    CHARTPACK_DATE=$(date '+%F') "$PYTHON" -u "$CHARTPACK" \
+        --src "$SRC" --staging "$STAGING" --state "$CHARTPACK_STATE" --apply \
+        >"$CHARTPACK_LOG" 2>&1 || log "chartpaket: skriptet avslutade med $?"
+    cat "$CHARTPACK_LOG" >>"$VERBOSE_LOG"
+    chart_new=$(awk -F: '/^att importera:/{gsub(/ /,"",$2); print $2}' "$CHARTPACK_LOG")
+    chart_upgraded=$(awk -F: '/^uppgraderade:/{split($2,a," "); print a[1]}' "$CHARTPACK_LOG")
+    chart_packs=$(awk '/^paket: /{print $2}' "$CHARTPACK_LOG")
+
+    # The staged files are copies with corrected tags, so this import moves them
+    # rather than copying again -- staging drains itself and nothing is left to
+    # clean up. -A because the tags are already right and MusicBrainz cannot match
+    # loose chart tracks anyway: a 16-track folder cost 397s with autotagging on
+    # and produced one wrong-but-confident match, versus 0.7s with it off.
+    if [[ -d $STAGING ]] && find "$STAGING" -type f -print -quit 2>/dev/null | grep -q .; then
+        log "chartpaket: importerar staging"
+        "$BEET" -c "$OVERLAY" import -q -A -m "$STAGING" >>"$VERBOSE_LOG" 2>&1 ||
+            log "FEL chartpaket-import avslutade med $?"
+        find "$STAGING" -type d -empty -delete 2>/dev/null || true
+    fi
+fi
+
+# Directories the classifier called chart packs must not also go through the
+# album loop: it cannot match them, and it would put every one of them into the
+# unmatched queue every single night.
+declare -A IS_CHART=()
+if [[ -f $CHARTPACK_STATE ]]; then
+    while IFS= read -r name; do
+        [[ -n $name ]] && IS_CHART["$name"]=1
+    done < <("$PYTHON" -c '
+import json, sys
+try:
+    state = json.load(open(sys.argv[1]))
+except Exception:
+    sys.exit(0)
+for name, rec in state.items():
+    if rec.get("kind") == "chartpack":
+        print(name)
+' "$CHARTPACK_STATE" 2>/dev/null)
+fi
+
 total=0
 processed=0
 settling=0
 failed=0
+charts=0
 
 # One beet process per top-level directory. Importing the whole tree in a single
 # process has OOM-killed this pod twice: beets keeps every album's MusicBrainz
@@ -84,6 +142,11 @@ for dir in "$SRC"/*/; do
     total=$((total + 1))
     name=${dir%/}
     name=${name##*/}
+
+    if [[ -n ${IS_CHART[$name]:-} ]]; then
+        charts=$((charts + 1))
+        continue
+    fi
 
     if [[ -n $(find "$dir" -maxdepth 0 -mmin "-$QUIET_MINUTES" 2>/dev/null) ]]; then
         log "väntar   $name (ändrad senaste $QUIET_MINUTES min)"
@@ -119,7 +182,10 @@ tail -n "+$((before_lines + 1))" "$IMPORT_LOG" 2>/dev/null |
 unmatched=$(wc -l <"$UNMATCHED")
 
 say "$added nya spår, biblioteket har nu ${after_tracks:-?}"
-say "$total mappar: $processed behandlade, $settling väntar, $failed fel"
+say "$total mappar: $processed behandlade, $charts chartpaket, $settling väntar, $failed fel"
+if [[ ${chart_packs:-0} -gt 0 ]]; then
+    say "chartpaket: ${chart_packs:-0} behandlade, ${chart_new:-0} låtar, ${chart_upgraded:-0} uppgraderade"
+fi
 
 # The slowest directories are the only line a human can act on: one of them in
 # the overlay's ignore list, or handed to chartpack-import.py, is the whole fix.

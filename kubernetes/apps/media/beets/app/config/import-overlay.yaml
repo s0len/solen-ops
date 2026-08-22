@@ -9,6 +9,10 @@ import:
   # inodes and written tags, so the library survives qbittorrent cleanup. Moving
   # or symlinking the payload instead would break seeding, so pin those off here
   # regardless of what the base config becomes.
+  #
+  # The staging import in nightly-import.sh passes -m to override this. That is
+  # safe and deliberate: those files are copies the chart-pack script already made,
+  # not torrent payload, so moving them drains staging instead of doubling it.
   move: no
   link: no
 
@@ -21,6 +25,11 @@ import:
 # folder holds ~50-90 tracks from as many different releases, so album matching
 # always fails, and it failed expensively -- one Apple Music pack was 36 of the
 # 109 minutes of the 2026-08-20 run.
+#
+# Keeping them out of this import is nightly-import.sh's job now: it reads the
+# classifier's verdict from chartpack-state.json and skips those directories. The
+# two name globs below are the older, weaker guard and stay only as a backstop for
+# a pack the classifier has not seen yet.
 #
 # beets globs this on the BASENAME only (util.sorted_walk), it does apply to
 # directories, and setting it REPLACES the built-in list rather than extending

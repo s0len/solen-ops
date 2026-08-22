@@ -140,6 +140,9 @@ spec:
           - path: /scripts/nightly-import.sh
             subPath: nightly-import.sh
             readOnly: true
+          - path: /scripts/chartpack-import.py
+            subPath: chartpack-import.py
+            readOnly: true
 
       data:
         type: nfs
