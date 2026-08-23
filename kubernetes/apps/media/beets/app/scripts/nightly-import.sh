@@ -83,18 +83,32 @@ log "bibliotek före: ${before_tracks:-?} spår"
 chart_new=0
 chart_upgraded=0
 chart_packs=0
+chart_failed=""
 if [[ -x $CHARTPACK ]] || [[ -f $CHARTPACK ]]; then
     log "chartpaket: letar och stagear"
-    # Straight to a file, unbuffered. The first sweep of this tree takes the best
-    # part of an hour, and holding the output in a variable means a run killed by
-    # the job deadline leaves nothing behind to explain how far it got.
-    CHARTPACK_DATE=$(date '+%F') "$PYTHON" -u "$CHARTPACK" \
-        --src "$SRC" --staging "$STAGING" --state "$CHARTPACK_STATE" --apply \
-        >"$CHARTPACK_LOG" 2>&1 || log "chartpaket: skriptet avslutade med $?"
-    cat "$CHARTPACK_LOG" >>"$VERBOSE_LOG"
-    chart_new=$(awk -F: '/^att importera:/{gsub(/ /,"",$2); print $2}' "$CHARTPACK_LOG")
-    chart_upgraded=$(awk -F: '/^uppgraderade:/{split($2,a," "); print a[1]}' "$CHARTPACK_LOG")
-    chart_packs=$(awk '/^paket: /{print $2}' "$CHARTPACK_LOG")
+    # Claim the log BEFORE running, and abandon the step if that fails. Output goes
+    # straight to a file, unbuffered, because the first sweep of this tree takes the
+    # best part of an hour and holding it in a variable means a run killed by the job
+    # deadline leaves nothing behind to explain how far it got.
+    #
+    # The counters are parsed only when the run actually succeeded. On 2026-08-23 a
+    # root-owned log left behind by a manual run made the redirect fail, the step
+    # never ran -- and the counters were then read out of the PREVIOUS night's log, so
+    # the report was about to claim 40 packs and 11566 songs this run never touched.
+    if ! : >"$CHARTPACK_LOG" 2>/dev/null; then
+        chart_failed="kan inte skriva $CHARTPACK_LOG (ägarskap?)"
+        log "FEL chartpaket: $chart_failed"
+    elif CHARTPACK_DATE=$(date '+%F') "$PYTHON" -u "$CHARTPACK" \
+            --src "$SRC" --staging "$STAGING" --state "$CHARTPACK_STATE" --apply \
+            >>"$CHARTPACK_LOG" 2>&1; then
+        chart_new=$(awk -F: '/^att importera:/{gsub(/ /,"",$2); print $2}' "$CHARTPACK_LOG")
+        chart_upgraded=$(awk -F: '/^uppgraderade:/{split($2,a," "); print a[1]}' "$CHARTPACK_LOG")
+        chart_packs=$(awk '/^paket: /{print $2}' "$CHARTPACK_LOG")
+    else
+        chart_failed="skriptet avslutade med $?"
+        log "FEL chartpaket: $chart_failed"
+    fi
+    [[ -s $CHARTPACK_LOG ]] && cat "$CHARTPACK_LOG" >>"$VERBOSE_LOG"
 
     # The staged files are copies with corrected tags, so this import moves them
     # rather than copying again -- staging drains itself and nothing is left to
@@ -183,7 +197,11 @@ unmatched=$(wc -l <"$UNMATCHED")
 
 say "$added nya spår, biblioteket har nu ${after_tracks:-?}"
 say "$total mappar: $processed behandlade, $charts chartpaket, $settling väntar, $failed fel"
-if [[ ${chart_packs:-0} -gt 0 ]]; then
+if [[ -n $chart_failed ]]; then
+    # Say it in the notification, not only in the log. A silent chart-pack failure
+    # looks exactly like a quiet night, and packs then pile up unnoticed.
+    say "CHARTPAKET HOPPADES ÖVER: $chart_failed"
+elif [[ ${chart_packs:-0} -gt 0 ]]; then
     say "chartpaket: ${chart_packs:-0} behandlade, ${chart_new:-0} låtar, ${chart_upgraded:-0} uppgraderade"
 fi
 
@@ -209,6 +227,11 @@ log "detaljerad utdata: $VERBOSE_LOG, omatchade i $UNMATCHED"
 
 if [[ $failed -gt 0 ]]; then
     notify "beets: $failed mappar failade" 1 "$SUMMARY"
+    exit 1
+fi
+
+if [[ -n $chart_failed ]]; then
+    notify "beets: chartpaketsteget failade" 1 "$SUMMARY"
     exit 1
 fi
 
