@@ -53,9 +53,15 @@ spec:
           reloader.stakater.com/auto: "true"
 
         cronjob:
-          # Early enough that the Pushover summary is waiting at breakfast, late
-          # enough to clear the 03:45 volsync snapshot of this same claim.
-          schedule: "0 6 * * *"
+          # 06:00 is early enough that the Pushover summary is waiting at breakfast
+          # and late enough to clear the 03:45 volsync snapshot of this same claim.
+          # 13:00 picks up whatever arrived during the morning, so a pack that lands
+          # after breakfast is in the library the same day rather than the next.
+          #
+          # Forbid below is what makes two schedules safe: both steps write
+          # library.db, and a long 06:00 run simply causes the 13:00 one to be
+          # skipped rather than overlap it.
+          schedule: "0 6,13 * * *"
           timeZone: ${TIMEZONE}
           concurrencyPolicy: Forbid
           successfulJobsHistory: 1
