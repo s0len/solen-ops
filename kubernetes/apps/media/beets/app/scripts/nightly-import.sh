@@ -8,6 +8,7 @@ PYTHON=/lsiopy/bin/python3
 CHARTPACK=${BEETS_CHARTPACK:-/scripts/chartpack-import.py}
 CHARTPACK_STATE=${BEETS_CHARTPACK_STATE:-/config/chartpack-state.json}
 CHARTPACK_LOG=/config/chartpack-latest.log
+LOCK=/config/nightly-import.lock
 STAGING=${BEETS_CHARTPACK_STAGING:-/data/staging/chartpack-import}
 VERBOSE_LOG=/config/nightly-import.log
 IMPORT_LOG=/config/nightly-verbs.log
@@ -55,6 +56,12 @@ notify() {
 }
 
 log "nightly import startad"
+
+exec 9>"$LOCK" || true
+if ! flock -n 9; then
+    log "en annan körning håller $LOCK - avslutar utan att göra något"
+    exit 0
+fi
 
 if [[ ! -d $SRC ]]; then
     log "AVBRYTER: $SRC finns inte"
