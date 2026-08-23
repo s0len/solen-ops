@@ -70,6 +70,7 @@ if ! flock -n 9; then
 fi
 
 on_term() {
+    [[ -n ${child_pid:-} ]] && kill "$child_pid" 2>/dev/null
     log "avbruten av SIGTERM efter $((SECONDS / 60)) min"
     notify "beets: importen avbröts" 1 \
         "${SUMMARY}Avbruten efter $((SECONDS / 60)) min, troligen jobbets activeDeadlineSeconds."
@@ -119,15 +120,20 @@ if [[ -x $CHARTPACK ]] || [[ -f $CHARTPACK ]]; then
     if ! : >"$CHARTPACK_LOG" 2>/dev/null; then
         chart_failed="kan inte skriva $CHARTPACK_LOG (ägarskap?)"
         log "FEL chartpaket: $chart_failed"
-    elif CHARTPACK_DATE=$(date '+%F') "$PYTHON" -u "$CHARTPACK" \
-            --src "$SRC" --staging "$STAGING" --state "$CHARTPACK_STATE" --apply \
-            >>"$CHARTPACK_LOG" 2>&1; then
-        chart_new=$(awk -F: '/^att importera:/{gsub(/ /,"",$2); print $2}' "$CHARTPACK_LOG")
-        chart_upgraded=$(awk -F: '/^uppgraderade:/{split($2,a," "); print a[1]}' "$CHARTPACK_LOG")
-        chart_packs=$(awk '/^paket: /{print $2}' "$CHARTPACK_LOG")
     else
-        chart_failed="skriptet avslutade med $?"
-        log "FEL chartpaket: $chart_failed"
+        CHARTPACK_DATE=$(date '+%F') "$PYTHON" -u "$CHARTPACK" \
+            --src "$SRC" --staging "$STAGING" --state "$CHARTPACK_STATE" --apply \
+            >>"$CHARTPACK_LOG" 2>&1 &
+        child_pid=$!
+        if wait "$child_pid"; then
+            chart_new=$(awk -F: '/^att importera:/{gsub(/ /,"",$2); print $2}' "$CHARTPACK_LOG")
+            chart_upgraded=$(awk -F: '/^uppgraderade:/{split($2,a," "); print a[1]}' "$CHARTPACK_LOG")
+            chart_packs=$(awk '/^paket: /{print $2}' "$CHARTPACK_LOG")
+        else
+            chart_failed="skriptet avslutade med $?"
+            log "FEL chartpaket: $chart_failed"
+        fi
+        child_pid=""
     fi
     [[ -s $CHARTPACK_LOG ]] && cat "$CHARTPACK_LOG" >>"$VERBOSE_LOG"
 
@@ -138,8 +144,10 @@ if [[ -x $CHARTPACK ]] || [[ -f $CHARTPACK ]]; then
     # and produced one wrong-but-confident match, versus 0.7s with it off.
     if [[ -d $STAGING ]] && find "$STAGING" -type f -print -quit 2>/dev/null | grep -q .; then
         log "chartpaket: importerar staging"
-        "$BEET" -c "$OVERLAY" import -q -A -m "$STAGING" >>"$VERBOSE_LOG" 2>&1 ||
-            log "FEL chartpaket-import avslutade med $?"
+        "$BEET" -c "$OVERLAY" import -q -A -m "$STAGING" >>"$VERBOSE_LOG" 2>&1 &
+        child_pid=$!
+        wait "$child_pid" || log "FEL chartpaket-import avslutade med $?"
+        child_pid=""
         find "$STAGING" -type d -empty -delete 2>/dev/null || true
     fi
 fi
@@ -182,12 +190,15 @@ LOOSE_NAMES=()
 
 import_one() {
     local target=$1 label=$2
-    if "$BEET" -c "$OVERLAY" import -q "${retry_flag[@]}" "$target" >>"$VERBOSE_LOG" 2>&1; then
+    "$BEET" -c "$OVERLAY" import -q "${retry_flag[@]}" "$target" >>"$VERBOSE_LOG" 2>&1 &
+    child_pid=$!
+    if wait "$child_pid"; then
         processed=$((processed + 1))
     else
         log "FEL      $label (beet avslutade med $?)"
         failed=$((failed + 1))
     fi
+    child_pid=""
 }
 
 # One beet process per top-level directory. Importing the whole tree in a single
