@@ -36,12 +36,13 @@ AUDIO = (".mp3", ".flac", ".m4a", ".ogg", ".opus")
 LIBRARY = "/config/library.db"
 MUSIC_ROOT = "/data/media/musik"
 
-# Bump whenever is_chart_pack changes its mind about anything. Cached verdicts
+# Bump whenever classify() changes its mind about anything. Cached verdicts
 # are keyed on the directory's mtime, and a torrent directory never changes once
 # it seeds, so without this a corrected classifier would never revisit a verdict
 # it got wrong. Version 1 read the first files in os.walk order and called The
-# Beatles' discography a chart pack.
-CLASSIFIER_VERSION = 2
+# Beatles' discography a chart pack. Version 2 had no notion of loose tracks and
+# called DJ pool packs albums.
+CLASSIFIER_VERSION = 3
 
 # A version suffix survives in the strict key, so "Style" and "Style (Taylor's
 # Version)" stay distinct. The loose key drops it to catch credit shuffles
@@ -375,8 +376,10 @@ def find_existing(strict, loose, key_artist, title, length):
     return hits
 
 
-def is_chart_pack(path, sample=12):
-    """A chart pack keeps many releases in ONE directory; a discography keeps one
+def classify(path, sample=12):
+    """Decide whether a torrent directory is an album, a chart pack, or loose tracks.
+
+    A chart pack keeps many releases in ONE directory; a discography keeps one
     release per directory.
 
     Counting distinct album tags across the whole tree cannot tell those apart --
@@ -396,11 +399,19 @@ def is_chart_pack(path, sample=12):
     directories. BTS's discography has fifteen singles against two hundred album
     tracks; the packs have nothing but chart folders.
 
+    A directory whose files carry no album tag at ALL is a third thing: loose
+    tracks. Counting distinct album tags cannot see it, because zero tags yields
+    zero distinct tags and reads exactly like a single-album folder. DJ pool packs
+    are shaped this way -- artist and title on every file, album on none -- and
+    calling them albums fed 9,684 files through the album importer one folder at a
+    time.
+
     Reads stop as soon as the remaining files cannot reach the threshold, which
-    is what keeps the cost near seven tag reads for an ordinary album folder
-    rather than the full sample; this walks the whole tree over NFS.
+    keeps the cost near seven tag reads for an ordinary album folder rather than
+    the full sample; this walks the whole tree over NFS. The early exit needs at
+    least one album tag first, or an untagged folder would bail before proving it.
     """
-    chart_files = album_files = 0
+    chart_files = album_files = loose_files = 0
     for root, _, names in os.walk(path):
         audio = [n for n in sorted(names) if n.lower().endswith(AUDIO)]
         if not audio:
@@ -409,19 +420,24 @@ def is_chart_pack(path, sample=12):
             # Too few to judge, and a chart folder is never this small.
             album_files += len(audio)
             continue
-        albums, checked = set(), 0
+        albums, tagged, checked = set(), 0, 0
         for n in audio[:sample]:
             tags = read_tags(os.path.join(root, n))
             checked += 1
             if tags and tags["album"]:
                 albums.add(norm(tags["album"]))
-            if len(albums) + (sample - checked) <= sample // 2:
+                tagged += 1
+            if tagged and len(albums) + (sample - checked) <= sample // 2:
                 break
-        if len(albums) > sample // 2:
+        if not tagged:
+            loose_files += len(audio)
+        elif len(albums) > sample // 2:
             chart_files += len(audio)
         else:
             album_files += len(audio)
-    return chart_files > album_files
+    if loose_files > chart_files and loose_files > album_files:
+        return "loose"
+    return "chartpack" if chart_files > album_files else "album"
 
 
 def main():
@@ -503,11 +519,7 @@ def main():
                 continue
             rec = state.get(d)
             if not rec or rec.get("mtime") != mtime or rec.get("v") != CLASSIFIER_VERSION:
-                rec = {
-                    "mtime": mtime,
-                    "v": CLASSIFIER_VERSION,
-                    "kind": "chartpack" if is_chart_pack(full) else "album",
-                }
+                rec = {"mtime": mtime, "v": CLASSIFIER_VERSION, "kind": classify(full)}
                 state[d] = rec
                 stale += 1
                 # Checkpoint as we go. The first sweep of this tree took over

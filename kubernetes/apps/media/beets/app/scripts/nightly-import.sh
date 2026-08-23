@@ -63,6 +63,14 @@ if ! flock -n 9; then
     exit 0
 fi
 
+on_term() {
+    log "avbruten av SIGTERM efter $((SECONDS / 60)) min"
+    notify "beets: importen avbröts" 1 \
+        "${SUMMARY}Avbruten efter $((SECONDS / 60)) min, troligen jobbets activeDeadlineSeconds."
+    exit 143
+}
+trap on_term TERM
+
 if [[ ! -d $SRC ]]; then
     log "AVBRYTER: $SRC finns inte"
     notify "beets: import misslyckades" 1 "Källkatalogen $SRC finns inte."
@@ -134,9 +142,14 @@ fi
 # album loop: it cannot match them, and it would put every one of them into the
 # unmatched queue every single night.
 declare -A IS_CHART=()
+declare -A IS_LOOSE=()
 if [[ -f $CHARTPACK_STATE ]]; then
-    while IFS= read -r name; do
-        [[ -n $name ]] && IS_CHART["$name"]=1
+    while IFS=$'\t' read -r kind name; do
+        [[ -z $name ]] && continue
+        case $kind in
+            chartpack) IS_CHART["$name"]=1 ;;
+            loose) IS_LOOSE["$name"]=1 ;;
+        esac
     done < <("$PYTHON" -c '
 import json, sys
 try:
@@ -144,8 +157,9 @@ try:
 except Exception:
     sys.exit(0)
 for name, rec in state.items():
-    if rec.get("kind") == "chartpack":
-        print(name)
+    kind = rec.get("kind")
+    if kind in ("chartpack", "loose"):
+        print(f"{kind}\t{name}")
 ' "$CHARTPACK_STATE" 2>/dev/null)
 fi
 
@@ -154,6 +168,7 @@ processed=0
 settling=0
 failed=0
 charts=0
+loose=0
 
 # One beet process per top-level directory. Importing the whole tree in a single
 # process has OOM-killed this pod twice: beets keeps every album's MusicBrainz
@@ -166,6 +181,11 @@ for dir in "$SRC"/*/; do
 
     if [[ -n ${IS_CHART[$name]:-} ]]; then
         charts=$((charts + 1))
+        continue
+    fi
+
+    if [[ -n ${IS_LOOSE[$name]:-} ]]; then
+        loose=$((loose + 1))
         continue
     fi
 
@@ -203,7 +223,7 @@ tail -n "+$((before_lines + 1))" "$IMPORT_LOG" 2>/dev/null |
 unmatched=$(wc -l <"$UNMATCHED")
 
 say "$added nya spår, biblioteket har nu ${after_tracks:-?}"
-say "$total mappar: $processed behandlade, $charts chartpaket, $settling väntar, $failed fel"
+say "$total mappar: $processed behandlade, $charts chartpaket, $loose lösa spår, $settling väntar, $failed fel"
 if [[ -n $chart_failed ]]; then
     # Say it in the notification, not only in the log. A silent chart-pack failure
     # looks exactly like a quiet night, and packs then pile up unnoticed.
