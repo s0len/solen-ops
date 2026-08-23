@@ -13,6 +13,7 @@ STAGING=${BEETS_CHARTPACK_STAGING:-/data/staging/chartpack-import}
 VERBOSE_LOG=/config/nightly-import.log
 IMPORT_LOG=/config/nightly-verbs.log
 UNMATCHED=/config/unmatched-latest.txt
+RUN_LOG=/config/nightly-run.log
 
 # A torrent arrives in /data/torrents/music by being moved out of
 # /data/torrents/temp. The move is atomic per file, not per directory, so give
@@ -30,7 +31,12 @@ RETRY_DAYS=14
 
 SUMMARY=""
 
-log() { printf '%s  %s\n' "$(date '+%F %T')" "$*"; }
+log() {
+    local line
+    line="$(date '+%F %T')  $*"
+    printf '%s\n' "$line"
+    printf '%s\n' "$line" >>"$RUN_LOG" 2>/dev/null || true
+}
 say() {
     log "$*"
     SUMMARY="${SUMMARY}$*"$'\n'
