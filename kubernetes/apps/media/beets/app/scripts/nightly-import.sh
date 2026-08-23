@@ -143,12 +143,14 @@ fi
 # unmatched queue every single night.
 declare -A IS_CHART=()
 declare -A IS_LOOSE=()
+declare -A IS_COLLECTION=()
 if [[ -f $CHARTPACK_STATE ]]; then
     while IFS=$'\t' read -r kind name; do
         [[ -z $name ]] && continue
         case $kind in
             chartpack) IS_CHART["$name"]=1 ;;
             loose) IS_LOOSE["$name"]=1 ;;
+            collection) IS_COLLECTION["$name"]=1 ;;
         esac
     done < <("$PYTHON" -c '
 import json, sys
@@ -158,7 +160,7 @@ except Exception:
     sys.exit(0)
 for name, rec in state.items():
     kind = rec.get("kind")
-    if kind in ("chartpack", "loose"):
+    if kind in ("chartpack", "loose", "collection"):
         print(f"{kind}\t{name}")
 ' "$CHARTPACK_STATE" 2>/dev/null)
 fi
@@ -169,7 +171,18 @@ settling=0
 failed=0
 charts=0
 loose=0
+collections=0
 LOOSE_NAMES=()
+
+import_one() {
+    local target=$1 label=$2
+    if "$BEET" -c "$OVERLAY" import -q "${retry_flag[@]}" "$target" >>"$VERBOSE_LOG" 2>&1; then
+        processed=$((processed + 1))
+    else
+        log "FEL      $label (beet avslutade med $?)"
+        failed=$((failed + 1))
+    fi
+}
 
 # One beet process per top-level directory. Importing the whole tree in a single
 # process has OOM-killed this pod twice: beets keeps every album's MusicBrainz
@@ -204,12 +217,16 @@ for dir in "$SRC"/*/; do
     fi
 
     started=$SECONDS
-    if "$BEET" -c "$OVERLAY" import -q "${retry_flag[@]}" "$dir" >>"$VERBOSE_LOG" 2>&1; then
-        processed=$((processed + 1))
+    if [[ -n ${IS_COLLECTION[$name]:-} ]]; then
+        collections=$((collections + 1))
+        for sub in "$dir"*/; do
+            [[ -d $sub ]] || continue
+            subname=${sub%/}
+            subname=${subname##*/}
+            import_one "$sub" "$name/$subname"
+        done
     else
-        rc=$?
-        log "FEL      $name (beet avslutade med $rc)"
-        failed=$((failed + 1))
+        import_one "$dir" "$name"
     fi
     printf '%s\t%s\n' "$((SECONDS - started))" "$name" >>"$TIMINGS"
 done
@@ -225,7 +242,7 @@ tail -n "+$((before_lines + 1))" "$IMPORT_LOG" 2>/dev/null |
 unmatched=$(wc -l <"$UNMATCHED")
 
 say "$added nya spår, biblioteket har nu ${after_tracks:-?}"
-say "$total mappar: $processed behandlade, $charts chartpaket, $loose lösa spår, $settling väntar, $failed fel"
+say "$total mappar: $processed importanrop, $collections samlingar, $charts chartpaket, $loose lösa spår, $settling väntar, $failed fel"
 # Naming them matters: a directory of loose tracks can be a DJ tool pack nobody
 # wants or a real artist's loose singles, and the classifier only sees structure.
 # Skipping is the safe default; staying silent about it is not.

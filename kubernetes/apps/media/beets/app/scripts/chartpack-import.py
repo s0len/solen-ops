@@ -41,8 +41,9 @@ MUSIC_ROOT = "/data/media/musik"
 # it seeds, so without this a corrected classifier would never revisit a verdict
 # it got wrong. Version 1 read the first files in os.walk order and called The
 # Beatles' discography a chart pack. Version 2 had no notion of loose tracks and
-# called DJ pool packs albums.
-CLASSIFIER_VERSION = 3
+# called DJ pool packs albums. Version 3 had no notion of collections and would
+# have handed a 2,084-album jazz box to beets in four processes.
+CLASSIFIER_VERSION = 4
 
 # A version suffix survives in the strict key, so "Style" and "Style (Taylor's
 # Version)" stay distinct. The loose key drops it to catch credit shuffles
@@ -376,6 +377,40 @@ def find_existing(strict, loose, key_artist, title, length):
     return hits
 
 
+COLLECTION_MIN = 4
+
+
+def distinct_albums(path, per_dir=2, max_dirs=40):
+    """How many different albums live under here, at any depth.
+
+    This is what separates a collection from a multi-disc album, and it has to be
+    depth-independent: counting subdirectories one level down called The Beatles'
+    discography a plain album, because its records sit two levels in behind an
+    "Original Masters" folder. Album NAMES do not care how the tree is shaped --
+    CD1 and CD2 of one record share one, and a collection has as many as it has
+    records.
+
+    Sampling is capped because this walks over NFS and the answer only needs to
+    clear a threshold of four, not be exact.
+    """
+    names = set()
+    seen_dirs = 0
+    for root, _, files in os.walk(path):
+        audio = [f for f in sorted(files) if f.lower().endswith(AUDIO)]
+        if not audio:
+            continue
+        seen_dirs += 1
+        if seen_dirs > max_dirs:
+            break
+        for f in audio[:per_dir]:
+            tags = read_tags(os.path.join(root, f))
+            if tags and tags["album"]:
+                names.add(norm(tags["album"]))
+        if len(names) >= COLLECTION_MIN * 3:
+            break
+    return names
+
+
 def classify(path, sample=12):
     """Decide whether a torrent directory is an album, a chart pack, or loose tracks.
 
@@ -398,6 +433,11 @@ def classify(path, sample=12):
     and a torrent is a chart pack only when most of its music sits in many-release
     directories. BTS's discography has fifteen singles against two hundred album
     tracks; the packs have nothing but chart folders.
+
+    A directory whose children are themselves many DIFFERENT albums is a fourth
+    thing: a collection. One beets process per top-level directory was the fix for
+    an OOM, but a 2,084-album jazz box in four directories turns that fix back into
+    the bug -- so a collection is imported one child at a time instead.
 
     A directory whose files carry no album tag at ALL is a third thing: loose
     tracks. Counting distinct album tags cannot see it, because zero tags yields
@@ -437,7 +477,11 @@ def classify(path, sample=12):
             album_files += len(audio)
     if loose_files > chart_files and loose_files > album_files:
         return "loose"
-    return "chartpack" if chart_files > album_files else "album"
+    if chart_files > album_files:
+        return "chartpack"
+    if len(distinct_albums(path)) >= COLLECTION_MIN:
+        return "collection"
+    return "album"
 
 
 def main():
