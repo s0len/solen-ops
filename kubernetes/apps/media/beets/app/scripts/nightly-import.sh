@@ -169,6 +169,7 @@ settling=0
 failed=0
 charts=0
 loose=0
+LOOSE_NAMES=()
 
 # One beet process per top-level directory. Importing the whole tree in a single
 # process has OOM-killed this pod twice: beets keeps every album's MusicBrainz
@@ -186,6 +187,7 @@ for dir in "$SRC"/*/; do
 
     if [[ -n ${IS_LOOSE[$name]:-} ]]; then
         loose=$((loose + 1))
+        LOOSE_NAMES+=("$name")
         continue
     fi
 
@@ -224,6 +226,15 @@ unmatched=$(wc -l <"$UNMATCHED")
 
 say "$added nya spår, biblioteket har nu ${after_tracks:-?}"
 say "$total mappar: $processed behandlade, $charts chartpaket, $loose lösa spår, $settling väntar, $failed fel"
+# Naming them matters: a directory of loose tracks can be a DJ tool pack nobody
+# wants or a real artist's loose singles, and the classifier only sees structure.
+# Skipping is the safe default; staying silent about it is not.
+if [[ $loose -gt 0 ]]; then
+    say "$loose mappar med lösa spår hoppades över:"
+    for n in "${LOOSE_NAMES[@]:0:5}"; do say "  $n"; done
+    [[ $loose -gt 5 ]] && say "  ... och $((loose - 5)) till"
+fi
+
 if [[ -n $chart_failed ]]; then
     # Say it in the notification, not only in the log. A silent chart-pack failure
     # looks exactly like a quiet night, and packs then pile up unnoticed.
