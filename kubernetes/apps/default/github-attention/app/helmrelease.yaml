@@ -1,0 +1,88 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s-labs/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: &app github-attention
+spec:
+  interval: 30m
+  chartRef:
+    kind: OCIRepository
+    name: app-template
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      strategy: rollback
+      retries: 3
+
+  values:
+    controllers:
+      github-attention:
+        type: cronjob
+        annotations:
+          reloader.stakater.com/auto: "true"
+
+        cronjob:
+          # 07:17 rather than 07:00 -- nothing else in the cluster wants that
+          # minute, and the GitHub search API is calmer off the hour.
+          schedule: "17 7 * * *"
+          timeZone: ${TIMEZONE}
+          concurrencyPolicy: Forbid
+          successfulJobsHistory: 1
+          failedJobsHistory: 3
+          backoffLimit: 2
+          activeDeadlineSeconds: 600
+
+        containers:
+          app:
+            image:
+              repository: alpine
+              tag: "3.24"
+            command: ["/bin/sh", "-c"]
+            args:
+              - |
+                apk add --no-cache curl jq coreutils >/dev/null &&
+                exec sh /scripts/gh-attention.sh
+            env:
+              GITHUB_USER: s0len
+              # > 24 so a delayed run never leaves an unreported gap
+              LOOKBACK_HOURS: "26"
+              TZ: ${TIMEZONE}
+            envFrom:
+              # optional so the job still runs before GITHUB_TOKEN exists on the
+              # pushover item; the script logs and skips the notification.
+              - secretRef:
+                  name: github-attention-secret
+                  optional: true
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: false   # apk writes to /var/cache
+              capabilities: { drop: ["ALL"] }
+            resources:
+              requests:
+                cpu: 10m
+                memory: 64Mi
+              limits:
+                memory: 256Mi
+
+    defaultPodOptions:
+      automountServiceAccountToken: false
+      enableServiceLinks: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534
+        runAsGroup: 65534
+        seccompProfile: { type: RuntimeDefault }
+
+    persistence:
+      scripts:
+        type: configMap
+        name: github-attention-configmap
+        defaultMode: 0555
+        globalMounts:
+          - path: /scripts/gh-attention.sh
+            subPath: gh-attention.sh
+            readOnly: true

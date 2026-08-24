@@ -11,6 +11,7 @@ resources:
   - ./blueriiot2mqtt/ks.yaml
   - ./esphome/ks.yaml
   - ./glauth/ks.yaml
+  - ./github-attention/ks.yaml
   - ./go2rtc/ks.yaml
   - ./home-assistant/ks.yaml
   - ./hortusfox-web/ks.yaml
