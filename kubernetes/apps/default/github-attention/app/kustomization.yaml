@@ -8,7 +8,7 @@ resources:
 configMapGenerator:
   - name: github-attention-configmap
     files:
-      - gh-attention.sh=./scripts/gh-attention.sh
+      - gh-attention.py=./scripts/gh-attention.py
 generatorOptions:
   disableNameSuffixHash: true
   annotations:

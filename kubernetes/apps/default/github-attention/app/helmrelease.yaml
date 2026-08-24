@@ -39,13 +39,11 @@ spec:
         containers:
           app:
             image:
-              repository: alpine
-              tag: "3.24"
-            command: ["/bin/sh", "-c"]
-            args:
-              - |
-                apk add --no-cache curl jq coreutils >/dev/null &&
-                exec sh /scripts/gh-attention.sh
+              # stdlib-only script, so no package install at runtime -- apk
+              # needs root and this pod runs as 65534.
+              repository: python
+              tag: 3.14-alpine
+            command: ["python3", "/scripts/gh-attention.py"]
             env:
               GITHUB_USER: s0len
               # > 24 so a delayed run never leaves an unreported gap
@@ -59,7 +57,7 @@ spec:
                   optional: true
             securityContext:
               allowPrivilegeEscalation: false
-              readOnlyRootFilesystem: false   # apk writes to /var/cache
+              readOnlyRootFilesystem: true
               capabilities: { drop: ["ALL"] }
             resources:
               requests:
@@ -83,6 +81,6 @@ spec:
         name: github-attention-configmap
         defaultMode: 0555
         globalMounts:
-          - path: /scripts/gh-attention.sh
-            subPath: gh-attention.sh
+          - path: /scripts/gh-attention.py
+            subPath: gh-attention.py
             readOnly: true
