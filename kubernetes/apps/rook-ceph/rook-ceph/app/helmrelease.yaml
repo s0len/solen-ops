@@ -17,6 +17,7 @@ spec:
       repository: ghcr.io/rook/ceph
     monitoring:
       enabled: true
+    priorityClassName: system-cluster-critical
     resources:
       requests:
         cpu: 100m
