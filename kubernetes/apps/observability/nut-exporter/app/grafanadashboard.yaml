@@ -3,6 +3,8 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: nut-exporter-dashboard
+  annotations:
+    kustomize.toolkit.fluxcd.io/substitute: disabled
   labels:
     grafana_dashboard: "1"
 data:
