@@ -19,6 +19,7 @@ spec:
       enabled: true
     resources:
       requests:
-        memory: 128Mi # unchangable
-        cpu: 100m # unchangable
-      limits: {}
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        memory: 1Gi
