@@ -53,7 +53,7 @@ spec:
               - -c
               - |
                 cat > /oidc/providers.json <<EOF
-                {"openid_connect":{"APPS":[{"provider_id":"kanidm","name":"Kanidm","client_id":"${KANIDM_CLIENT_ID}","secret":"${KANIDM_CLIENT_SECRET}","settings":{"server_url":"https://idm.${SECRET_DOMAIN}/oauth2/openid/paperless/.well-known/openid-configuration"}}],"OAUTH_PKCE_ENABLED":"True"}}
+                {"openid_connect":{"APPS":[{"provider_id":"kanidm","name":"Kanidm","client_id":"$${KANIDM_CLIENT_ID}","secret":"$${KANIDM_CLIENT_SECRET}","settings":{"server_url":"https://idm.${SECRET_DOMAIN}/oauth2/openid/paperless/.well-known/openid-configuration"}}],"OAUTH_PKCE_ENABLED":"True"}}
                 EOF
         containers:
           app:
