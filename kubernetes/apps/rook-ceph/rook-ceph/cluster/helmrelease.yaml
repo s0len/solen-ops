@@ -113,12 +113,15 @@ spec:
           - name: control-2
             devices:
               - name: /dev/disk/by-id/nvme-Samsung_SSD_990_PRO_2TB_S7HENJ0Y238820E
+      upgradeOSDRequiresHealthyPGs: true
     cephBlockPools:
       - name: ceph-blockpool
         spec:
           failureDomain: host
           replicated:
             size: 3
+          parameters:
+            min_size: "2"
         storageClass:
           enabled: true
           name: ceph-block
@@ -151,10 +154,14 @@ spec:
           metadataPool:
             replicated:
               size: 3
+            parameters:
+              min_size: "2"
           dataPools:
             - failureDomain: host
               replicated:
                 size: 3
+              parameters:
+                min_size: "2"
               name: data0
           metadataServer:
             activeCount: 1
