@@ -3,6 +3,8 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: grafana-etcd-io-dashboard
+  annotations:
+    kustomize.toolkit.fluxcd.io/substitute: disabled
 data:
   dashboard.json: |-
     {
