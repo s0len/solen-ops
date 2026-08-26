@@ -44,3 +44,11 @@ machine:
     plex.node/preferred: "true"
     topology.kubernetes.io/zone: zone-c
     node.kubernetes.io/storage: ceph
+---
+apiVersion: v1alpha1
+kind: VolumeConfig
+name: EPHEMERAL
+provisioning:
+  diskSelector:
+    match: system_disk
+  grow: true
