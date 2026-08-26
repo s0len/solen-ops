@@ -22,8 +22,7 @@ machine:
   network:
     hostname: control-0
     interfaces:
-      - deviceSelector:
-          hardwareAddr: 78:20:51:38:a8:5d
+      - interface: enp2s0
         mtu: 1500
         addresses:
           - 192.168.10.40/24
@@ -37,8 +36,7 @@ machine:
             dhcp: false
             addresses:
               - 192.168.20.40/24
-      - deviceSelector:
-          hardwareAddr: ac:1f:6b:2d:f2:95
+      - interface: enp1s0f1
         dhcp: false
   install:
     diskSelector:
