@@ -29,6 +29,13 @@ QUIET_MINUTES=30
 # nothing left to wait for.
 RETRY_DAYS=14
 
+# The album loop stops itself here instead of being SIGTERMed by the job's
+# activeDeadlineSeconds: a killed run never reaches the report that says why.
+WORK_BUDGET=${BEETS_WORK_BUDGET:-15300}
+PER_DIR_MAX=${BEETS_PER_DIR_MAX:-900}
+CHARTPACK_MAX=${BEETS_CHARTPACK_MAX:-1800}
+CURSOR=/config/nightly-cursor.txt
+
 SUMMARY=""
 
 log() {
@@ -121,7 +128,7 @@ if [[ -x $CHARTPACK ]] || [[ -f $CHARTPACK ]]; then
         chart_failed="kan inte skriva $CHARTPACK_LOG (ägarskap?)"
         log "FEL chartpaket: $chart_failed"
     else
-        CHARTPACK_DATE=$(date '+%F') "$PYTHON" -u "$CHARTPACK" \
+        CHARTPACK_DATE=$(date '+%F') timeout -k 60 "$CHARTPACK_MAX" "$PYTHON" -u "$CHARTPACK" \
             --src "$SRC" --staging "$STAGING" --state "$CHARTPACK_STATE" --apply \
             >>"$CHARTPACK_LOG" 2>&1 &
         child_pid=$!
@@ -181,6 +188,7 @@ fi
 
 total=0
 processed=0
+timedout=0
 settling=0
 failed=0
 charts=0
@@ -189,26 +197,62 @@ collections=0
 LOOSE_NAMES=()
 
 import_one() {
-    local target=$1 label=$2
-    "$BEET" -c "$OVERLAY" import -q "${retry_flag[@]}" "$target" >>"$VERBOSE_LOG" 2>&1 &
+    local target=$1 label=$2 rc=0
+    timeout -k 60 "$PER_DIR_MAX" "$BEET" -c "$OVERLAY" import -q "${retry_flag[@]}" "$target" \
+        >>"$VERBOSE_LOG" 2>&1 &
     child_pid=$!
-    if wait "$child_pid"; then
+    wait "$child_pid" || rc=$?
+    child_pid=""
+    if (( rc == 0 )); then
         processed=$((processed + 1))
+    elif (( rc == 124 )); then
+        # Whatever finished is in the incremental state, so the next visit resumes.
+        log "TIMEOUT  $label (över ${PER_DIR_MAX}s)"
+        timedout=$((timedout + 1))
     else
-        log "FEL      $label (beet avslutade med $?)"
+        log "FEL      $label (beet avslutade med $rc)"
         failed=$((failed + 1))
     fi
-    child_pid=""
 }
 
 # One beet process per top-level directory. Importing the whole tree in a single
 # process has OOM-killed this pod twice: beets keeps every album's MusicBrainz
 # candidates alive for the life of the process, so memory grows without bound.
+DIRS=()
 for dir in "$SRC"/*/; do
     [[ -d $dir ]] || continue
-    total=$((total + 1))
+    DIRS+=("$dir")
+done
+ndirs=${#DIRS[@]}
+
+# Resume where the last run ran out of budget, keyed on the name rather than an
+# index so a torrent arriving or leaving overnight cannot shift the position.
+# Without this the loop restarts at A every run and the tail is never reached.
+start=0
+if [[ -s $CURSOR ]]; then
+    want=$(<"$CURSOR")
+    for i in "${!DIRS[@]}"; do
+        cand=${DIRS[i]%/}
+        if [[ ! ${cand##*/} < $want ]]; then
+            start=$i
+            break
+        fi
+    done
+fi
+
+over_budget() { (( SECONDS >= WORK_BUDGET )); }
+resume_at=""
+
+for ((k = 0; k < ndirs; k++)); do
+    dir=${DIRS[$(((start + k) % ndirs))]}
     name=${dir%/}
     name=${name##*/}
+
+    if over_budget; then
+        resume_at=$name
+        break
+    fi
+    total=$((total + 1))
 
     if [[ -n ${IS_CHART[$name]:-} ]]; then
         charts=$((charts + 1))
@@ -238,6 +282,12 @@ for dir in "$SRC"/*/; do
         collections=$((collections + 1))
         for sub in "$dir"*/; do
             [[ -d $sub ]] || continue
+            # Half a collection is safe to leave: what imported is in the
+            # incremental state, so resuming here costs only the remainder.
+            if over_budget; then
+                resume_at=$name
+                break
+            fi
             subname=${sub%/}
             subname=${subname##*/}
             import_one "$sub" "$name/$subname"
@@ -246,7 +296,16 @@ for dir in "$SRC"/*/; do
         import_one "$dir" "$name"
     fi
     printf '%s\t%s\n' "$((SECONDS - started))" "$name" >>"$TIMINGS"
+    [[ -n $resume_at ]] && break
 done
+
+remaining=0
+if [[ -n $resume_at ]]; then
+    remaining=$((ndirs - total))
+    printf '%s\n' "$resume_at" >"$CURSOR"
+else
+    : >"$CURSOR"
+fi
 
 after_tracks=$(tracks)
 added=$(( ${after_tracks:-0} - ${before_tracks:-0} ))
@@ -259,7 +318,13 @@ tail -n "+$((before_lines + 1))" "$IMPORT_LOG" 2>/dev/null |
 unmatched=$(wc -l <"$UNMATCHED")
 
 say "$added nya spår, biblioteket har nu ${after_tracks:-?}"
-say "$total mappar: $processed importanrop, $collections samlingar, $charts chartpaket, $loose lösa spår, $settling väntar, $failed fel"
+say "$total mappar: $processed importanrop, $collections samlingar, $charts chartpaket, $loose lösa spår, $settling väntar, $timedout avbrutna, $failed fel"
+if (( remaining > 0 )); then
+    say "budgeten tog slut efter $((SECONDS / 60)) min: $remaining mappar kvar, nästa körning börjar vid $resume_at"
+fi
+if (( timedout > 0 )); then
+    say "$timedout mappar nådde ${PER_DIR_MAX}s och avbröts, sök TIMEOUT i $RUN_LOG"
+fi
 # Naming them matters: a directory of loose tracks can be a DJ tool pack nobody
 # wants or a real artist's loose singles, and the classifier only sees structure.
 # Skipping is the safe default; staying silent about it is not.
@@ -290,7 +355,9 @@ if [[ $unmatched -gt 0 ]]; then
     # Deliberately not "waiting for MusicBrainz": a triage of one night's 95
     # entries found 5 genuinely missing from MB, 8 already in the library under
     # other tags, and 21 that MB does hold but cannot match as-shaped.
-    say "$unmatched utan säker MusicBrainz-match (kan redan finnas i biblioteket):"
+    partial=""
+    (( remaining > 0 )) && partial=" av de $total genomsökta"
+    say "$unmatched utan säker MusicBrainz-match$partial (kan redan finnas i biblioteket):"
     head -8 "$UNMATCHED" | while IFS= read -r p; do say "  ${p#"$SRC"/}"; done
     [[ $unmatched -gt 8 ]] && say "  ... och $((unmatched - 8)) till, hela listan i $UNMATCHED"
 fi
