@@ -56,3 +56,11 @@ machine:
     intel.feature.node.kubernetes.io/gpu: "true"
     topology.kubernetes.io/zone: zone-a
     node.kubernetes.io/storage: ceph
+---
+apiVersion: v1alpha1
+kind: VolumeConfig
+name: EPHEMERAL
+provisioning:
+  diskSelector:
+    match: disk.serial == 'S5GXNF1R887620N'
+  grow: true
