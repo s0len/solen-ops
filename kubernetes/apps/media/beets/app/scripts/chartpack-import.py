@@ -563,14 +563,14 @@ def main():
                 continue
             rec = state.get(d)
             if not rec or rec.get("mtime") != mtime or rec.get("v") != CLASSIFIER_VERSION:
-                fresh = {"mtime": mtime, "v": CLASSIFIER_VERSION, "kind": classify(full)}
+                entry = {"mtime": mtime, "v": CLASSIFIER_VERSION, "kind": classify(full)}
                 # Carry the import mark across a classifier bump. It records what was
                 # already staged, which has nothing to do with how the directory is
                 # classified -- dropping it on the v3-to-v4 bump sent all 98 chart
                 # packs back through staging for nothing.
                 if rec and rec.get("mtime") == mtime and rec.get("imported"):
-                    fresh["imported"] = rec["imported"]
-                rec = fresh
+                    entry["imported"] = rec["imported"]
+                rec = entry
                 state[d] = rec
                 stale += 1
                 # Checkpoint as we go. The first sweep of this tree took over
