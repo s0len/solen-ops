@@ -38,6 +38,8 @@ spec:
       token_url: https://idm.${SECRET_DOMAIN}/oauth2/token
       use_pkce: "true"
       role_attribute_path: contains(groups[*], 'admins') && 'Admin' || 'Viewer'
+      # allow_assign_grafana_admin is a no-op without this path
+      grafana_admin_attribute_path: contains(groups[*], 'admins')
       allow_assign_grafana_admin: "true"
       signing_algorithm: ES256
     database:
