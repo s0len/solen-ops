@@ -48,12 +48,29 @@ data:
       "templating": {
         "list": [
           {
+            "name": "datasource",
+            "label": "Datasource",
+            "type": "datasource",
+            "query": "prometheus",
+            "regex": "",
+            "current": {
+              "selected": false,
+              "text": "Prometheus",
+              "value": "prometheus"
+            },
+            "multi": false,
+            "includeAll": false,
+            "refresh": 1,
+            "options": [],
+            "hide": 0
+          },
+          {
             "name": "node",
             "label": "Nod",
             "type": "query",
             "datasource": {
               "type": "prometheus",
-              "uid": "${DS_PROMETHEUS}"
+              "uid": "${datasource}"
             },
             "definition": "label_values(smartctl_device, instance)",
             "query": {
@@ -83,7 +100,7 @@ data:
             "type": "query",
             "datasource": {
               "type": "prometheus",
-              "uid": "${DS_PROMETHEUS}"
+              "uid": "${datasource}"
             },
             "definition": "label_values(smartctl_device{instance=~\"$node\"}, device)",
             "query": {
@@ -129,7 +146,7 @@ data:
           "title": "Diskar övervakade",
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "${datasource}"
           },
           "gridPos": {
             "x": 0,
@@ -160,7 +177,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "${datasource}"
               },
               "editorMode": "code",
               "expr": "count(smartctl_device{instance=~\"$node\", device=~\"$device\"})",
@@ -194,7 +211,7 @@ data:
           "title": "SMART ej OK",
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "${datasource}"
           },
           "gridPos": {
             "x": 5,
@@ -229,7 +246,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "${datasource}"
               },
               "editorMode": "code",
               "expr": "count(smartctl_device_smart_status{instance=~\"$node\", device=~\"$device\"} != 1) or vector(0)",
@@ -263,7 +280,7 @@ data:
           "title": "Mediafel totalt",
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "${datasource}"
           },
           "gridPos": {
             "x": 10,
@@ -298,7 +315,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "${datasource}"
               },
               "editorMode": "code",
               "expr": "sum(smartctl_device_media_errors{instance=~\"$node\", device=~\"$device\"}) or vector(0)",
@@ -332,7 +349,7 @@ data:
           "title": "Varmast just nu",
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "${datasource}"
           },
           "gridPos": {
             "x": 15,
@@ -372,7 +389,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "${datasource}"
               },
               "editorMode": "code",
               "expr": "topk(3, smartctl_device_temperature{instance=~\"$node\", device=~\"$device\", temperature_type=\"current\"} * on(instance, device) group_left(model_name, serial_number, firmware_version) smartctl_device)",
@@ -407,7 +424,7 @@ data:
           "title": "Diskinventarium",
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "${datasource}"
           },
           "gridPos": {
             "x": 0,
@@ -738,7 +755,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "${datasource}"
               },
               "editorMode": "code",
               "expr": "max by (instance, device, model_name, serial_number, firmware_version, interface) (smartctl_device{instance=~\"$node\", device=~\"$device\"})",
@@ -750,7 +767,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "${datasource}"
               },
               "editorMode": "code",
               "expr": "max by (instance, device) (smartctl_device_temperature{instance=~\"$node\", device=~\"$device\", temperature_type=\"current\"})",
@@ -762,7 +779,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "${datasource}"
               },
               "editorMode": "code",
               "expr": "max by (instance, device) (smartctl_device_percentage_used{instance=~\"$node\", device=~\"$device\"})",
@@ -774,7 +791,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "${datasource}"
               },
               "editorMode": "code",
               "expr": "max by (instance, device) (smartctl_device_available_spare{instance=~\"$node\", device=~\"$device\"})",
@@ -786,7 +803,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "${datasource}"
               },
               "editorMode": "code",
               "expr": "max by (instance, device) (smartctl_device_available_spare_threshold{instance=~\"$node\", device=~\"$device\"})",
@@ -798,7 +815,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "${datasource}"
               },
               "editorMode": "code",
               "expr": "max by (instance, device) (smartctl_device_power_on_seconds{instance=~\"$node\", device=~\"$device\"})",
@@ -810,7 +827,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "${datasource}"
               },
               "editorMode": "code",
               "expr": "max by (instance, device) (smartctl_device_bytes_written{instance=~\"$node\", device=~\"$device\"})",
@@ -822,7 +839,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "${datasource}"
               },
               "editorMode": "code",
               "expr": "max by (instance, device) (smartctl_device_power_cycle_count{instance=~\"$node\", device=~\"$device\"})",
@@ -834,7 +851,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "${datasource}"
               },
               "editorMode": "code",
               "expr": "max by (instance, device) (smartctl_device_media_errors{instance=~\"$node\", device=~\"$device\"})",
@@ -846,7 +863,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "${datasource}"
               },
               "editorMode": "code",
               "expr": "max by (instance, device) (smartctl_device_smart_status{instance=~\"$node\", device=~\"$device\"})",
@@ -953,7 +970,7 @@ data:
           "title": "Temperatur över tid",
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "${datasource}"
           },
           "gridPos": {
             "x": 0,
@@ -1023,7 +1040,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "${datasource}"
               },
               "editorMode": "code",
               "expr": "smartctl_device_temperature{instance=~\"$node\", device=~\"$device\", temperature_type=\"current\"} * on(instance, device) group_left(model_name, serial_number, firmware_version) smartctl_device",
@@ -1059,7 +1076,7 @@ data:
           "title": "Temperatur nu",
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "${datasource}"
           },
           "gridPos": {
             "x": 17,
@@ -1101,7 +1118,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "${datasource}"
               },
               "editorMode": "code",
               "expr": "smartctl_device_temperature{instance=~\"$node\", device=~\"$device\", temperature_type=\"current\"} * on(instance, device) group_left(model_name, serial_number, firmware_version) smartctl_device",
@@ -1153,7 +1170,7 @@ data:
           "title": "Slitage (andel av garanterad TBW)",
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "${datasource}"
           },
           "gridPos": {
             "x": 0,
@@ -1195,7 +1212,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "${datasource}"
               },
               "editorMode": "code",
               "expr": "smartctl_device_percentage_used{instance=~\"$node\", device=~\"$device\"} * on(instance, device) group_left(model_name, serial_number, firmware_version) smartctl_device",
@@ -1234,7 +1251,7 @@ data:
           "title": "Tillgänglig reservkapacitet",
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "${datasource}"
           },
           "gridPos": {
             "x": 8,
@@ -1276,7 +1293,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "${datasource}"
               },
               "editorMode": "code",
               "expr": "smartctl_device_available_spare{instance=~\"$node\", device=~\"$device\"} * on(instance, device) group_left(model_name, serial_number, firmware_version) smartctl_device",
@@ -1315,7 +1332,7 @@ data:
           "title": "Beräknade år till 100 % slitage",
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "${datasource}"
           },
           "gridPos": {
             "x": 16,
@@ -1357,7 +1374,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "${datasource}"
               },
               "editorMode": "code",
               "expr": "clamp_max((100 - smartctl_device_percentage_used{instance=~\"$node\", device=~\"$device\"}) / clamp_min(smartctl_device_percentage_used{instance=~\"$node\", device=~\"$device\"}, 1) * smartctl_device_power_on_seconds{instance=~\"$node\", device=~\"$device\"} / 31557600, 99) * on(instance, device) group_left(model_name, serial_number, firmware_version) smartctl_device",
@@ -1409,7 +1426,7 @@ data:
           "title": "Skrivhastighet",
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "${datasource}"
           },
           "gridPos": {
             "x": 0,
@@ -1462,7 +1479,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "${datasource}"
               },
               "editorMode": "code",
               "expr": "rate(smartctl_device_bytes_written{instance=~\"$node\", device=~\"$device\"}[$__rate_interval]) * on(instance, device) group_left(model_name, serial_number, firmware_version) smartctl_device",
@@ -1498,7 +1515,7 @@ data:
           "title": "Totalt skrivet",
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "${datasource}"
           },
           "gridPos": {
             "x": 12,
@@ -1531,7 +1548,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "${datasource}"
               },
               "editorMode": "code",
               "expr": "smartctl_device_bytes_written{instance=~\"$node\", device=~\"$device\"} * on(instance, device) group_left(model_name, serial_number, firmware_version) smartctl_device",
@@ -1583,7 +1600,7 @@ data:
           "title": "SATA SMART-attribut (råvärden)",
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "${datasource}"
           },
           "gridPos": {
             "x": 0,
@@ -1621,7 +1638,7 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "${datasource}"
               },
               "editorMode": "code",
               "expr": "max by (instance, device, attribute_name) (smartctl_device_attribute{instance=~\"$node\", device=~\"$device\", attribute_value_type=\"raw\", attribute_name=~\"Reallocated_Sector_Ct|CRC_Error_Count|Wear_Leveling_Count|Used_Rsvd_Blk_Cnt_Tot|Uncorrectable_Error_Cnt|Runtime_Bad_Block|Power_On_Hours|Total_LBAs_Written\"})",
