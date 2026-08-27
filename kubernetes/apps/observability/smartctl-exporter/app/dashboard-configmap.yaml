@@ -1,0 +1,1665 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: smartctl-exporter-grafana-dashboard
+  annotations:
+    kustomize.toolkit.fluxcd.io/substitute: disabled
+data:
+  dashboard.json: |-
+    {
+      "id": null,
+      "uid": "smartctl-disk-health",
+      "title": "Diskhälsa (SMART)",
+      "description": "Disk- och SSD-hälsa per nod från smartctl_exporter. Nod, modell, serienummer och firmware joinas in i varje panel från smartctl_device.",
+      "tags": [
+        "smartctl",
+        "storage",
+        "hardware"
+      ],
+      "timezone": "browser",
+      "editable": true,
+      "graphTooltip": 1,
+      "schemaVersion": 39,
+      "version": 1,
+      "refresh": "1m",
+      "time": {
+        "from": "now-24h",
+        "to": "now"
+      },
+      "fiscalYearStartMonth": 0,
+      "links": [],
+      "annotations": {
+        "list": [
+          {
+            "builtIn": 1,
+            "datasource": {
+              "type": "grafana",
+              "uid": "-- Grafana --"
+            },
+            "enable": true,
+            "hide": true,
+            "iconColor": "rgba(0, 211, 255, 1)",
+            "name": "Annotations & Alerts",
+            "type": "dashboard"
+          }
+        ]
+      },
+      "templating": {
+        "list": [
+          {
+            "name": "node",
+            "label": "Nod",
+            "type": "query",
+            "datasource": {
+              "type": "prometheus",
+              "uid": "${DS_PROMETHEUS}"
+            },
+            "definition": "label_values(smartctl_device, instance)",
+            "query": {
+              "query": "label_values(smartctl_device, instance)",
+              "refId": "A"
+            },
+            "multi": true,
+            "includeAll": true,
+            "allValue": ".*",
+            "current": {
+              "selected": true,
+              "text": [
+                "All"
+              ],
+              "value": [
+                "$__all"
+              ]
+            },
+            "refresh": 1,
+            "sort": 1,
+            "options": [],
+            "hide": 0
+          },
+          {
+            "name": "device",
+            "label": "Enhet",
+            "type": "query",
+            "datasource": {
+              "type": "prometheus",
+              "uid": "${DS_PROMETHEUS}"
+            },
+            "definition": "label_values(smartctl_device{instance=~\"$node\"}, device)",
+            "query": {
+              "query": "label_values(smartctl_device{instance=~\"$node\"}, device)",
+              "refId": "A"
+            },
+            "multi": true,
+            "includeAll": true,
+            "allValue": ".*",
+            "current": {
+              "selected": true,
+              "text": [
+                "All"
+              ],
+              "value": [
+                "$__all"
+              ]
+            },
+            "refresh": 1,
+            "sort": 1,
+            "options": [],
+            "hide": 0
+          }
+        ]
+      },
+      "panels": [
+        {
+          "id": 1,
+          "type": "row",
+          "title": "Översikt",
+          "collapsed": false,
+          "gridPos": {
+            "x": 0,
+            "y": 0,
+            "w": 24,
+            "h": 1
+          },
+          "panels": []
+        },
+        {
+          "id": 2,
+          "type": "stat",
+          "title": "Diskar övervakade",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "gridPos": {
+            "x": 0,
+            "y": 1,
+            "w": 5,
+            "h": 4
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "custom": {},
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "text",
+                    "value": null
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${DS_PROMETHEUS}"
+              },
+              "editorMode": "code",
+              "expr": "count(smartctl_device{instance=~\"$node\", device=~\"$device\"})",
+              "refId": "A",
+              "range": false,
+              "instant": true
+            }
+          ],
+          "description": "Antal diskar smartctl_exporter ser just nu.",
+          "options": {
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "colorMode": "value",
+            "graphMode": "none",
+            "justifyMode": "auto",
+            "textMode": "auto",
+            "orientation": "auto",
+            "wideLayout": true,
+            "showPercentChange": false,
+            "percentChangeColorMode": "standard"
+          }
+        },
+        {
+          "id": 3,
+          "type": "stat",
+          "title": "SMART ej OK",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "gridPos": {
+            "x": 5,
+            "y": 1,
+            "w": 5,
+            "h": 4
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "custom": {},
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 1
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${DS_PROMETHEUS}"
+              },
+              "editorMode": "code",
+              "expr": "count(smartctl_device_smart_status{instance=~\"$node\", device=~\"$device\"} != 1) or vector(0)",
+              "refId": "A",
+              "range": false,
+              "instant": true
+            }
+          ],
+          "description": "Diskar som inte klarar sitt SMART-selftest. Ska vara 0.",
+          "options": {
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "colorMode": "value",
+            "graphMode": "none",
+            "justifyMode": "auto",
+            "textMode": "auto",
+            "orientation": "auto",
+            "wideLayout": true,
+            "showPercentChange": false,
+            "percentChangeColorMode": "standard"
+          }
+        },
+        {
+          "id": 4,
+          "type": "stat",
+          "title": "Mediafel totalt",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "gridPos": {
+            "x": 10,
+            "y": 1,
+            "w": 5,
+            "h": 4
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "custom": {},
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 1
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${DS_PROMETHEUS}"
+              },
+              "editorMode": "code",
+              "expr": "sum(smartctl_device_media_errors{instance=~\"$node\", device=~\"$device\"}) or vector(0)",
+              "refId": "A",
+              "range": false,
+              "instant": true
+            }
+          ],
+          "description": "Summa okorrigerbara mediafel över alla diskar. Ska vara 0.",
+          "options": {
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "colorMode": "value",
+            "graphMode": "none",
+            "justifyMode": "auto",
+            "textMode": "auto",
+            "orientation": "auto",
+            "wideLayout": true,
+            "showPercentChange": false,
+            "percentChangeColorMode": "standard"
+          }
+        },
+        {
+          "id": 5,
+          "type": "stat",
+          "title": "Varmast just nu",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "gridPos": {
+            "x": 15,
+            "y": 1,
+            "w": 9,
+            "h": 4
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "custom": {},
+              "unit": "celsius",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "yellow",
+                    "value": 60
+                  },
+                  {
+                    "color": "red",
+                    "value": 65
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${DS_PROMETHEUS}"
+              },
+              "editorMode": "code",
+              "expr": "topk(3, smartctl_device_temperature{instance=~\"$node\", device=~\"$device\", temperature_type=\"current\"} * on(instance, device) group_left(model_name, serial_number, firmware_version) smartctl_device)",
+              "refId": "A",
+              "range": false,
+              "legendFormat": "{{instance}} · {{device}} · {{model_name}}",
+              "instant": true
+            }
+          ],
+          "description": "Tre varmaste diskarna. Gult vid 60 °C och rött vid 65 °C matchar larmen i smartctl-exporter-rules.",
+          "options": {
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "colorMode": "background_solid",
+            "graphMode": "none",
+            "justifyMode": "auto",
+            "textMode": "value_and_name",
+            "orientation": "auto",
+            "wideLayout": true,
+            "showPercentChange": false,
+            "percentChangeColorMode": "standard"
+          }
+        },
+        {
+          "id": 6,
+          "type": "table",
+          "title": "Diskinventarium",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "gridPos": {
+            "x": 0,
+            "y": 5,
+            "w": 24,
+            "h": 11
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "mappings": [],
+              "custom": {
+                "align": "auto",
+                "cellOptions": {
+                  "type": "auto"
+                },
+                "inspect": false,
+                "filterable": true
+              },
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "text",
+                    "value": null
+                  }
+                ]
+              }
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Temp"
+                },
+                "properties": [
+                  {
+                    "id": "unit",
+                    "value": "celsius"
+                  },
+                  {
+                    "id": "custom.cellOptions",
+                    "value": {
+                      "type": "color-text"
+                    }
+                  },
+                  {
+                    "id": "thresholds",
+                    "value": {
+                      "mode": "absolute",
+                      "steps": [
+                        {
+                          "color": "green",
+                          "value": null
+                        },
+                        {
+                          "color": "yellow",
+                          "value": 60
+                        },
+                        {
+                          "color": "red",
+                          "value": 65
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "id": "custom.width",
+                    "value": 78
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Slitage"
+                },
+                "properties": [
+                  {
+                    "id": "unit",
+                    "value": "percent"
+                  },
+                  {
+                    "id": "max",
+                    "value": 100
+                  },
+                  {
+                    "id": "min",
+                    "value": 0
+                  },
+                  {
+                    "id": "custom.cellOptions",
+                    "value": {
+                      "type": "gauge",
+                      "mode": "gradient"
+                    }
+                  },
+                  {
+                    "id": "thresholds",
+                    "value": {
+                      "mode": "absolute",
+                      "steps": [
+                        {
+                          "color": "green",
+                          "value": null
+                        },
+                        {
+                          "color": "yellow",
+                          "value": 70
+                        },
+                        {
+                          "color": "red",
+                          "value": 90
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "id": "custom.width",
+                    "value": 120
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Reserv"
+                },
+                "properties": [
+                  {
+                    "id": "unit",
+                    "value": "percent"
+                  },
+                  {
+                    "id": "custom.cellOptions",
+                    "value": {
+                      "type": "color-text"
+                    }
+                  },
+                  {
+                    "id": "thresholds",
+                    "value": {
+                      "mode": "absolute",
+                      "steps": [
+                        {
+                          "color": "red",
+                          "value": null
+                        },
+                        {
+                          "color": "yellow",
+                          "value": 20
+                        },
+                        {
+                          "color": "green",
+                          "value": 60
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "id": "custom.width",
+                    "value": 84
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Reservtröskel"
+                },
+                "properties": [
+                  {
+                    "id": "unit",
+                    "value": "percent"
+                  },
+                  {
+                    "id": "custom.width",
+                    "value": 116
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Drifttid"
+                },
+                "properties": [
+                  {
+                    "id": "unit",
+                    "value": "s"
+                  },
+                  {
+                    "id": "custom.width",
+                    "value": 108
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Skrivet"
+                },
+                "properties": [
+                  {
+                    "id": "unit",
+                    "value": "bytes"
+                  },
+                  {
+                    "id": "custom.width",
+                    "value": 96
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Mediafel"
+                },
+                "properties": [
+                  {
+                    "id": "custom.cellOptions",
+                    "value": {
+                      "type": "color-text"
+                    }
+                  },
+                  {
+                    "id": "thresholds",
+                    "value": {
+                      "mode": "absolute",
+                      "steps": [
+                        {
+                          "color": "green",
+                          "value": null
+                        },
+                        {
+                          "color": "red",
+                          "value": 1
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "id": "custom.width",
+                    "value": 92
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "SMART"
+                },
+                "properties": [
+                  {
+                    "id": "mappings",
+                    "value": [
+                      {
+                        "type": "value",
+                        "options": {
+                          "1": {
+                            "text": "OK",
+                            "color": "green",
+                            "index": 0
+                          },
+                          "0": {
+                            "text": "FEL",
+                            "color": "red",
+                            "index": 1
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "id": "custom.cellOptions",
+                    "value": {
+                      "type": "color-background",
+                      "mode": "basic"
+                    }
+                  },
+                  {
+                    "id": "custom.width",
+                    "value": 80
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Modell"
+                },
+                "properties": [
+                  {
+                    "id": "custom.width",
+                    "value": 250
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Nod"
+                },
+                "properties": [
+                  {
+                    "id": "custom.width",
+                    "value": 96
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Enhet"
+                },
+                "properties": [
+                  {
+                    "id": "custom.width",
+                    "value": 78
+                  }
+                ]
+              }
+            ]
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${DS_PROMETHEUS}"
+              },
+              "editorMode": "code",
+              "expr": "max by (instance, device, model_name, serial_number, firmware_version, interface) (smartctl_device{instance=~\"$node\", device=~\"$device\"})",
+              "refId": "A",
+              "range": false,
+              "instant": true,
+              "format": "table"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${DS_PROMETHEUS}"
+              },
+              "editorMode": "code",
+              "expr": "max by (instance, device) (smartctl_device_temperature{instance=~\"$node\", device=~\"$device\", temperature_type=\"current\"})",
+              "refId": "B",
+              "range": false,
+              "instant": true,
+              "format": "table"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${DS_PROMETHEUS}"
+              },
+              "editorMode": "code",
+              "expr": "max by (instance, device) (smartctl_device_percentage_used{instance=~\"$node\", device=~\"$device\"})",
+              "refId": "C",
+              "range": false,
+              "instant": true,
+              "format": "table"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${DS_PROMETHEUS}"
+              },
+              "editorMode": "code",
+              "expr": "max by (instance, device) (smartctl_device_available_spare{instance=~\"$node\", device=~\"$device\"})",
+              "refId": "D",
+              "range": false,
+              "instant": true,
+              "format": "table"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${DS_PROMETHEUS}"
+              },
+              "editorMode": "code",
+              "expr": "max by (instance, device) (smartctl_device_available_spare_threshold{instance=~\"$node\", device=~\"$device\"})",
+              "refId": "E",
+              "range": false,
+              "instant": true,
+              "format": "table"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${DS_PROMETHEUS}"
+              },
+              "editorMode": "code",
+              "expr": "max by (instance, device) (smartctl_device_power_on_seconds{instance=~\"$node\", device=~\"$device\"})",
+              "refId": "F",
+              "range": false,
+              "instant": true,
+              "format": "table"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${DS_PROMETHEUS}"
+              },
+              "editorMode": "code",
+              "expr": "max by (instance, device) (smartctl_device_bytes_written{instance=~\"$node\", device=~\"$device\"})",
+              "refId": "G",
+              "range": false,
+              "instant": true,
+              "format": "table"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${DS_PROMETHEUS}"
+              },
+              "editorMode": "code",
+              "expr": "max by (instance, device) (smartctl_device_power_cycle_count{instance=~\"$node\", device=~\"$device\"})",
+              "refId": "H",
+              "range": false,
+              "instant": true,
+              "format": "table"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${DS_PROMETHEUS}"
+              },
+              "editorMode": "code",
+              "expr": "max by (instance, device) (smartctl_device_media_errors{instance=~\"$node\", device=~\"$device\"})",
+              "refId": "I",
+              "range": false,
+              "instant": true,
+              "format": "table"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${DS_PROMETHEUS}"
+              },
+              "editorMode": "code",
+              "expr": "max by (instance, device) (smartctl_device_smart_status{instance=~\"$node\", device=~\"$device\"})",
+              "refId": "J",
+              "range": false,
+              "instant": true,
+              "format": "table"
+            }
+          ],
+          "description": "En rad per fysisk disk. Nod, modell, serienummer och firmware joinas in från smartctl_device så raden går att koppla till hårdvara utan att gissa.",
+          "options": {
+            "showHeader": true,
+            "cellHeight": "sm",
+            "footer": {
+              "show": false,
+              "reducer": [
+                "sum"
+              ],
+              "countRows": false,
+              "fields": ""
+            },
+            "sortBy": [
+              {
+                "desc": true,
+                "displayName": "Temp"
+              }
+            ]
+          },
+          "transformations": [
+            {
+              "id": "filterFieldsByName",
+              "options": {
+                "exclude": {
+                  "names": [
+                    "Time"
+                  ]
+                }
+              }
+            },
+            {
+              "id": "merge",
+              "options": {}
+            },
+            {
+              "id": "organize",
+              "options": {
+                "excludeByName": {
+                  "Value #A": true
+                },
+                "renameByName": {
+                  "instance": "Nod",
+                  "device": "Enhet",
+                  "model_name": "Modell",
+                  "serial_number": "Serienummer",
+                  "firmware_version": "Firmware",
+                  "interface": "Buss",
+                  "Value #B": "Temp",
+                  "Value #C": "Slitage",
+                  "Value #D": "Reserv",
+                  "Value #E": "Reservtröskel",
+                  "Value #F": "Drifttid",
+                  "Value #G": "Skrivet",
+                  "Value #H": "Strömcykler",
+                  "Value #I": "Mediafel",
+                  "Value #J": "SMART"
+                },
+                "indexByName": {
+                  "Nod": 0,
+                  "Enhet": 1,
+                  "Modell": 2,
+                  "Serienummer": 3,
+                  "Firmware": 4,
+                  "Buss": 5,
+                  "Temp": 6,
+                  "Slitage": 7,
+                  "Reserv": 8,
+                  "Reservtröskel": 9,
+                  "Drifttid": 10,
+                  "Skrivet": 11,
+                  "Strömcykler": 12,
+                  "Mediafel": 13,
+                  "SMART": 14
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": 7,
+          "type": "row",
+          "title": "Temperatur",
+          "collapsed": false,
+          "gridPos": {
+            "x": 0,
+            "y": 16,
+            "w": 24,
+            "h": 1
+          },
+          "panels": []
+        },
+        {
+          "id": 8,
+          "type": "timeseries",
+          "title": "Temperatur över tid",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "gridPos": {
+            "x": 0,
+            "y": 17,
+            "w": 17,
+            "h": 9
+          },
+          "fieldConfig": {
+            "defaults": {
+              "custom": {
+                "drawStyle": "line",
+                "lineInterpolation": "smooth",
+                "lineWidth": 2,
+                "fillOpacity": 8,
+                "gradientMode": "opacity",
+                "showPoints": "never",
+                "pointSize": 5,
+                "spanNulls": true,
+                "axisPlacement": "auto",
+                "axisLabel": "",
+                "axisColorMode": "text",
+                "axisBorderShow": false,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "barAlignment": 0,
+                "thresholdsStyle": {
+                  "mode": "dashed"
+                },
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false
+              },
+              "mappings": [],
+              "unit": "celsius",
+              "color": {
+                "mode": "palette-classic"
+              },
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "yellow",
+                    "value": 60
+                  },
+                  {
+                    "color": "red",
+                    "value": 65
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${DS_PROMETHEUS}"
+              },
+              "editorMode": "code",
+              "expr": "smartctl_device_temperature{instance=~\"$node\", device=~\"$device\", temperature_type=\"current\"} * on(instance, device) group_left(model_name, serial_number, firmware_version) smartctl_device",
+              "refId": "A",
+              "range": true,
+              "legendFormat": "{{instance}} · {{device}} · {{model_name}}"
+            }
+          ],
+          "options": {
+            "legend": {
+              "displayMode": "table",
+              "placement": "bottom",
+              "showLegend": true,
+              "sortBy": "Max",
+              "sortDesc": true,
+              "calcs": [
+                "mean",
+                "max",
+                "lastNotNull"
+              ]
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc",
+              "hideZeros": false
+            }
+          },
+          "description": "Streckade linjer: 60 °C (varning) och 65 °C (kritisk), samma trösklar som larmen. Legenden visar nod, enhet och modell."
+        },
+        {
+          "id": 9,
+          "type": "bargauge",
+          "title": "Temperatur nu",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "gridPos": {
+            "x": 17,
+            "y": 17,
+            "w": 7,
+            "h": 9
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "custom": {},
+              "unit": "celsius",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "yellow",
+                    "value": 60
+                  },
+                  {
+                    "color": "red",
+                    "value": 65
+                  }
+                ]
+              },
+              "max": 85,
+              "min": 20
+            },
+            "overrides": []
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${DS_PROMETHEUS}"
+              },
+              "editorMode": "code",
+              "expr": "smartctl_device_temperature{instance=~\"$node\", device=~\"$device\", temperature_type=\"current\"} * on(instance, device) group_left(model_name, serial_number, firmware_version) smartctl_device",
+              "refId": "A",
+              "range": false,
+              "legendFormat": "{{instance}} · {{device}} · {{model_name}}",
+              "instant": true
+            }
+          ],
+          "description": "Skalan går till 85 °C, strax över 990 PRO:s kritiska tröskel på 84 °C.",
+          "options": {
+            "displayMode": "gradient",
+            "orientation": "horizontal",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "showUnfilled": true,
+            "valueMode": "color",
+            "minVizHeight": 16,
+            "minVizWidth": 8,
+            "maxVizHeight": 300,
+            "namePlacement": "left",
+            "sizing": "auto",
+            "legend": {
+              "showLegend": false
+            }
+          }
+        },
+        {
+          "id": 10,
+          "type": "row",
+          "title": "Slitage och livslängd",
+          "collapsed": false,
+          "gridPos": {
+            "x": 0,
+            "y": 26,
+            "w": 24,
+            "h": 1
+          },
+          "panels": []
+        },
+        {
+          "id": 11,
+          "type": "bargauge",
+          "title": "Slitage (andel av garanterad TBW)",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "gridPos": {
+            "x": 0,
+            "y": 27,
+            "w": 8,
+            "h": 8
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "custom": {},
+              "unit": "percent",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "yellow",
+                    "value": 70
+                  },
+                  {
+                    "color": "red",
+                    "value": 90
+                  }
+                ]
+              },
+              "max": 100,
+              "min": 0
+            },
+            "overrides": []
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${DS_PROMETHEUS}"
+              },
+              "editorMode": "code",
+              "expr": "smartctl_device_percentage_used{instance=~\"$node\", device=~\"$device\"} * on(instance, device) group_left(model_name, serial_number, firmware_version) smartctl_device",
+              "refId": "A",
+              "range": false,
+              "legendFormat": "{{instance}} · {{device}} · {{model_name}}",
+              "instant": true
+            }
+          ],
+          "description": "NVMe percentage_used. 100 % = diskens specificerade uthållighet är förbrukad, inte att den dör. Finns bara för NVMe, SATA-diskarna saknar fältet.",
+          "options": {
+            "displayMode": "gradient",
+            "orientation": "horizontal",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "showUnfilled": true,
+            "valueMode": "color",
+            "minVizHeight": 16,
+            "minVizWidth": 8,
+            "maxVizHeight": 300,
+            "namePlacement": "left",
+            "sizing": "auto",
+            "legend": {
+              "showLegend": false
+            }
+          }
+        },
+        {
+          "id": 12,
+          "type": "bargauge",
+          "title": "Tillgänglig reservkapacitet",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "gridPos": {
+            "x": 8,
+            "y": 27,
+            "w": 8,
+            "h": 8
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "custom": {},
+              "unit": "percent",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "red",
+                    "value": null
+                  },
+                  {
+                    "color": "yellow",
+                    "value": 20
+                  },
+                  {
+                    "color": "green",
+                    "value": 60
+                  }
+                ]
+              },
+              "max": 100,
+              "min": 0
+            },
+            "overrides": []
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${DS_PROMETHEUS}"
+              },
+              "editorMode": "code",
+              "expr": "smartctl_device_available_spare{instance=~\"$node\", device=~\"$device\"} * on(instance, device) group_left(model_name, serial_number, firmware_version) smartctl_device",
+              "refId": "A",
+              "range": false,
+              "legendFormat": "{{instance}} · {{device}} · {{model_name}}",
+              "instant": true
+            }
+          ],
+          "description": "Reservblock kvar. Larmet går när värdet kryper under diskens egen tröskel, som är 10 % för Samsung-diskarna och 50 % för Micron-disken.",
+          "options": {
+            "displayMode": "gradient",
+            "orientation": "horizontal",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "showUnfilled": true,
+            "valueMode": "color",
+            "minVizHeight": 16,
+            "minVizWidth": 8,
+            "maxVizHeight": 300,
+            "namePlacement": "left",
+            "sizing": "auto",
+            "legend": {
+              "showLegend": false
+            }
+          }
+        },
+        {
+          "id": 13,
+          "type": "bargauge",
+          "title": "Beräknade år till 100 % slitage",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "gridPos": {
+            "x": 16,
+            "y": 27,
+            "w": 8,
+            "h": 8
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "custom": {},
+              "unit": "y",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "red",
+                    "value": null
+                  },
+                  {
+                    "color": "yellow",
+                    "value": 3
+                  },
+                  {
+                    "color": "green",
+                    "value": 8
+                  }
+                ]
+              },
+              "max": 30,
+              "min": 0
+            },
+            "overrides": []
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${DS_PROMETHEUS}"
+              },
+              "editorMode": "code",
+              "expr": "clamp_max((100 - smartctl_device_percentage_used{instance=~\"$node\", device=~\"$device\"}) / clamp_min(smartctl_device_percentage_used{instance=~\"$node\", device=~\"$device\"}, 1) * smartctl_device_power_on_seconds{instance=~\"$node\", device=~\"$device\"} / 31557600, 99) * on(instance, device) group_left(model_name, serial_number, firmware_version) smartctl_device",
+              "refId": "A",
+              "range": false,
+              "legendFormat": "{{instance}} · {{device}} · {{model_name}}",
+              "instant": true
+            }
+          ],
+          "description": "Framskrivning från diskens egen historik: kvarvarande slitage delat med slitagetakten hittills, räknat på faktisk drifttid. Grovt mått, och diskar med 0 % slitage klampas till 99 år.",
+          "options": {
+            "displayMode": "gradient",
+            "orientation": "horizontal",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "showUnfilled": true,
+            "valueMode": "color",
+            "minVizHeight": 16,
+            "minVizWidth": 8,
+            "maxVizHeight": 300,
+            "namePlacement": "left",
+            "sizing": "auto",
+            "legend": {
+              "showLegend": false
+            }
+          }
+        },
+        {
+          "id": 14,
+          "type": "row",
+          "title": "Skrivlast",
+          "collapsed": false,
+          "gridPos": {
+            "x": 0,
+            "y": 35,
+            "w": 24,
+            "h": 1
+          },
+          "panels": []
+        },
+        {
+          "id": 15,
+          "type": "timeseries",
+          "title": "Skrivhastighet",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "gridPos": {
+            "x": 0,
+            "y": 36,
+            "w": 12,
+            "h": 8
+          },
+          "fieldConfig": {
+            "defaults": {
+              "custom": {
+                "drawStyle": "line",
+                "lineInterpolation": "smooth",
+                "lineWidth": 2,
+                "fillOpacity": 8,
+                "gradientMode": "opacity",
+                "showPoints": "never",
+                "pointSize": 5,
+                "spanNulls": true,
+                "axisPlacement": "auto",
+                "axisLabel": "",
+                "axisColorMode": "text",
+                "axisBorderShow": false,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "barAlignment": 0,
+                "thresholdsStyle": {
+                  "mode": "off"
+                },
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false
+              },
+              "mappings": [],
+              "unit": "Bps",
+              "color": {
+                "mode": "palette-classic"
+              }
+            },
+            "overrides": []
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${DS_PROMETHEUS}"
+              },
+              "editorMode": "code",
+              "expr": "rate(smartctl_device_bytes_written{instance=~\"$node\", device=~\"$device\"}[$__rate_interval]) * on(instance, device) group_left(model_name, serial_number, firmware_version) smartctl_device",
+              "refId": "A",
+              "range": true,
+              "legendFormat": "{{instance}} · {{device}} · {{model_name}}"
+            }
+          ],
+          "options": {
+            "legend": {
+              "displayMode": "table",
+              "placement": "bottom",
+              "showLegend": true,
+              "sortBy": "Max",
+              "sortDesc": true,
+              "calcs": [
+                "mean",
+                "max",
+                "lastNotNull"
+              ]
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc",
+              "hideZeros": false
+            }
+          },
+          "description": "Derivata av bytes_written. Visar vilken disk som faktiskt tar skrivlasten."
+        },
+        {
+          "id": 16,
+          "type": "bargauge",
+          "title": "Totalt skrivet",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "gridPos": {
+            "x": 12,
+            "y": 36,
+            "w": 12,
+            "h": 8
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "custom": {},
+              "unit": "bytes",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "blue",
+                    "value": null
+                  }
+                ]
+              },
+              "min": 0
+            },
+            "overrides": []
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${DS_PROMETHEUS}"
+              },
+              "editorMode": "code",
+              "expr": "smartctl_device_bytes_written{instance=~\"$node\", device=~\"$device\"} * on(instance, device) group_left(model_name, serial_number, firmware_version) smartctl_device",
+              "refId": "A",
+              "range": false,
+              "legendFormat": "{{instance}} · {{device}} · {{model_name}}",
+              "instant": true
+            }
+          ],
+          "description": "Ackumulerat sedan diskens första start, inte sedan noden bootade.",
+          "options": {
+            "displayMode": "gradient",
+            "orientation": "horizontal",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "showUnfilled": true,
+            "valueMode": "color",
+            "minVizHeight": 16,
+            "minVizWidth": 8,
+            "maxVizHeight": 300,
+            "namePlacement": "left",
+            "sizing": "auto",
+            "legend": {
+              "showLegend": false
+            }
+          }
+        },
+        {
+          "id": 17,
+          "type": "row",
+          "title": "SATA-attribut",
+          "collapsed": false,
+          "gridPos": {
+            "x": 0,
+            "y": 44,
+            "w": 24,
+            "h": 1
+          },
+          "panels": []
+        },
+        {
+          "id": 18,
+          "type": "table",
+          "title": "SATA SMART-attribut (råvärden)",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "gridPos": {
+            "x": 0,
+            "y": 45,
+            "w": 24,
+            "h": 9
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "mappings": [],
+              "custom": {
+                "align": "auto",
+                "cellOptions": {
+                  "type": "auto"
+                },
+                "inspect": false,
+                "filterable": true
+              },
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "text",
+                    "value": null
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${DS_PROMETHEUS}"
+              },
+              "editorMode": "code",
+              "expr": "max by (instance, device, attribute_name) (smartctl_device_attribute{instance=~\"$node\", device=~\"$device\", attribute_value_type=\"raw\", attribute_name=~\"Reallocated_Sector_Ct|CRC_Error_Count|Wear_Leveling_Count|Used_Rsvd_Blk_Cnt_Tot|Uncorrectable_Error_Cnt|Runtime_Bad_Block|Power_On_Hours|Total_LBAs_Written\"})",
+              "refId": "A",
+              "range": false,
+              "instant": true,
+              "format": "table"
+            }
+          ],
+          "description": "SATA-diskarna saknar NVMe:s percentage_used, så deras hälsa läses här istället. Reallocated_Sector_Ct och CRC_Error_Count ska vara 0.",
+          "options": {
+            "showHeader": true,
+            "cellHeight": "sm",
+            "footer": {
+              "show": false,
+              "reducer": [
+                "sum"
+              ],
+              "countRows": false,
+              "fields": ""
+            }
+          },
+          "transformations": [
+            {
+              "id": "organize",
+              "options": {
+                "excludeByName": {
+                  "Time": true
+                },
+                "renameByName": {
+                  "instance": "Nod",
+                  "device": "Enhet",
+                  "attribute_name": "Attribut",
+                  "Value": "Råvärde"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
