@@ -7,9 +7,6 @@ metadata:
   labels:
     grafana.internal/instance: grafana
 spec:
-  client:
-    headers:
-      Authorization: "Bearer ${OPERATOR_TOKEN}"
   config:
     analytics:
       check_for_updates: "false"
