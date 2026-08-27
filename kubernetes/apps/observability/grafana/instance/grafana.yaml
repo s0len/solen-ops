@@ -37,9 +37,8 @@ spec:
       auth_url: https://idm.${SECRET_DOMAIN}/ui/oauth2
       token_url: https://idm.${SECRET_DOMAIN}/oauth2/token
       use_pkce: "true"
-      role_attribute_path: contains(groups[*], 'admins') && 'Admin' || 'Viewer'
-      # allow_assign_grafana_admin is a no-op without this path
-      grafana_admin_attribute_path: contains(groups[*], 'admins')
+      # kanidm sends groups as SPNs, so the bare name never matches
+      role_attribute_path: contains(groups[*], 'admins@idm.${SECRET_DOMAIN}') && 'GrafanaAdmin' || 'Viewer'
       allow_assign_grafana_admin: "true"
       signing_algorithm: ES256
     database:
