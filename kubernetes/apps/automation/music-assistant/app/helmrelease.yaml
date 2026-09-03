@@ -54,6 +54,10 @@ spec:
     service:
       app:
         controller: *app
+        type: LoadBalancer
+        annotations:
+          lbipam.cilium.io/ips: "${MUSIC_ASSISTANT_LB_IP}"
+          external-dns.alpha.kubernetes.io/hostname: "ma.${SECRET_DOMAIN}"
         ports:
           http:
             port: 8095
