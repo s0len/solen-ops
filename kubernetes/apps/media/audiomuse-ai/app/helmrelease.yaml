@@ -57,7 +57,7 @@ spec:
                 cpu: 50m
                 memory: 256Mi
               limits:
-                memory: 1Gi
+                memory: 2Gi
       worker:
         annotations:
           reloader.stakater.com/auto: "true"
