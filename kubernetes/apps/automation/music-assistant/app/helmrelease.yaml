@@ -60,6 +60,9 @@ spec:
           external-dns.alpha.kubernetes.io/hostname: "ma.${SECRET_DOMAIN}"
         ports:
           http:
+            port: 80
+            targetPort: 8095
+          api:
             port: 8095
 
     route:
