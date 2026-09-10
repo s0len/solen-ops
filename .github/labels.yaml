@@ -39,3 +39,14 @@
   color: "370fb2"
 - name: hold
   color: "ee0701"
+# Triage (docs/agents/triage-labels.md)
+- name: needs-triage
+  color: "fbca04"
+- name: needs-info
+  color: "d876e3"
+- name: ready-for-agent
+  color: "0075ca"
+- name: ready-for-human
+  color: "e99695"
+- name: wontfix
+  color: "ffffff"
