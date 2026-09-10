@@ -1,15 +1,20 @@
-"""Gate tests: real Alertmanager payloads in, GitHub issues and comments out.
+"""Gate tests: real Alertmanager payloads in; GitHub issues, comments, signed
+Hermes forwards and metrics out.
 
 The Gate runs as the real script in a subprocess, configured only through its
 environment, and is driven purely over HTTP. GitHub is an in-process fake that
-declares existing issues and records what the Gate creates and comments. The
-tests assert only on what leaves the Gate: HTTP status codes, created issues,
-comments.
+declares existing issues and records what the Gate creates and comments.
+Hermes is an in-process fake that records every forward and verifies its
+generic V2 signature with the shared secret. The tests assert only on what
+leaves the Gate: HTTP status codes, created issues, comments, forwards, the
+metrics page and the log.
 
 The one piece of Gate internals the tests know is the marker format, because
 it is a persisted contract: changing it would orphan every open Incident Issue.
+The Run Budget state file is only ever handed to the Gate as a path.
 """
 import hashlib
+import hmac
 import json
 import os
 import socket
@@ -28,6 +33,11 @@ from urllib.parse import parse_qs, urlparse
 GATE_SCRIPT = Path(__file__).resolve().parents[1] / "app" / "scripts" / "gate.py"
 INCIDENTS_REPO = "example/incidents"
 TOKEN = "test-token"
+HERMES_SECRET = "hermes-route-secret-for-tests"
+COUNTER_NAMES = ("notifications_received_total", "issues_created_total", "bare_issues_total", "comments_total",
+                 "forwards_total", "forward_failures_total", "github_errors_total")
+GAUGE_NAMES = ("run_budget_limit", "run_budget_used", "run_budget_remaining",
+               "heartbeat_age_seconds", "heartbeat_file_present")
 ISO_UTC = r"\d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ"
 
 
@@ -211,12 +221,99 @@ class FakeGitHub:
         return Handler
 
 
+# --------------------------------------------------------------------------- fake hermes
+
+class FakeHermes:
+    """The Hermes webhook gateway's `investigate` route: records every forward
+    and checks its generic V2 signature (hex HMAC-SHA256 of "<timestamp>.<body>",
+    headers X-Webhook-Signature-V2 and X-Webhook-Timestamp) with the shared secret."""
+
+    ROUTE_PATH = "/webhooks/investigate"
+    REPLAY_WINDOW_SECONDS = 300
+
+    def __init__(self):
+        self.lock = threading.Lock()
+        self.reset()
+        self.server = ThreadingHTTPServer(("127.0.0.1", 0), self._handler())
+        self.server.daemon_threads = True
+        self.thread = threading.Thread(target=self.server.serve_forever, daemon=True)
+        self.thread.start()
+        self.url = f"http://127.0.0.1:{self.server.server_address[1]}{self.ROUTE_PATH}"
+
+    def reset(self):
+        with self.lock:
+            self.mode = "ok"
+            self.requests = []
+
+    def stop(self):
+        self.server.shutdown()
+        self.server.server_close()
+
+    def _handler(self):
+        fake = self
+
+        class Handler(BaseHTTPRequestHandler):
+            protocol_version = "HTTP/1.1"
+
+            def log_message(self, *args):
+                return None
+
+            def _json(self, status, body):
+                data = json.dumps(body).encode()
+                self.send_response(status)
+                self.send_header("Content-Type", "application/json")
+                self.send_header("Content-Length", str(len(data)))
+                self.end_headers()
+                self.wfile.write(data)
+
+            def do_POST(self):
+                raw = self.rfile.read(int(self.headers.get("Content-Length", "0")))
+                timestamp = self.headers.get("X-Webhook-Timestamp", "")
+                signature = self.headers.get("X-Webhook-Signature-V2", "")
+                expected = hmac.new(HERMES_SECRET.encode(), timestamp.encode() + b"." + raw, hashlib.sha256).hexdigest()
+                try:
+                    fresh = abs(time.time() - int(timestamp)) <= fake.REPLAY_WINDOW_SECONDS
+                except ValueError:
+                    fresh = False
+                try:
+                    body = json.loads(raw)
+                except ValueError:
+                    body = None
+                with fake.lock:
+                    fake.requests.append({
+                        "path": self.path,
+                        "headers": {k.lower(): v for k, v in self.headers.items()},
+                        "raw": raw,
+                        "body": body,
+                        "signature_valid": bool(signature) and hmac.compare_digest(signature, expected),
+                        "timestamp_fresh": fresh,
+                    })
+                    mode = fake.mode
+                if mode == "error":
+                    self._json(500, {"error": "gateway exploded"})
+                elif mode == "disconnect":
+                    self.close_connection = True
+                    self.connection.close()
+                elif mode == "hang":
+                    time.sleep(3)
+                    self._json(202, {"status": "accepted"})
+                elif not fresh or not signature or not hmac.compare_digest(signature, expected):
+                    self._json(401, {"error": "Invalid signature"})
+                elif self.path != fake.ROUTE_PATH:
+                    self._json(404, {"error": "no such route"})
+                else:
+                    self._json(202, {"status": "accepted", "route": "investigate", "delivery_id":
+                                     self.headers.get("X-Request-ID", "")})
+
+        return Handler
+
+
 # --------------------------------------------------------------------------- the gate under test
 
 class GateProcess:
     """The real gate.py, started as a subprocess with only its environment."""
 
-    def __init__(self, github_url):
+    def __init__(self, github_url, hermes=None, **extra_env):
         with socket.socket() as probe:
             probe.bind(("127.0.0.1", 0))
             self.port = probe.getsockname()[1]
@@ -224,6 +321,12 @@ class GateProcess:
         self.log = tempfile.NamedTemporaryFile(prefix="gate-", suffix=".log", delete=False)
         env = dict(os.environ, PORT=str(self.port), GITHUB_API_URL=github_url,
                    GITHUB_INCIDENTS_REPO=INCIDENTS_REPO, GITHUB_TOKEN=TOKEN, GITHUB_TIMEOUT_SECONDS="5")
+        for key in ("HERMES_WEBHOOK_URL", "HERMES_WEBHOOK_SECRET", "BUDGET_STATE_FILE", "RUN_BUDGET_PER_DAY",
+                    "HEARTBEAT_FILE", "GATE_FAKE_NOW", "HERMES_TIMEOUT_SECONDS"):
+            env.pop(key, None)
+        if hermes is not None:
+            env.update(HERMES_WEBHOOK_URL=hermes.url, HERMES_WEBHOOK_SECRET=HERMES_SECRET)
+        env.update({key: str(value) for key, value in extra_env.items() if value is not None})
         self.process = subprocess.Popen([sys.executable, str(GATE_SCRIPT)], env=env,
                                         stdout=self.log, stderr=subprocess.STDOUT)
         deadline = time.monotonic() + 10
@@ -272,22 +375,46 @@ class GateProcess:
         status, body = self.post_raw(json.dumps(payload).encode(), path)
         return status, json.loads(body) if body else None
 
+    def metrics(self):
+        """The metrics page as {series name: value} plus the set of HELP/TYPE-declared names."""
+        status, body = self.get("/metrics")
+        assert status == 200, body
+        values, declared = {}, {}
+        for line in body.decode().splitlines():
+            if line.startswith("# HELP "):
+                declared.setdefault(line.split()[2], set()).add("help")
+            elif line.startswith("# TYPE "):
+                declared.setdefault(line.split()[2], set()).add(line.split()[3])
+            elif line.strip():
+                name, value = line.split()
+                values[name] = float(value)
+        return values, declared
+
 
 # --------------------------------------------------------------------------- tests
 
 class GateTests(unittest.TestCase):
+    """Deduplication and GitHub behaviour with Hermes healthy and an ample Run Budget."""
+
     @classmethod
     def setUpClass(cls):
         cls.github = FakeGitHub()
-        cls.gate = GateProcess(cls.github.url)
+        cls.hermes = FakeHermes()
+        cls.state_dir = tempfile.TemporaryDirectory(prefix="gate-state-")
+        cls.gate = GateProcess(cls.github.url, hermes=cls.hermes,
+                               BUDGET_STATE_FILE=os.path.join(cls.state_dir.name, "run-budget.json"),
+                               RUN_BUDGET_PER_DAY=1000)
 
     @classmethod
     def tearDownClass(cls):
         cls.gate.stop()
         cls.github.stop()
+        cls.hermes.stop()
+        cls.state_dir.cleanup()
 
     def setUp(self):
         self.github.reset()
+        self.hermes.reset()
 
     def tearDown(self):
         self.github.mode = "ok"
@@ -503,6 +630,300 @@ class GateTests(unittest.TestCase):
         for request in self.github.requests:
             self.assertEqual(request["authorization"], f"Bearer {TOKEN}")
             self.assertTrue(request["path"].startswith(f"/repos/{INCIDENTS_REPO}/issues"), request["path"])
+
+
+class BudgetAndForwardTests(unittest.TestCase):
+    """Run Budget and Hermes forwarding: a fresh Gate and state file per test."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.github = FakeGitHub()
+        cls.hermes = FakeHermes()
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.github.stop()
+        cls.hermes.stop()
+
+    def setUp(self):
+        self.github.reset()
+        self.hermes.reset()
+        self.state_dir = tempfile.TemporaryDirectory(prefix="gate-state-")
+        self.state_file = os.path.join(self.state_dir.name, "run-budget.json")
+        self.gates = []
+
+    def tearDown(self):
+        for gate in self.gates:
+            gate.stop()
+        self.state_dir.cleanup()
+
+    def start_gate(self, hermes="default", **env):
+        hermes = self.hermes if hermes == "default" else hermes
+        gate = GateProcess(self.github.url, hermes=hermes, BUDGET_STATE_FILE=self.state_file, **env)
+        self.gates.append(gate)
+        return gate
+
+    def budget(self, gate):
+        values, _ = gate.metrics()
+        return {k: values[f"alert_agent_gate_{k}"] for k in ("run_budget_limit", "run_budget_used", "run_budget_remaining")}
+
+    def counter(self, gate, name):
+        return gate.metrics()[0][f"alert_agent_gate_{name}"]
+
+    # -- new Alert Group under budget
+
+    def test_new_alert_group_under_budget_creates_issue_consumes_one_slot_and_forwards_one_signed_prompt(self):
+        gate = self.start_gate(RUN_BUDGET_PER_DAY=3)
+        payload = notification(alerts=[alert("KubePodCrashLooping", pod="sonarr-0"),
+                                       alert("KubePodCrashLooping", pod="radarr-0")])
+
+        status, body = gate.post(payload)
+
+        self.assertEqual(status, 200, body)
+        self.assertEqual(body["action"], "created")
+        self.assertIs(body["forwarded"], True)
+        issue = self.github.created[0]
+        self.assertEqual(issue["labels"], ["needs-triage"])
+        self.assertEqual(self.budget(gate), {"run_budget_limit": 3, "run_budget_used": 1, "run_budget_remaining": 2})
+
+        self.assertEqual(len(self.hermes.requests), 1)
+        forward = self.hermes.requests[0]
+        self.assertEqual(forward["path"], FakeHermes.ROUTE_PATH)
+        self.assertTrue(forward["signature_valid"], forward["headers"])
+        self.assertTrue(forward["timestamp_fresh"], forward["headers"])
+        self.assertIn("x-webhook-signature-v2", forward["headers"])
+        self.assertIn("x-webhook-timestamp", forward["headers"])
+        self.assertNotIn("x-webhook-signature", forward["headers"])
+        self.assertEqual(forward["headers"]["content-type"], "application/json")
+        self.assertIn(str(issue["number"]), forward["headers"]["x-request-id"])
+        self.assertEqual(list(forward["body"]), ["prompt"])
+        prompt = forward["body"]["prompt"]
+        for expected in (f"#{issue['number']}", issue["html_url"], INCIDENTS_REPO, "KubePodCrashLooping",
+                         payload["groupKey"], "runbooks/KubePodCrashLooping.md", "runbooks/patterns/",
+                         "sonarr-0", "radarr-0", "2026-09-10T11:20:03.117Z", "Pod is crash looping",
+                         "prometheus.observability:9090",
+                         "prometheus-operated.observability.svc.cluster.local:9090",
+                         "victoria-logs-server.observability.svc.cluster.local:9428",
+                         "alertmanager-operated.observability.svc.cluster.local:9093",
+                         "Verified evidence", "Unverified hypotheses", "Checks a human must run",
+                         "needs-info", "NEVER exec", "ONE comment", "Runbook proposal"):
+            self.assertIn(expected, prompt)
+        self.assertNotRegex(prompt, r"\$\{?(issue|alert|group|incidents|received|external|prometheus|victorialogs|alertmanager)")
+        self.assertEqual(self.counter(gate, "forwards_total"), 1)
+        self.assertEqual(self.counter(gate, "forward_failures_total"), 0)
+        self.assertEqual(self.counter(gate, "issues_created_total"), 1)
+        self.assertEqual(self.counter(gate, "bare_issues_total"), 0)
+
+    def test_service_urls_come_from_the_environment(self):
+        gate = self.start_gate(PROMETHEUS_URL="http://prom.test:9090/", VICTORIALOGS_URL="http://vl.test:9428",
+                               ALERTMANAGER_URL="http://am.test:9093")
+        gate.post(notification())
+
+        prompt = self.hermes.requests[0]["body"]["prompt"]
+        self.assertIn("http://prom.test:9090/api/v1/query", prompt)
+        self.assertIn("http://vl.test:9428/select/logsql/query", prompt)
+        self.assertIn("http://am.test:9093/api/v2/alerts", prompt)
+
+    # -- over budget
+
+    def test_over_budget_creates_bare_issue_and_forwards_nothing(self):
+        gate = self.start_gate(RUN_BUDGET_PER_DAY=2)
+        outcomes = [gate.post(notification(name))[1] for name in ("AlertOne", "AlertTwo", "AlertThree")]
+
+        self.assertEqual([o["action"] for o in outcomes], ["created", "created", "created-bare"])
+        self.assertNotIn("forwarded", outcomes[2])
+        self.assertEqual([i["labels"] for i in self.github.created],
+                         [["needs-triage"], ["needs-triage"], ["needs-triage", "uninvestigated"]])
+        self.assertIn("AlertThree", self.github.created[2]["body"])
+        self.assertEqual(len(self.hermes.requests), 2)
+        self.assertEqual({r["body"]["prompt"].count("AlertThree") for r in self.hermes.requests}, {0})
+        self.assertEqual(self.budget(gate), {"run_budget_limit": 2, "run_budget_used": 2, "run_budget_remaining": 0})
+        self.assertEqual(self.counter(gate, "bare_issues_total"), 1)
+        self.assertEqual(self.counter(gate, "issues_created_total"), 3)
+
+    def test_zero_budget_means_every_issue_is_bare(self):
+        gate = self.start_gate(RUN_BUDGET_PER_DAY=0)
+
+        status, body = gate.post(notification())
+
+        self.assertEqual((status, body["action"]), (200, "created-bare"))
+        self.assertEqual(self.github.created[0]["labels"], ["needs-triage", "uninvestigated"])
+        self.assertEqual(self.hermes.requests, [])
+
+    # -- repeats and resolutions
+
+    def test_still_firing_and_resolved_never_touch_the_budget_or_hermes(self):
+        gate = self.start_gate(RUN_BUDGET_PER_DAY=2)
+        firing = notification()
+        resolved = notification(status="resolved")
+        number = self.github.declare_issue(marker_for(firing["groupKey"]))
+
+        self.assertEqual(gate.post(firing)[1], {"action": "still-firing", "issue": number})
+        self.assertEqual(gate.post(firing)[1], {"action": "still-firing", "issue": number})
+        self.assertEqual(gate.post(resolved)[1], {"action": "resolved", "issue": number})
+        self.assertEqual(gate.post(notification("Other", status="resolved"))[1], {"action": "dropped"})
+
+        self.assertEqual(len(self.github.comments), 3)
+        self.assertEqual(self.hermes.requests, [])
+        self.assertEqual(self.budget(gate), {"run_budget_limit": 2, "run_budget_used": 0, "run_budget_remaining": 2})
+        self.assertEqual(self.counter(gate, "comments_total"), 3)
+        self.assertEqual(self.counter(gate, "notifications_received_total"), 4)
+
+    # -- rollover and persistence
+
+    def test_budget_rolls_over_at_utc_midnight_and_not_before(self):
+        late = self.start_gate(RUN_BUDGET_PER_DAY=1, GATE_FAKE_NOW="2026-09-10T23:59:58Z")
+        self.assertEqual(late.post(notification("First"))[1]["action"], "created")
+        self.assertEqual(late.post(notification("Second"))[1]["action"], "created-bare")
+        late.stop()
+        self.gates.remove(late)
+
+        last_second = self.start_gate(RUN_BUDGET_PER_DAY=1, GATE_FAKE_NOW="2026-09-10T23:59:59Z")
+        self.assertEqual(last_second.post(notification("Third"))[1]["action"], "created-bare")
+        self.assertEqual(self.budget(last_second), {"run_budget_limit": 1, "run_budget_used": 1, "run_budget_remaining": 0})
+        last_second.stop()
+        self.gates.remove(last_second)
+
+        midnight = self.start_gate(RUN_BUDGET_PER_DAY=1, GATE_FAKE_NOW="2026-09-11T00:00:00Z")
+        self.assertEqual(self.budget(midnight), {"run_budget_limit": 1, "run_budget_used": 0, "run_budget_remaining": 1})
+        self.assertEqual(midnight.post(notification("Fourth"))[1]["action"], "created")
+        self.assertEqual(midnight.post(notification("Fifth"))[1]["action"], "created-bare")
+
+        self.assertEqual([len(r["body"]["prompt"]) > 0 for r in self.hermes.requests], [True, True])
+        self.assertIn("First", self.hermes.requests[0]["body"]["prompt"])
+        self.assertIn("Fourth", self.hermes.requests[1]["body"]["prompt"])
+
+    def test_budget_survives_a_gate_restart_within_the_same_day(self):
+        first = self.start_gate(RUN_BUDGET_PER_DAY=2)
+        self.assertEqual(first.post(notification("First"))[1]["action"], "created")
+        first.stop()
+        self.gates.remove(first)
+        self.assertTrue(os.path.exists(self.state_file))
+
+        second = self.start_gate(RUN_BUDGET_PER_DAY=2)
+        self.assertEqual(self.budget(second), {"run_budget_limit": 2, "run_budget_used": 1, "run_budget_remaining": 1})
+        self.assertEqual(second.post(notification("Second"))[1]["action"], "created")
+        self.assertEqual(second.post(notification("Third"))[1]["action"], "created-bare")
+        self.assertEqual(len(self.hermes.requests), 2)
+
+    def test_budget_without_a_state_file_still_counts_within_the_process(self):
+        gate = GateProcess(self.github.url, hermes=self.hermes, RUN_BUDGET_PER_DAY=1)
+        self.gates.append(gate)
+
+        self.assertEqual(gate.post(notification("First"))[1]["action"], "created")
+        self.assertEqual(gate.post(notification("Second"))[1]["action"], "created-bare")
+        self.assertIn("BUDGET_STATE_FILE is empty", gate.read_log())
+
+    # -- hermes unavailable
+
+    def test_hermes_error_leaves_the_issue_counts_a_failure_and_answers_alertmanager_with_success(self):
+        gate = self.start_gate(RUN_BUDGET_PER_DAY=5)
+        self.hermes.mode = "error"
+
+        status, body = gate.post(notification())
+
+        self.assertEqual(status, 200, body)
+        self.assertEqual(body["action"], "created")
+        self.assertIs(body["forwarded"], False)
+        self.assertEqual(len(self.github.created), 1)
+        self.assertEqual(self.github.created[0]["labels"], ["needs-triage"])
+        self.assertEqual(self.counter(gate, "forward_failures_total"), 1)
+        self.assertEqual(self.counter(gate, "forwards_total"), 0)
+        self.assertEqual(self.budget(gate)["run_budget_used"], 1)
+        self.assertIn("forward_failed", gate.read_log())
+
+        self.hermes.mode = "ok"
+        status, body = gate.post(notification())
+        self.assertEqual((status, body["action"]), (200, "still-firing"))
+        self.assertEqual(len(self.hermes.requests), 1)
+
+    def test_hermes_unreachable_or_hanging_still_answers_alertmanager_with_success(self):
+        gate = self.start_gate(RUN_BUDGET_PER_DAY=5, HERMES_TIMEOUT_SECONDS=1)
+        for mode, name in (("disconnect", "Dropped"), ("hang", "Hung")):
+            with self.subTest(mode=mode):
+                self.hermes.mode = mode
+                status, body = gate.post(notification(name))
+                self.assertEqual(status, 200, body)
+                self.assertEqual((body["action"], body["forwarded"]), ("created", False))
+        self.assertEqual(self.counter(gate, "forward_failures_total"), 2)
+        self.assertEqual(len(self.github.created), 2)
+
+        down = GateProcess(self.github.url, BUDGET_STATE_FILE=self.state_file, RUN_BUDGET_PER_DAY=5,
+                           HERMES_WEBHOOK_URL="http://127.0.0.1:9/webhooks/investigate", HERMES_WEBHOOK_SECRET="x")
+        self.gates.append(down)
+        status, body = down.post(notification("Refused"))
+        self.assertEqual((status, body["action"], body["forwarded"]), (200, "created", False))
+        self.assertEqual(self.counter(down, "forward_failures_total"), 1)
+
+    # -- github failure
+
+    def test_github_create_failure_leaves_the_budget_unchanged(self):
+        gate = self.start_gate(RUN_BUDGET_PER_DAY=1)
+        self.github.mode = "error"
+        self.assertEqual(gate.post(notification("First"))[0], 502)
+        self.assertEqual(self.budget(gate)["run_budget_used"], 0)
+        self.assertEqual(self.counter(gate, "github_errors_total"), 1)
+        self.assertEqual(self.hermes.requests, [])
+
+        self.github.mode = "ok"
+        self.assertEqual(gate.post(notification("First"))[1]["action"], "created")
+        self.assertEqual(gate.post(notification("Second"))[1]["action"], "created-bare")
+        self.assertEqual(self.budget(gate)["run_budget_used"], 1)
+        self.assertEqual(len(self.hermes.requests), 1)
+
+    # -- forwarding disabled
+
+    def test_forwarding_disabled_when_hermes_url_is_empty(self):
+        gate = self.start_gate(hermes=None, RUN_BUDGET_PER_DAY=5)
+
+        status, body = gate.post(notification())
+
+        self.assertEqual(status, 200, body)
+        self.assertEqual(body["action"], "created-bare")
+        self.assertEqual(self.github.created[0]["labels"], ["needs-triage", "uninvestigated"])
+        self.assertEqual(self.hermes.requests, [])
+        self.assertEqual(self.budget(gate)["run_budget_used"], 0)
+        self.assertEqual(self.counter(gate, "forward_failures_total"), 0)
+        self.assertIn("HERMES_WEBHOOK_URL is empty", gate.read_log())
+        self.assertIn("forwarding_disabled", gate.read_log())
+
+    # -- metrics
+
+    def test_metrics_expose_every_series_with_help_and_type(self):
+        heartbeat = os.path.join(self.state_dir.name, "heartbeat.txt")
+        gate = self.start_gate(RUN_BUDGET_PER_DAY=7, HEARTBEAT_FILE=heartbeat)
+
+        values, declared = gate.metrics()
+        for name in COUNTER_NAMES:
+            full = f"alert_agent_gate_{name}"
+            self.assertEqual(declared.get(full), {"help", "counter"}, full)
+            self.assertEqual(values[full], 0, full)
+        for name in GAUGE_NAMES:
+            full = f"alert_agent_gate_{name}"
+            self.assertEqual(declared.get(full), {"help", "gauge"}, full)
+        self.assertEqual(values["alert_agent_gate_run_budget_limit"], 7)
+        self.assertEqual(values["alert_agent_gate_heartbeat_file_present"], 0)
+        self.assertGreaterEqual(values["alert_agent_gate_heartbeat_age_seconds"], 1e9)
+
+        Path(heartbeat).write_text("ok\n")
+        values, _ = gate.metrics()
+        self.assertEqual(values["alert_agent_gate_heartbeat_file_present"], 1)
+        self.assertLess(values["alert_agent_gate_heartbeat_age_seconds"], 60)
+
+        two_days = time.time() - 2 * 86400
+        os.utime(heartbeat, (two_days, two_days))
+        values, _ = gate.metrics()
+        self.assertGreater(values["alert_agent_gate_heartbeat_age_seconds"], 86400 * 1.9)
+        self.assertLess(values["alert_agent_gate_heartbeat_age_seconds"], 86400 * 2.1)
+
+        gate.post(notification())
+        values, _ = gate.metrics()
+        self.assertEqual(values["alert_agent_gate_notifications_received_total"], 1)
+        self.assertEqual(values["alert_agent_gate_issues_created_total"], 1)
+        self.assertEqual(values["alert_agent_gate_forwards_total"], 1)
+        self.assertEqual(values["alert_agent_gate_run_budget_used"], 1)
+        self.assertEqual(values["alert_agent_gate_run_budget_remaining"], 6)
+        self.assertEqual(gate.get("/healthz")[0], 200)
 
 
 if __name__ == "__main__":
