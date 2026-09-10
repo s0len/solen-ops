@@ -1,0 +1,190 @@
+# Template. hermes-config-render.sh substitutes ${HERMES_WEBHOOK_SECRET} and writes
+# $HERMES_HOME/config.yaml (/opt/data/config.yaml) before the gateway starts;
+# Hermes' gateway loader does NOT expand ${...} itself.
+# Flux substitution MUST be disabled on the ConfigMap that carries this file.
+
+# Without this the loader calls the config pre-v12 and skips every migration.
+_config_version: 41
+
+model:
+  provider: "openai-codex"
+  # Tier ladder on this seat, strongest first: gpt-5.6-sol, gpt-5.6-terra, gpt-5.6-luna.
+  # Top tier = gpt-5.6-sol — pin the `fix` cron to it. Investigations run one tier down.
+  default: "gpt-5.6-terra"
+
+agent:
+  max_turns: 30
+  # kanban is here because the cron platform default enables it; without it the
+  # resolved cron surface is [kanban, terminal], not the [terminal] declared below.
+  disabled_toolsets: [memory, skills, session_search, cronjob, kanban]
+
+approvals:
+  # mode governs the real decision. The default `smart` hands a flagged command to
+  # a guardian LLM that may approve it with nobody watching; manual has no human on
+  # a webhook session, so it fails closed.
+  mode: manual
+  # These two only bind when the caller reaches the unattended branch.
+  # check_all_command_guards() skips it whenever HERMES_EXEC_ASK is set, which
+  # start_gateway() does process-wide, so they do NOT govern terminal commands in
+  # this runtime. Kept because they are correct if that changes, and because
+  # _run_approval_gate and check_execute_code_guard do honour them.
+  # The layers that actually hold: the deny globs below, mode: manual, and RBAC.
+  unattended_mode: deny
+  cron_mode: deny
+  single_query_mode: deny
+  # fnmatch globs, case-insensitive, full-match against the whole command and
+  # against each sub-command segment; a match blocks before yolo, mode:off and
+  # cron approve. `*verb*` rather than `kubectl verb` because flags sit between
+  # the two. A spaced form is used wherever the bare word appears in read output
+  # (`replicaset` vs ` set `, `reason=Created` vs ` create `, `envoy-proxy`).
+  # Over-blocking a read is noisy; missing a write is silent.
+  # NOT a sandbox: `bash script.sh` is never content-scanned, so a helper written
+  # in one turn and run in the next bypasses every glob. RBAC covers that.
+  deny:
+    - "*kubectl*delete*"
+    - "*kubectl*apply*"
+    - "*kubectl*patch*"
+    - "*kubectl*edit*"
+    - "*kubectl*replace*"
+    - "*kubectl*scale*"
+    - "*kubectl*rollout*"
+    - "*kubectl*exec*"
+    - "*kubectl*cp*"
+    - "*kubectl*drain*"
+    - "*kubectl*cordon*"
+    - "*kubectl*uncordon*"
+    - "*kubectl*port-forward*"
+    - "*kubectl* create *"
+    - "*kubectl* annotate *"
+    - "*kubectl* label *"
+    - "*kubectl* taint *"
+    - "*kubectl* set *"
+    - "*kubectl* expose *"
+    - "*kubectl* run *"
+    - "*kubectl* attach *"
+    - "*kubectl* debug *"
+    - "*kubectl* certificate approve*"
+    - "*kubectl* certificate deny*"
+    - "*kubectl* proxy*"
+    - "k *delete*"
+    - "k *apply*"
+    - "*curl*-x *"
+    - "*curl*-xpost*"
+    - "*curl*-xput*"
+    - "*curl*-xpatch*"
+    - "*curl*-xdelete*"
+    - "*curl*--request*"
+    - "*gh*api*--method*"
+    - "*gh*api*-x *"
+    - "*gh*api*-f *"
+    - "*gh*api*--field*"
+    - "*gh*api*--input*"
+    - "*gh*pr*merge*"
+    - "*gh*workflow*run*"
+    - "*gh*release*"
+    - "*gh*secret*"
+    - "*gh*repo*delete*"
+    - "*gh*auth*"
+    - "*helm*install*"
+    - "*helm*uninstall*"
+    - "*helm*upgrade*"
+    - "*helm*rollback*"
+    - "*helm*delete*"
+    - "*flux*suspend*"
+    - "*flux*resume*"
+    - "*flux*reconcile*"
+    - "*flux*delete*"
+    - "*flux*create*"
+    - "*flux*install*"
+    - "*flux*bootstrap*"
+    - "*talosctl*apply-config*"
+    - "*talosctl*patch*"
+    - "*talosctl*edit*"
+    - "*talosctl*reboot*"
+    - "*talosctl*shutdown*"
+    - "*talosctl*reset*"
+    - "*talosctl*upgrade*"
+    - "*talosctl*bootstrap*"
+    - "*talosctl*rollback*"
+    - "*talosctl*wipe*"
+    - "*talosctl*meta*"
+    - "*talosctl*etcd*"
+    - "*talosctl*restart*"
+    - "*talosctl*service *"
+    # Not a blanket `*git*push*`: the Fix run pushes its own branch (ADR-0001).
+    - "*git*push*main*"
+    - "*git*push*--force*"
+    - "*git*push*-f *"
+    # redact_secrets does not mask a YAML `secret:` line, and the same volume
+    # holds the OpenAI refresh token.
+    - "*opt/data/config.yaml*"
+    - "*.hermes/config.yaml*"
+    - "*opt/data/.env*"
+    - "*opt/data/auth.json*"
+
+security:
+  redact_secrets: true
+  # The scanner self-installs a downloaded binary onto the volume that holds the
+  # OpenAI refresh token, and its URL heuristics flag plain-HTTP in-cluster
+  # endpoints — the Agent's only evidence path. Cilium bounds egress instead.
+  tirith_enabled: false
+
+memory:
+  memory_enabled: false
+  user_profile_enabled: false
+  nudge_interval: 0
+
+skills:
+  creation_nudge_interval: 0
+
+auxiliary:
+  background_review:
+    enabled: false
+
+# Hints latch by writing config.yaml; the mount is read-only, so pre-set them.
+onboarding:
+  profile_build: "off"
+  seen:
+    busy_input_prompt: true
+    tool_progress_prompt: true
+    profile_build_offered: true
+    openclaw_residue_cleanup: true
+
+sessions:
+  auto_prune: true
+  retention_days: 30
+
+# The dispatcher runs inside the gateway by default and polls a board this Agent
+# has no use for; the kanban toolset is disabled above for the same reason.
+kanban:
+  dispatch_in_gateway: false
+
+platform_toolsets:
+  webhook: [terminal]
+  cron: [terminal]
+
+# Only webhook is enabled. Cron is the gateway's built-in scheduler, not a Platform.
+# api_server cannot be switched off here: gateway/config_env.py::_api_server enables
+# it from API_SERVER_KEY after this file is read. hermes.env.example pins a
+# deliberately short key, which is the documented way to keep that listener down.
+platforms:
+  webhook:
+    enabled: true
+    extra:
+      host: "0.0.0.0"
+      port: 8644
+      routes:
+        investigate:
+          secret: "${HERMES_WEBHOOK_SECRET}"
+          # Exactly one top-level field; the Gate renders the whole prompt.
+          prompt: "{prompt}"
+          toolsets: [terminal]
+          deliver: log
+
+telemetry:
+  shared_metrics:
+    enabled: false
+    send: false
+
+updates:
+  check: false
