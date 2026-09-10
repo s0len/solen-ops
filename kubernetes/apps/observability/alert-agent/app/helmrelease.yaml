@@ -1,0 +1,143 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s-labs/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: &app alert-agent
+spec:
+  interval: 30m
+  chartRef:
+    kind: OCIRepository
+    name: app-template
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      strategy: rollback
+      retries: 3
+
+  values:
+    controllers:
+      alert-agent:
+        # The Run Budget is a file on an RWO claim: one replica, never two at once.
+        replicas: 1
+        strategy: Recreate
+        annotations:
+          reloader.stakater.com/auto: "true"
+
+        containers:
+          gate:
+            image:
+              # stdlib-only script, so nothing is installed at runtime and the
+              # tag must stay in step with gate-tests.yaml.
+              repository: python
+              tag: 3.14-alpine
+            command: ["python3", "/scripts/gate.py"]
+            env:
+              TZ: ${TIMEZONE}
+              PORT: &port 8080
+              GITHUB_INCIDENTS_REPO: s0len/solen-ops-incidents
+              RUN_BUDGET_PER_DAY: "10"
+              BUDGET_STATE_FILE: /state/run-budget.json
+              # Empty until Hermes joins the pod: every new Alert Group becomes
+              # a Bare Issue and the budget stays untouched.
+              HERMES_WEBHOOK_URL: ""
+              HEARTBEAT_FILE: /data/heartbeat/last
+              PYTHONDONTWRITEBYTECODE: "1"
+              PYTHONUNBUFFERED: "1"
+              HOME: /tmp
+              TMPDIR: /tmp
+            envFrom:
+              - secretRef:
+                  name: alert-agent-github-secret
+              - secretRef:
+                  name: alert-agent-webhook-secret
+            probes:
+              liveness:
+                enabled: true
+                custom: true
+                spec:
+                  httpGet: { path: /healthz, port: *port }
+                  periodSeconds: 20
+                  timeoutSeconds: 5
+                  failureThreshold: 3
+              readiness:
+                enabled: true
+                custom: true
+                spec:
+                  httpGet: { path: /healthz, port: *port }
+                  periodSeconds: 15
+                  timeoutSeconds: 5
+                  failureThreshold: 3
+              startup:
+                enabled: true
+                custom: true
+                spec:
+                  httpGet: { path: /healthz, port: *port }
+                  periodSeconds: 3
+                  failureThreshold: 10
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities: { drop: ["ALL"] }
+            resources:
+              requests:
+                cpu: 50m
+                memory: 64Mi
+              limits:
+                memory: 256Mi
+
+    defaultPodOptions:
+      automountServiceAccountToken: false
+      enableServiceLinks: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534
+        runAsGroup: 65534
+        fsGroup: 65534
+        fsGroupChangePolicy: OnRootMismatch
+        seccompProfile:
+          type: RuntimeDefault
+
+    service:
+      app:
+        controller: *app
+        ports:
+          http:
+            port: *port
+
+    serviceMonitor:
+      app:
+        serviceName: *app
+        endpoints:
+          - port: http
+            scheme: http
+            path: /metrics
+            interval: 1m
+            scrapeTimeout: 10s
+
+    persistence:
+      scripts:
+        type: configMap
+        name: alert-agent-configmap
+        defaultMode: 0555
+        globalMounts:
+          - path: /scripts/gate.py
+            subPath: gate.py
+            readOnly: true
+      # One claim, two mounts: the whole volume read-only, and the Gate's own
+      # subdirectory read-write for the Run Budget state file.
+      data:
+        existingClaim: *app
+        globalMounts:
+          - path: /data
+            readOnly: true
+          - path: /state
+            subPath: gate
+      tmp:
+        type: emptyDir
+        sizeLimit: 32Mi
+        globalMounts:
+          - path: /tmp

@@ -12,6 +12,15 @@ spec:
     receiver: pushover
     repeatInterval: 12h
     routes:
+      # groupWait here is the Floor; the matcher is the Known-benign list,
+      # including the two alertnames the Agent raises about itself.
+      - receiver: alert-agent
+        continue: true
+        groupWait: 15m
+        matchers:
+          - name: alertname
+            matchType: "!~"
+            value: Watchdog|InfoInhibitor|etcdMemberCommunicationSlow|AlertAgentHeartbeatStale|AlertAgentGateDown
       - receiver: "null"
         matchers:
           - name: alertname
@@ -22,6 +31,10 @@ spec:
           - name: severity
             value: critical
             matchType: =
+      # Matcher-less and last. Once any child route matches, Alertmanager stops
+      # falling back to the root receiver, so a matching first route would
+      # otherwise silently strip Pushover from every non-critical alert.
+      - receiver: pushover
   inhibitRules:
     - equal: ["alertname", "namespace"]
       sourceMatch:
@@ -34,6 +47,11 @@ spec:
           matchType: =
   receivers:
     - name: "null"
+    - name: alert-agent
+      webhookConfigs:
+        - url: http://alert-agent.observability.svc.cluster.local:8080/webhook
+          sendResolved: true
+          maxAlerts: 0
     - name: pushover
       pushoverConfigs:
         - html: true
