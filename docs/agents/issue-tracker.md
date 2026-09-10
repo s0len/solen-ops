@@ -1,6 +1,8 @@
-# Issue tracker: GitHub
+# Issue tracker: GitHub (private repo `s0len/solen-ops-incidents`)
 
-Issues and specs for this repo live as GitHub issues. Use the `gh` CLI for all operations.
+Issues and specs for this repo live as GitHub issues in the **private** repository `s0len/solen-ops-incidents`, never in this public repository. This repository is public; issues carry cluster details (pod and node names, log excerpts, design internals) that must not be world-readable. See ADR-0002.
+
+Use the `gh` CLI for all operations and pass `--repo s0len/solen-ops-incidents` on **every** issue command. Running `gh issue ...` from this clone without `--repo` targets the public repo and is wrong.
 
 ## Conventions
 
@@ -11,7 +13,7 @@ Issues and specs for this repo live as GitHub issues. Use the `gh` CLI for all o
 - **Apply / remove labels**: `gh issue edit <number> --add-label "..."` / `--remove-label "..."`
 - **Close**: `gh issue close <number> --comment "..."`
 
-Infer the repo from `git remote -v`; `gh` does this automatically when run inside a clone.
+Do NOT infer the repo from `git remote -v`: this clone points at the public repo. Always pass `--repo s0len/solen-ops-incidents`. Pull requests (Fix PRs, Renovate) still live in this public repository; only issues move.
 
 ## Pull requests as a triage surface
 
@@ -27,11 +29,11 @@ GitHub shares one number space across issues and PRs, so a bare `#42` may be eit
 
 ## When a skill says "publish to the issue tracker"
 
-Create a GitHub issue.
+Create a GitHub issue in `s0len/solen-ops-incidents` (`gh issue create --repo s0len/solen-ops-incidents ...`).
 
 ## When a skill says "fetch the relevant ticket"
 
-Run `gh issue view <number> --comments`.
+Run `gh issue view <number> --comments --repo s0len/solen-ops-incidents`. A PR in this repository references its ticket as `s0len/solen-ops-incidents#<number>`.
 
 ## Wayfinding operations
 

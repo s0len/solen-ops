@@ -33,7 +33,7 @@ This is a Kubernetes home operations repository for a self-hosted bare-metal clu
 
 ### Issue tracker
 
-Issues live in this repo's GitHub Issues (`s0len/solen-ops`), operated via the `gh` CLI. See `docs/agents/issue-tracker.md`.
+Issues live in the **private** repo `s0len/solen-ops-incidents`, never here (this repo is public). Every `gh issue` command needs `--repo s0len/solen-ops-incidents`. PRs stay in this repo. See `docs/agents/issue-tracker.md`.
 
 ### Triage labels
 

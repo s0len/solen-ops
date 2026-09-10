@@ -3,11 +3,11 @@ status: accepted
 date: 2026-09-10
 ---
 
-# Incident Issues and Runbooks live in a separate private repository
+# All issues, Incident Issues and Runbooks live in a separate private repository
 
 This repository is public. Incident Issues carry pod and node names, log excerpts and whatever evidence the Agent pastes, and Runbooks are the distilled incident history of the cluster. Relying on a language model to redact that is not something to build on, and making this repository private would break the Renovate and label workflows it depends on.
 
-Issues and Runbooks therefore live in `s0len/solen-ops-incidents`, private. Fix PRs still target this repository and close their Incident Issue across repos. The cost is one cross-repo link per issue and a second repository to install labels and credentials on.
+All issues for this project, including specs and tickets about this repository's own code, together with Incident Issues and Runbooks, live in `s0len/solen-ops-incidents`, private. Nothing is tracked in this repository's issue tracker. Pull requests stay here, because Flux reconciles this repository. Fix PRs still target this repository and close their Incident Issue across repos. The cost is one cross-repo link per issue and a second repository to install labels and credentials on.
 
 ## Considered options
 
