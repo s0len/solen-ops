@@ -7,7 +7,8 @@
       "managerFilePatterns": [
         "/(^|/).+\\.env$/",
         "/(^|/).+\\.sh$/",
-        "/(^|/).+\\.ya?ml(?:\\.j2)?$/"
+        "/(^|/).+\\.ya?ml(?:\\.j2)?$/",
+        "/(^|/)Dockerfile$/"
       ],
       "matchStrings": [
         // # renovate: datasource=github-releases depName=k3s-io/k3s

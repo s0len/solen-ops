@@ -13,6 +13,17 @@
       "matchPackageNames": ["/postgresql/"],
       "matchUpdateTypes": ["digest"],
       "schedule": ["every 3 months on the first day of the month"]
+    },
+    {
+      "description": ["Never auto-merge anything that changes the alert Agent's image: the pod holds a cluster credential, so the owner reads the release notes first"],
+      "matchFileNames": ["kubernetes/apps/observability/alert-agent/image/**"],
+      "automerge": false
+    },
+    {
+      "description": ["Never auto-merge the Hermes base or the derived alert Agent image"],
+      "matchDatasources": ["docker"],
+      "matchPackageNames": ["docker.io/nousresearch/hermes-agent", "nousresearch/hermes-agent", "ghcr.io/s0len/hermes-agent"],
+      "automerge": false
     }
   ]
 }
