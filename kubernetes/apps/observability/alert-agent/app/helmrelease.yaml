@@ -89,13 +89,10 @@ spec:
               RUN_BUDGET_PER_DAY: "10"
               BUDGET_STATE_FILE: /state/run-budget.json
               INCIDENT_INDEX_FILE: /state/incident-index.json
-              # Empty until the OpenAI login is done: a forward without a
-              # credential spends a Run Budget slot on a 202 whose run then
-              # dies on authentication, leaving an Incident Issue that carries
-              # neither a Diagnosis nor the uninvestigated label. Set to
-              # http://127.0.0.1:8644/webhooks/investigate once the heartbeat
-              # proves the login (docs/agent-login.md in the Incidents Repo).
-              HERMES_WEBHOOK_URL: ""
+              # Plural /webhooks/. Emptying this is the kill switch: Incident
+              # Issues keep being filed, labelled uninvestigated, with no
+              # Diagnosis and no Run Budget spent.
+              HERMES_WEBHOOK_URL: http://127.0.0.1:8644/webhooks/investigate
               HEARTBEAT_FILE: /data/heartbeat/last
               PYTHONDONTWRITEBYTECODE: "1"
               PYTHONUNBUFFERED: "1"
