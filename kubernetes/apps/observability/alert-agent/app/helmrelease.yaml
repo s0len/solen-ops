@@ -147,6 +147,10 @@ spec:
               # Only read when no profile scope is bound; hermes-config.yaml
               # carries the same value for the scoped path.
               TERMINAL_CWD: /opt/data/workspace
+              # s6-setuidgid drops to uid 10000 without changing HOME, leaving
+              # it at /root: gh then dies reading /root/.config before it ever
+              # looks at GITHUB_TOKEN, and git has nowhere to write config.
+              HOME: /opt/data
             envFrom:
               - secretRef:
                   name: alert-agent-github-secret

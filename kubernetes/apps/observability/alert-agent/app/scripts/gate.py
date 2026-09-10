@@ -643,6 +643,8 @@ Clone the Incidents Repo shallowly into this run's own directory (`gh repo clone
 - LogsQL against VictoriaLogs at $victorialogs_url, for example: curl -s '$victorialogs_url/select/logsql/query' --data-urlencode 'query=<logsql>' --data-urlencode 'limit=100'
 - The Alertmanager API at $alertmanager_url, for example: curl -s '$alertmanager_url/api/v2/alerts' (co-firing alerts) and '$alertmanager_url/api/v2/silences'
 - Each alert's generatorURL above carries the exact expression that fired; query it and its neighbours over the firing window.
+- Your commands are screened before they run. Inline interpreter scripts are refused: never `python3 -c`, `sh -c`, `bash -c`, `perl -e` or any `-c`/`-e` form, and never pipe into one. There is no `jq`. Shape JSON with the tools that are allowed instead: `kubectl -o jsonpath=...` or `-o custom-columns=...`, `curl ... | head -n`, or `curl ... -o /tmp/x.json` and then read the file.
+- A refused command is not the end of the Investigation. Note it, gather what you can by another route, and record in the Diagnosis what you could not check and why.
 
 ## Rules that are never broken
 - NEVER exec, restart, delete, apply, patch, edit, scale, drain, cordon, silence, label, annotate or otherwise change anything in the cluster, in Alertmanager or in any repository. No kubectl exec/cp/apply/patch/edit/delete/scale/rollout/drain/cordon, no flux suspend/resume/reconcile, no git push, no pull request, no write to any Runbook.
