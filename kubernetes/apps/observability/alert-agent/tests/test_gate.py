@@ -9,9 +9,10 @@ generic V2 signature with the shared secret. The tests assert only on what
 leaves the Gate: HTTP status codes, created issues, comments, forwards, the
 metrics page and the log.
 
-The one piece of Gate internals the tests know is the marker format, because
-it is a persisted contract: changing it would orphan every open Incident Issue.
-The Run Budget state file is only ever handed to the Gate as a path.
+The Gate internals the tests know are its persisted contracts: the marker
+format, whose change would orphan every open Incident Issue, and the shape of
+the Incident Issue index file, which a restarted Gate has to keep reading. The
+Run Budget state file is only ever handed to the Gate as a path.
 """
 import hashlib
 import hmac
@@ -26,6 +27,7 @@ import time
 import unittest
 import urllib.error
 import urllib.request
+from datetime import datetime, timedelta, timezone
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
@@ -39,10 +41,17 @@ COUNTER_NAMES = ("notifications_received_total", "issues_created_total", "bare_i
 GAUGE_NAMES = ("run_budget_limit", "run_budget_used", "run_budget_remaining",
                "heartbeat_age_seconds", "heartbeat_file_present")
 ISO_UTC = r"\d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ"
+# Mirrors gate.py: the index file is a persisted contract, so its bounds are too.
+INDEX_MAX_ENTRIES = 512
+INDEX_MAX_AGE_DAYS = 30
+
+
+def index_key_for(group_key):
+    return hashlib.sha256(group_key.encode()).hexdigest()[:24]
 
 
 def marker_for(group_key):
-    return f"<!-- alert-agent:group={hashlib.sha256(group_key.encode()).hexdigest()[:24]} -->"
+    return f"<!-- alert-agent:group={index_key_for(group_key)} -->"
 
 
 # --------------------------------------------------------------------------- payload builders
@@ -95,7 +104,15 @@ def notification(alertname="KubePodCrashLooping", job="kube-state-metrics", stat
 # --------------------------------------------------------------------------- fake github
 
 class FakeGitHub:
-    """Enough of the GitHub Issues API for the Gate: list, create, comment."""
+    """Enough of the GitHub Issues API for the Gate: list, get by number, create, comment.
+
+    The real listing endpoint is not read-after-write consistent — a created
+    issue stayed missing from it for over a second while the read by number
+    returned it at once — so `hide_new_from_listing` withholds every create
+    from the listing until `release_listing`. Without that lag the fake was
+    kinder than GitHub, which is how a duplicate Incident Issue reached
+    production unnoticed.
+    """
 
     def __init__(self):
         self.lock = threading.Lock()
@@ -114,6 +131,17 @@ class FakeGitHub:
             self.comments = []
             self.requests = []
             self.next_number = 1
+            self.hide_new_from_listing = False
+            self.hidden = set()
+
+    def release_listing(self):
+        """Everything created during the lag becomes visible to the listing."""
+        with self.lock:
+            self.hidden = set()
+
+    def close_issue(self, number):
+        with self.lock:
+            self.issues[number]["state"] = "closed"
 
     def declare_issue(self, body, title="declared", state="open", labels=(), pull_request=False):
         with self.lock:
@@ -171,7 +199,18 @@ class FakeGitHub:
                 if not self._gate():
                     return
                 url = urlparse(self.path)
-                if url.path != f"/repos/{INCIDENTS_REPO}/issues":
+                listing = f"/repos/{INCIDENTS_REPO}/issues"
+                if url.path.startswith(listing + "/"):
+                    try:
+                        number = int(url.path[len(listing) + 1:])
+                    except ValueError:
+                        self._json(404, {"message": "Not Found"})
+                        return
+                    with fake.lock:
+                        item = fake.issues.get(number)
+                    self._json(200, item) if item else self._json(404, {"message": "Not Found"})
+                    return
+                if url.path != listing:
                     self._json(404, {"message": "Not Found"})
                     return
                 q = parse_qs(url.query)
@@ -180,6 +219,7 @@ class FakeGitHub:
                 page = int(q.get("page", ["1"])[0])
                 with fake.lock:
                     items = sorted(fake.issues.values(), key=lambda i: i["number"])
+                    items = [i for i in items if i["number"] not in fake.hidden]
                 if state != "all":
                     items = [i for i in items if i["state"] == state]
                 start = (page - 1) * per_page
@@ -200,6 +240,8 @@ class FakeGitHub:
                                 "html_url": f"https://github.invalid/{INCIDENTS_REPO}/issues/{number}"}
                         fake.issues[number] = item
                         fake.created.append(dict(item, labels=list(body.get("labels", []))))
+                        if fake.hide_new_from_listing:
+                            fake.hidden.add(number)
                     self._json(201, item)
                     return
                 prefix = f"/repos/{INCIDENTS_REPO}/issues/"
@@ -322,7 +364,7 @@ class GateProcess:
         env = dict(os.environ, PORT=str(self.port), GITHUB_API_URL=github_url,
                    GITHUB_INCIDENTS_REPO=INCIDENTS_REPO, GITHUB_TOKEN=TOKEN, GITHUB_TIMEOUT_SECONDS="5")
         for key in ("HERMES_WEBHOOK_URL", "HERMES_WEBHOOK_SECRET", "BUDGET_STATE_FILE", "RUN_BUDGET_PER_DAY",
-                    "HEARTBEAT_FILE", "GATE_FAKE_NOW", "HERMES_TIMEOUT_SECONDS"):
+                    "INCIDENT_INDEX_FILE", "HEARTBEAT_FILE", "GATE_FAKE_NOW", "HERMES_TIMEOUT_SECONDS"):
             env.pop(key, None)
         if hermes is not None:
             env.update(HERMES_WEBHOOK_URL=hermes.url, HERMES_WEBHOOK_SECRET=HERMES_SECRET)
@@ -403,6 +445,7 @@ class GateTests(unittest.TestCase):
         cls.state_dir = tempfile.TemporaryDirectory(prefix="gate-state-")
         cls.gate = GateProcess(cls.github.url, hermes=cls.hermes,
                                BUDGET_STATE_FILE=os.path.join(cls.state_dir.name, "run-budget.json"),
+                               INCIDENT_INDEX_FILE=os.path.join(cls.state_dir.name, "incident-index.json"),
                                RUN_BUDGET_PER_DAY=1000)
 
     @classmethod
@@ -650,6 +693,7 @@ class BudgetAndForwardTests(unittest.TestCase):
         self.hermes.reset()
         self.state_dir = tempfile.TemporaryDirectory(prefix="gate-state-")
         self.state_file = os.path.join(self.state_dir.name, "run-budget.json")
+        self.index_file = os.path.join(self.state_dir.name, "incident-index.json")
         self.gates = []
 
     def tearDown(self):
@@ -659,7 +703,8 @@ class BudgetAndForwardTests(unittest.TestCase):
 
     def start_gate(self, hermes="default", **env):
         hermes = self.hermes if hermes == "default" else hermes
-        gate = GateProcess(self.github.url, hermes=hermes, BUDGET_STATE_FILE=self.state_file, **env)
+        gate = GateProcess(self.github.url, hermes=hermes, BUDGET_STATE_FILE=self.state_file,
+                           INCIDENT_INDEX_FILE=self.index_file, **env)
         self.gates.append(gate)
         return gate
 
@@ -924,6 +969,210 @@ class BudgetAndForwardTests(unittest.TestCase):
         self.assertEqual(values["alert_agent_gate_run_budget_used"], 1)
         self.assertEqual(values["alert_agent_gate_run_budget_remaining"], 6)
         self.assertEqual(gate.get("/healthz")[0], 200)
+
+
+class IncidentIndexTests(unittest.TestCase):
+    """One Incident Issue per Alert Group even while GitHub's listing lags.
+
+    Every test here runs with `hide_new_from_listing`, the live bug in
+    miniature: the Gate has just created an issue that `GET /issues` still does
+    not return, and Alertmanager retries within seconds.
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        cls.github = FakeGitHub()
+        cls.hermes = FakeHermes()
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.github.stop()
+        cls.hermes.stop()
+
+    def setUp(self):
+        self.github.reset()
+        self.hermes.reset()
+        self.state_dir = tempfile.TemporaryDirectory(prefix="gate-index-")
+        self.index_file = os.path.join(self.state_dir.name, "incident-index.json")
+        self.gates = []
+
+    def tearDown(self):
+        for gate in self.gates:
+            gate.stop()
+        self.state_dir.cleanup()
+
+    def start_gate(self, **env):
+        gate = GateProcess(self.github.url, hermes=self.hermes, RUN_BUDGET_PER_DAY=1000,
+                           BUDGET_STATE_FILE=os.path.join(self.state_dir.name, "run-budget.json"),
+                           INCIDENT_INDEX_FILE=self.index_file, **env)
+        self.gates.append(gate)
+        return gate
+
+    def entries(self):
+        with open(self.index_file, encoding="utf-8") as handle:
+            return json.load(handle)["entries"]
+
+    # -- the duplicate that reached production
+
+    def test_immediate_retry_while_the_listing_lags_creates_one_incident_issue(self):
+        gate = self.start_gate()
+        self.github.hide_new_from_listing = True
+        payload = notification()
+
+        created = gate.post(payload)[1]
+        status, body = gate.post(payload)
+
+        self.assertEqual(status, 200, body)
+        self.assertEqual(created["action"], "created")
+        self.assertEqual(body, {"action": "still-firing", "issue": created["issue"]})
+        self.assertEqual(len(self.github.created), 1)
+        self.assertEqual(len(self.github.comments), 1)
+        self.assertEqual(len(self.hermes.requests), 1)
+
+    def test_resolved_immediately_after_creation_comments_instead_of_being_dropped(self):
+        gate = self.start_gate()
+        self.github.hide_new_from_listing = True
+
+        created = gate.post(notification())[1]
+        status, body = gate.post(notification(status="resolved"))
+
+        self.assertEqual(status, 200, body)
+        self.assertEqual(body, {"action": "resolved", "issue": created["issue"]})
+        self.assertEqual(len(self.github.created), 1)
+        self.assertRegex(self.github.comments[0]["body"], rf"^Resolved at {ISO_UTC}")
+        self.assertEqual(self.github.issues[created["issue"]]["state"], "open")
+
+    def test_the_listing_catching_up_does_not_change_the_answer(self):
+        gate = self.start_gate()
+        self.github.hide_new_from_listing = True
+        payload = notification()
+        created = gate.post(payload)[1]
+        self.github.release_listing()
+
+        self.assertEqual(gate.post(payload)[1], {"action": "still-firing", "issue": created["issue"]})
+        self.assertEqual(len(self.github.created), 1)
+
+    # -- what the index costs and skips
+
+    def test_an_index_hit_reads_the_issue_by_number_and_never_lists(self):
+        gate = self.start_gate()
+        payload = notification()
+        number = gate.post(payload)[1]["issue"]
+        self.github.requests.clear()
+
+        gate.post(payload)
+
+        self.assertEqual([r["path"] for r in self.github.requests if r["method"] == "GET"],
+                         [f"/repos/{INCIDENTS_REPO}/issues/{number}"])
+
+    def test_an_issue_found_through_the_listing_is_indexed(self):
+        gate = self.start_gate()
+        payload = notification()
+        number = self.github.declare_issue(marker_for(payload["groupKey"]))
+
+        self.assertEqual(gate.post(payload)[1], {"action": "still-firing", "issue": number})
+
+        self.assertEqual(self.entries()[index_key_for(payload["groupKey"])]["issue"], number)
+
+    # -- surviving a restart
+
+    def test_the_index_survives_a_gate_restart(self):
+        first = self.start_gate()
+        self.github.hide_new_from_listing = True
+        created = first.post(notification())[1]
+        first.stop()
+        self.gates.remove(first)
+        self.assertEqual(self.entries()[index_key_for(notification()["groupKey"])]["issue"], created["issue"])
+
+        second = self.start_gate()
+        status, body = second.post(notification())
+
+        self.assertEqual(status, 200, body)
+        self.assertEqual(body, {"action": "still-firing", "issue": created["issue"]})
+        self.assertEqual(len(self.github.created), 1)
+
+    # -- entries that must not be trusted
+
+    def test_an_indexed_issue_that_was_closed_does_not_absorb_a_new_firing(self):
+        gate = self.start_gate()
+        self.github.hide_new_from_listing = True
+        payload = notification()
+        created = gate.post(payload)[1]
+        self.github.close_issue(created["issue"])
+
+        status, body = gate.post(payload)
+
+        self.assertEqual(status, 200, body)
+        self.assertEqual(body["action"], "created")
+        self.assertNotEqual(body["issue"], created["issue"])
+        self.assertEqual(len(self.github.created), 2)
+        self.assertEqual(self.github.comments, [])
+        self.assertEqual(self.entries()[index_key_for(payload["groupKey"])]["issue"], body["issue"])
+        self.assertIn("incident_index_dropped", gate.read_log())
+
+    def test_an_indexed_issue_that_is_gone_falls_back_to_the_listing(self):
+        gate = self.start_gate()
+        payload = notification()
+        created = gate.post(payload)[1]
+        del self.github.issues[created["issue"]]
+        number = self.github.declare_issue(marker_for(payload["groupKey"]))
+
+        self.assertEqual(gate.post(payload)[1], {"action": "still-firing", "issue": number})
+        self.assertEqual(self.entries()[index_key_for(payload["groupKey"])]["issue"], number)
+
+    # -- an index the Gate cannot read
+
+    def test_an_empty_or_corrupt_index_falls_back_to_the_listing_and_says_so(self):
+        for name, content in (("truncated", "{not json"), ("empty", ""),
+                              ("wrong shape", '{"entries": 7}'), ("not an object", "[]")):
+            with self.subTest(index=name):
+                self.github.reset()
+                Path(self.index_file).write_text(content)
+                gate = self.start_gate()
+                payload = notification()
+                number = self.github.declare_issue(marker_for(payload["groupKey"]))
+
+                self.assertEqual(gate.post(payload)[1], {"action": "still-firing", "issue": number})
+                self.assertEqual(self.github.created, [])
+                self.assertRegex(gate.read_log(), r"incident_index_(unreadable|invalid)")
+                self.assertEqual(self.entries()[index_key_for(payload["groupKey"])]["issue"], number)
+
+    def test_an_unwritable_index_leaves_the_gate_working_through_the_listing(self):
+        os.mkdir(self.index_file)
+        gate = self.start_gate()
+        payload = notification()
+
+        self.assertEqual(gate.post(payload)[1]["action"], "created")
+        self.assertEqual(gate.post(payload)[1]["action"], "still-firing")
+        self.assertEqual(len(self.github.created), 1)
+        self.assertRegex(gate.read_log(), r"incident_index_(unreadable|write_failed)")
+
+    # -- bounded growth
+
+    def test_the_index_cannot_grow_without_bound(self):
+        frozen = datetime(2026, 9, 10, 12, tzinfo=timezone.utc)
+        overflow = INDEX_MAX_ENTRIES + 200
+        seeded = {f"{i:024x}": {"issue": 10_000 + i,
+                                "at": (frozen - timedelta(minutes=overflow - i)).strftime("%Y-%m-%dT%H:%M:%SZ")}
+                  for i in range(overflow)}
+        expired = {f"a{i:023x}": {"issue": 900_000 + i,
+                                  "at": (frozen - timedelta(days=INDEX_MAX_AGE_DAYS + 1 + i)).strftime(
+                                      "%Y-%m-%dT%H:%M:%SZ")}
+                   for i in range(5)}
+        Path(self.index_file).write_text(json.dumps({"entries": dict(seeded, **expired)}))
+
+        gate = self.start_gate(GATE_FAKE_NOW=frozen.strftime("%Y-%m-%dT%H:%M:%SZ"))
+        payload = notification()
+        gate.post(payload)
+
+        entries = self.entries()
+        self.assertEqual(len(entries), INDEX_MAX_ENTRIES)
+        self.assertIn(index_key_for(payload["groupKey"]), entries)
+        for key in expired:
+            self.assertNotIn(key, entries)
+        self.assertNotIn(f"{0:024x}", entries)
+        self.assertIn(f"{overflow - 1:024x}", entries)
+        self.assertEqual(gate.post(payload)[1]["action"], "still-firing")
 
 
 if __name__ == "__main__":

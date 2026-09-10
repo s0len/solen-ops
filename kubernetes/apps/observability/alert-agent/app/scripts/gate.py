@@ -4,7 +4,10 @@
 Receives Alertmanager v4 webhook notifications and turns each Alert Group into
 exactly one Incident Issue in the Incidents Repo, deterministically and without
 a model call. Deduplication is a hidden HTML-comment marker in the issue body
-carrying a hash of the group key; no per-group labels.
+carrying a hash of the group key; no per-group labels. A local index maps that
+hash to the issue number, because GitHub's issue listing does not show a create
+for a second or more and an Alertmanager retry inside that window would
+otherwise open a second Incident Issue.
 
 Decision per notification, in order:
 
@@ -18,9 +21,9 @@ Decision per notification, in order:
   * firing,   no open Incident Issue,
     Run Budget exhausted               -> create a Bare Issue, forward nothing
 
-The Run Budget is a per-UTC-day counter in a JSON file on the PVC, the one
-thing the Gate writes to disk. Stdlib only: runs on the slim python image as
-non-root with a read-only root filesystem.
+The Run Budget is a per-UTC-day counter in a JSON file on the PVC; it and the
+Incident Issue index are the only things the Gate writes to disk. Stdlib only:
+runs on the slim python image as non-root with a read-only root filesystem.
 """
 import hashlib
 import hmac
@@ -36,7 +39,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 from dataclasses import dataclass, replace
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from typing import Any, Callable, Optional
 
@@ -61,6 +64,8 @@ TITLE_MAX_CHARS = 200
 MAX_REQUEST_BYTES = 8 * 1024 * 1024
 ISSUES_PER_PAGE = 100
 MAX_ISSUE_PAGES = 10
+INDEX_MAX_ENTRIES = 512
+INDEX_MAX_AGE_SECONDS = 30 * 86400
 USER_AGENT = "alert-agent-gate"
 WEBHOOK_PATH = "/webhook"
 HEALTH_PATHS = ("/healthz", "/health")
@@ -95,6 +100,7 @@ class Config:
     github_timeout: float = 15.0
     run_budget_per_day: int = DEFAULT_RUN_BUDGET_PER_DAY
     budget_state_file: str = ""
+    incident_index_file: str = ""
     hermes_webhook_url: str = ""
     hermes_webhook_secret: str = ""
     hermes_timeout: float = 10.0
@@ -115,6 +121,7 @@ class Config:
             github_timeout=float(env.get("GITHUB_TIMEOUT_SECONDS", "15")),
             run_budget_per_day=int(env.get("RUN_BUDGET_PER_DAY", str(DEFAULT_RUN_BUDGET_PER_DAY))),
             budget_state_file=env.get("BUDGET_STATE_FILE", ""),
+            incident_index_file=env.get("INCIDENT_INDEX_FILE", ""),
             hermes_webhook_url=env.get("HERMES_WEBHOOK_URL", ""),
             hermes_webhook_secret=env.get("HERMES_WEBHOOK_SECRET", ""),
             hermes_timeout=float(env.get("HERMES_TIMEOUT_SECONDS", "10")),
@@ -386,11 +393,27 @@ class GitHubClient:
         except ValueError as exc:
             raise GitHubError(f"GitHub returned non-JSON for {method} {path}") from exc
 
+    def get_issue(self, number: int) -> Optional[dict]:
+        """One issue by number, or None when it is gone.
+
+        Unlike the listing this read is consistent immediately after a create,
+        which is what makes the Incident Issue index trustworthy.
+        """
+        try:
+            issue = self._request("GET", f"/repos/{self.repo}/issues/{number}")
+        except GitHubError as exc:
+            if exc.status == 404:
+                return None
+            raise
+        return issue if isinstance(issue, dict) else None
+
     def find_incident_issue(self, marker: str) -> Optional[dict]:
         """The oldest open issue whose body contains `marker`, or None.
 
         Lists open issues oldest-first and filters locally: exact match, no
-        dependency on the search index catching up, no per-group labels.
+        dependency on the search index catching up, no per-group labels. The
+        listing lags a create by a second or more, so the Incident Issue index
+        is asked first and this stays the fallback.
         """
         for page in range(1, MAX_ISSUE_PAGES + 1):
             items = self._request(
@@ -432,6 +455,98 @@ class GitHubClient:
             f"/repos/{self.repo}/issues/{issue_number}/comments",
             body={"body": body},
         )
+
+
+# --------------------------------------------------------------------------- incident index
+
+class IncidentIndex:
+    """Group hash -> Incident Issue number, so deduplication does not wait for
+    GitHub's issue listing.
+
+    `GET /repos/{repo}/issues` is not read-after-write consistent: measured
+    against the real API, a created issue was still absent from the listing
+    over a second later, while `GET /repos/{repo}/issues/{number}` returned it
+    on the first attempt. An Alertmanager retry inside that window used to open
+    a second Incident Issue. Every hit here is therefore re-read by number
+    before it is trusted, and a hit that is gone, closed, a pull request or no
+    longer carrying the marker is dropped so the listing decides instead.
+
+    Same discipline as the Run Budget: the file is authoritative and re-read on
+    every question, writes go to a sibling temp file and are renamed into
+    place, an unreadable file is logged and treated as empty. Bounded to
+    INDEX_MAX_ENTRIES entries and INDEX_MAX_AGE_SECONDS of age, oldest evicted
+    first; an evicted group is simply found through the listing again. Without
+    a state file the index lives in memory only.
+    """
+
+    def __init__(self, state_file: str = ""):
+        self.state_file = state_file
+        self._lock = threading.Lock()
+        self._memory: dict = {}
+
+    def _load(self) -> dict:
+        if not self.state_file:
+            return dict(self._memory)
+        try:
+            with open(self.state_file, encoding="utf-8") as handle:
+                data = json.load(handle)
+        except FileNotFoundError:
+            return dict(self._memory)
+        except (OSError, ValueError) as exc:
+            log("incident_index_unreadable", file=self.state_file, error=str(exc))
+            return dict(self._memory)
+        entries = data.get("entries") if isinstance(data, dict) else None
+        if not isinstance(entries, dict):
+            log("incident_index_invalid", file=self.state_file)
+            return dict(self._memory)
+        return {
+            key: {"issue": entry["issue"], "at": entry["at"]}
+            for key, entry in entries.items()
+            if isinstance(entry, dict) and isinstance(entry.get("at"), str)
+            and isinstance(entry.get("issue"), int) and not isinstance(entry["issue"], bool)
+            and entry["issue"] > 0
+        }
+
+    def _store(self, entries: dict) -> None:
+        self._memory = dict(entries)
+        if not self.state_file:
+            return
+        temp = f"{self.state_file}.tmp"
+        try:
+            with open(temp, "w", encoding="utf-8") as handle:
+                json.dump({"entries": entries}, handle)
+                handle.write("\n")
+                handle.flush()
+                os.fsync(handle.fileno())
+            os.replace(temp, self.state_file)
+        except OSError as exc:
+            log("incident_index_write_failed", file=self.state_file, error=str(exc))
+
+    @staticmethod
+    def _prune(entries: dict, now: datetime) -> dict:
+        # now_iso is fixed-width UTC, so lexical order is chronological order.
+        cutoff = now_iso(now - timedelta(seconds=INDEX_MAX_AGE_SECONDS))
+        fresh = {key: entry for key, entry in entries.items() if entry["at"] >= cutoff}
+        if len(fresh) <= INDEX_MAX_ENTRIES:
+            return fresh
+        newest = sorted(fresh.items(), key=lambda item: (item[1]["at"], item[0]), reverse=True)
+        return dict(newest[:INDEX_MAX_ENTRIES])
+
+    def lookup(self, key: str) -> Optional[int]:
+        entry = self._load().get(key)
+        return int(entry["issue"]) if entry else None
+
+    def remember(self, key: str, issue_number: int, now: datetime) -> None:
+        with self._lock:
+            entries = self._load()
+            entries[key] = {"issue": int(issue_number), "at": now_iso(now)}
+            self._store(self._prune(entries, now))
+
+    def forget(self, key: str) -> None:
+        with self._lock:
+            entries = self._load()
+            if entries.pop(key, None) is not None:
+                self._store(entries)
 
 
 # --------------------------------------------------------------------------- run budget
@@ -740,12 +855,14 @@ class Gate:
     def __init__(
         self,
         github: GitHubClient,
+        index: IncidentIndex,
         run_budget: RunBudget,
         forwarder: HermesForwarder,
         metrics: Metrics,
         clock: Callable[[], datetime] = lambda: datetime.now(timezone.utc),
     ):
         self.github = github
+        self.index = index
         self.run_budget = run_budget
         self.forwarder = forwarder
         self.metrics = metrics
@@ -769,8 +886,39 @@ class Gate:
         forwarded = self.forwarder.forward(outcome.issue, n, now)
         return replace(outcome, forwarded=forwarded, issue=None)
 
-    def _decide(self, n: Notification, marker: str, now: datetime, stamp: str, context: dict) -> Outcome:
+    def _find_incident_issue(self, n: Notification, marker: str, now: datetime,
+                             context: dict) -> Optional[dict]:
+        """The index first, the listing second; whatever the listing finds is indexed."""
+        key = group_hash(n.group_key)
+        number = self.index.lookup(key)
+        if number is not None:
+            indexed = self.github.get_issue(number)
+            reason = self._not_the_incident_issue(indexed, marker)
+            if reason is None:
+                log("incident_index_hit", issue=number, **context)
+                return indexed
+            self.index.forget(key)
+            log("incident_index_dropped", issue=number, reason=reason, **context)
         issue = self.github.find_incident_issue(marker)
+        if issue is not None:
+            self.index.remember(key, int(issue["number"]), now)
+        return issue
+
+    @staticmethod
+    def _not_the_incident_issue(issue: Optional[dict], marker: str) -> Optional[str]:
+        """Why an indexed issue must not absorb this notification, or None."""
+        if issue is None:
+            return "gone"
+        if issue.get("state") != "open":
+            return "closed"
+        if "pull_request" in issue:
+            return "pull_request"
+        if marker not in (issue.get("body") or ""):
+            return "marker_absent"
+        return None
+
+    def _decide(self, n: Notification, marker: str, now: datetime, stamp: str, context: dict) -> Outcome:
+        issue = self._find_incident_issue(n, marker, now, context)
         if issue is not None:
             number = int(issue["number"])
             if n.firing:
@@ -795,6 +943,7 @@ class Gate:
             labels.append(BARE_ISSUE_LABEL)
         issue = self.github.create_incident_issue(render_issue_title(n), render_issue_body(n, marker, stamp), labels)
         number = int(issue["number"])
+        self.index.remember(group_hash(n.group_key), number, now)
         self.metrics.inc("issues_created_total")
         if investigate:
             used = self.run_budget.consume(now)
@@ -900,6 +1049,7 @@ def make_server(config: Config, host: str = "0.0.0.0") -> GateServer:
     clock = config.clock()
     github = GitHubClient(config.github_api_url, config.github_token, config.incidents_repo, config.github_timeout)
     metrics = Metrics()
+    index = IncidentIndex(config.incident_index_file)
     budget = RunBudget(config.run_budget_per_day, config.budget_state_file)
     services = {"prometheus": config.prometheus_url, "victorialogs": config.victorialogs_url,
                 "alertmanager": config.alertmanager_url}
@@ -913,7 +1063,7 @@ def make_server(config: Config, host: str = "0.0.0.0") -> GateServer:
                   lambda: heartbeat_age_seconds(config.heartbeat_file))
     metrics.gauge("heartbeat_file_present", "1 when the Hermes heartbeat file can be read, else 0.",
                   lambda: int(heartbeat_age_seconds(config.heartbeat_file) != HEARTBEAT_ABSENT_SECONDS))
-    return GateServer((host, config.port), Gate(github, budget, forwarder, metrics, clock))
+    return GateServer((host, config.port), Gate(github, index, budget, forwarder, metrics, clock))
 
 
 def main() -> int:
@@ -926,6 +1076,9 @@ def main() -> int:
         log("startup_warning", warning="HERMES_WEBHOOK_SECRET is empty; Hermes will reject every forward")
     if not config.budget_state_file:
         log("startup_warning", warning="BUDGET_STATE_FILE is empty; the Run Budget resets on restart")
+    if not config.incident_index_file:
+        log("startup_warning",
+            warning="INCIDENT_INDEX_FILE is empty; the Incident Issue index resets on restart")
     if config.fake_now:
         log("startup_warning", warning=f"GATE_FAKE_NOW={config.fake_now}; the clock is frozen (tests only)")
     server = make_server(config)
@@ -938,7 +1091,8 @@ def main() -> int:
     signal.signal(signal.SIGINT, shutdown)
     log("startup", port=config.port, incidents_repo=config.incidents_repo, github_api_url=config.github_api_url,
         hermes_webhook_url=config.hermes_webhook_url, run_budget_per_day=config.run_budget_per_day,
-        budget_state_file=config.budget_state_file, heartbeat_file=config.heartbeat_file,
+        budget_state_file=config.budget_state_file, incident_index_file=config.incident_index_file,
+        heartbeat_file=config.heartbeat_file,
         prometheus_url=config.prometheus_url, victorialogs_url=config.victorialogs_url,
         alertmanager_url=config.alertmanager_url)
     try:

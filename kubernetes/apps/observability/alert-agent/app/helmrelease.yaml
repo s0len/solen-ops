@@ -41,6 +41,7 @@ spec:
               GITHUB_INCIDENTS_REPO: s0len/solen-ops-incidents
               RUN_BUDGET_PER_DAY: "10"
               BUDGET_STATE_FILE: /state/run-budget.json
+              INCIDENT_INDEX_FILE: /state/incident-index.json
               # Empty until Hermes joins the pod: every new Alert Group becomes
               # a Bare Issue and the budget stays untouched.
               HERMES_WEBHOOK_URL: ""
