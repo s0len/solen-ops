@@ -188,6 +188,15 @@ spec:
     defaultPodOptions:
       automountServiceAccountToken: true
       enableServiceLinks: false
+      # ndots:5 makes the resolver try the search domains first, and this
+      # cluster answers <public-host>.observability.svc.cluster.local with the
+      # real address. Cilium's DNS proxy then caches it under that name, never
+      # associates it with the toFQDNs rule, and drops the connection. Every
+      # URL this pod uses is fully qualified, so absolute-first costs nothing.
+      dnsConfig:
+        options:
+          - name: ndots
+            value: "1"
       securityContext:
         runAsNonRoot: true
         runAsUser: 65534
