@@ -49,3 +49,5 @@ HANDOFF-music-imports.md
 # Python bytecode
 __pycache__/
 *.pyc
+
+.claude/
