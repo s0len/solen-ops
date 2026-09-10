@@ -27,6 +27,53 @@ spec:
         annotations:
           reloader.stakater.com/auto: "true"
 
+        initContainers:
+          # Hermes' gateway loader reads config.yaml with a bare yaml.safe_load and
+          # does not expand ${...}: the route secret must be rendered onto the PVC
+          # before the gateway starts, never mounted as the template.
+          render-config:
+            image: &hermesImage
+              repository: ghcr.io/s0len/hermes-agent
+              tag: v2026.9.7@sha256:6ad7b93f1d4f365a8e060a830b6d51187fb52eeb86c57648aa3fa607c037ae9d
+            # args, not command: the image's entrypoint runs s6-overlay, which
+            # bootstraps the data volume and drops to uid 10000 before the script.
+            args: ["bash", "/opt/config-template/hermes-config-render.sh"]
+            env:
+              TZ: ${TIMEZONE}
+              API_SERVER_KEY: &apiServerKeySentinel disabled
+            envFrom:
+              - secretRef:
+                  name: alert-agent-webhook-secret
+            securityContext: &hermesSecurityContext
+              # main-wrapper.sh refuses any uid that is neither 0 nor 10000, so the
+              # pod default (65534) cannot apply here; s6-setuidgid drops to 10000.
+              runAsNonRoot: false
+              runAsUser: 0
+              runAsGroup: 0
+              allowPrivilegeEscalation: true
+              readOnlyRootFilesystem: true
+              capabilities:
+                add: ["CHOWN", "SETUID", "SETGID", "FOWNER", "DAC_OVERRIDE"]
+            resources: &initResources
+              requests:
+                cpu: 25m
+                memory: 128Mi
+              limits:
+                memory: 512Mi
+
+          # Cron jobs have no config.yaml surface; they live in cron/jobs.json on
+          # the PVC. Runs before the gateway so it reads a complete job list.
+          cron-bootstrap:
+            dependsOn: render-config
+            image: *hermesImage
+            args: ["bash", "/opt/config-template/hermes-cron-bootstrap.sh"]
+            env:
+              TZ: ${TIMEZONE}
+              API_SERVER_KEY: *apiServerKeySentinel
+              SRC_DIR: /opt/config-template
+            securityContext: *hermesSecurityContext
+            resources: *initResources
+
         containers:
           gate:
             image:
@@ -42,8 +89,12 @@ spec:
               RUN_BUDGET_PER_DAY: "10"
               BUDGET_STATE_FILE: /state/run-budget.json
               INCIDENT_INDEX_FILE: /state/incident-index.json
-              # Empty until Hermes joins the pod: every new Alert Group becomes
-              # a Bare Issue and the budget stays untouched.
+              # Empty until the OpenAI login is done: a forward without a
+              # credential spends a Run Budget slot on a 202 whose run then
+              # dies on authentication, leaving an Incident Issue that carries
+              # neither a Diagnosis nor the uninvestigated label. Set to
+              # http://127.0.0.1:8644/webhooks/investigate once the heartbeat
+              # proves the login (docs/agent-login.md in the Incidents Repo).
               HERMES_WEBHOOK_URL: ""
               HEARTBEAT_FILE: /data/heartbeat/last
               PYTHONDONTWRITEBYTECODE: "1"
@@ -90,8 +141,52 @@ spec:
               limits:
                 memory: 256Mi
 
+          hermes:
+            image: *hermesImage
+            args: ["gateway", "run"]
+            env:
+              TZ: ${TIMEZONE}
+              API_SERVER_KEY: *apiServerKeySentinel
+              # Only read when no profile scope is bound; hermes-config.yaml
+              # carries the same value for the scoped path.
+              TERMINAL_CWD: /opt/data/workspace
+            envFrom:
+              - secretRef:
+                  name: alert-agent-github-secret
+              - secretRef:
+                  name: alert-agent-webhook-secret
+            probes:
+              # No readiness probe on purpose: readiness is a pod-level
+              # condition, so a Hermes hiccup would pull the Gate out of the
+              # Service and Alertmanager would stop reaching it. Three minutes
+              # before liveness acts, because a run must not be killed mid-turn.
+              liveness:
+                enabled: true
+                custom: true
+                spec:
+                  httpGet: { path: /health, port: &hermesPort 8644 }
+                  periodSeconds: 30
+                  timeoutSeconds: 10
+                  failureThreshold: 6
+              readiness:
+                enabled: false
+              startup:
+                enabled: true
+                custom: true
+                spec:
+                  httpGet: { path: /health, port: *hermesPort }
+                  periodSeconds: 5
+                  failureThreshold: 60
+            securityContext: *hermesSecurityContext
+            resources:
+              requests:
+                cpu: 100m
+                memory: 512Mi
+              limits:
+                memory: 2Gi
+
     defaultPodOptions:
-      automountServiceAccountToken: false
+      automountServiceAccountToken: true
       enableServiceLinks: false
       securityContext:
         runAsNonRoot: true
@@ -101,6 +196,9 @@ spec:
         fsGroupChangePolicy: OnRootMismatch
         seccompProfile:
           type: RuntimeDefault
+
+    serviceAccount:
+      alert-agent: {}
 
     service:
       app:
@@ -124,21 +222,73 @@ spec:
         type: configMap
         name: alert-agent-configmap
         defaultMode: 0555
-        globalMounts:
-          - path: /scripts/gate.py
-            subPath: gate.py
-            readOnly: true
-      # One claim, two mounts: the whole volume read-only, and the Gate's own
-      # subdirectory read-write for the Run Budget state file.
+        advancedMounts:
+          alert-agent:
+            gate:
+              - path: /scripts/gate.py
+                subPath: gate.py
+                readOnly: true
+      config-template:
+        type: configMap
+        name: alert-agent-hermes-configmap
+        defaultMode: 0555
+        advancedMounts:
+          alert-agent:
+            render-config:
+              - path: /opt/config-template
+                readOnly: true
+            cron-bootstrap:
+              - path: /opt/config-template
+                readOnly: true
+      # One claim, four mounts. Hermes owns the whole volume as its home; the
+      # Gate sees only the heartbeat directory and its own state subdirectory,
+      # because the same volume holds auth.json, .env and state.db.
       data:
         existingClaim: *app
-        globalMounts:
-          - path: /data
-            readOnly: true
-          - path: /state
-            subPath: gate
+        advancedMounts:
+          alert-agent:
+            render-config:
+              - path: /opt/data
+            cron-bootstrap:
+              - path: /opt/data
+            hermes:
+              - path: /opt/data
+            gate:
+              - path: /data/heartbeat
+                subPath: heartbeat
+                readOnly: true
+              - path: /state
+                subPath: gate
       tmp:
         type: emptyDir
         sizeLimit: 32Mi
-        globalMounts:
-          - path: /tmp
+        advancedMounts:
+          alert-agent:
+            gate:
+              - path: /tmp
+      # Separate from the Gate's /tmp: an Investigation writes its Diagnosis
+      # body here and the Gate has no reason to see it.
+      hermes-tmp:
+        type: emptyDir
+        sizeLimit: 512Mi
+        advancedMounts:
+          alert-agent:
+            render-config:
+              - path: /tmp
+            cron-bootstrap:
+              - path: /tmp
+            hermes:
+              - path: /tmp
+      # s6-overlay writes its supervision tree here at boot, so a read-only root
+      # filesystem needs a writable, exec-able /run.
+      hermes-run:
+        type: emptyDir
+        sizeLimit: 32Mi
+        advancedMounts:
+          alert-agent:
+            render-config:
+              - path: /run
+            cron-bootstrap:
+              - path: /run
+            hermes:
+              - path: /run

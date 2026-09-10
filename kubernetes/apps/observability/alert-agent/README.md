@@ -10,8 +10,13 @@ The alert-investigation Agent: one pod in `observability` with two containers.
   `fix` cron against a ChatGPT Business seat. It reads the cluster; it never
   changes it.
 
-Both share one `ceph-block` PVC: Hermes' home (`/opt/data`), the Gate's budget
-state, the heartbeat file, session transcripts and cron output.
+Both share one `ceph-block` PVC, but not evenly. Hermes mounts the whole volume
+as its home (`/opt/data`): the OpenAI credential, its env file, `state.db` with
+every session transcript, cron output and the heartbeat file. The Gate mounts
+two subdirectories and nothing else — `heartbeat/` read-only for the file whose
+age it exports, and `gate/` read-write for the Run Budget and the incident
+index. Under the pod's `fsGroup: 65534` a whole-volume mount would make Hermes'
+credential group-readable by the Gate.
 
 Vocabulary is `CONTEXT.md`; the decisions behind this app are ADR-0001 to
 ADR-0003 and the parent spec in the Incidents Repo.
@@ -27,6 +32,7 @@ ADR-0003 and the parent spec in the Incidents Repo.
 | `app/resources/hermes-heartbeat.sh` | Written by the `heartbeat` job's model turn. |
 | `app/resources/hermes-prune.sh` | The `prune` job. No model call. |
 | `app/resources/hermes.env.example` | Non-secret env, and which keys come from Secrets. |
+| `app/rbac.yaml` | The Agent's read-only ClusterRole and its binding. |
 | `image/Dockerfile` | Hermes plus `gh` and `kubectl`. |
 | `smoke/smoke.sh` | The Hermes upgrade gate. |
 | `tests/test_gate.py` | The Gate's tests (`python3 -m unittest discover -s tests`). |
@@ -120,8 +126,11 @@ idempotently — safe to run on every pod start.
 
 In descending order of trust:
 
-1. **RBAC** (#9) — a read-only ClusterRole with no access to Secrets. The only
-   layer that holds against a determined prompt injection.
+1. **RBAC** (`app/rbac.yaml`) — get, list and watch, cluster-wide, on
+   everything except Secrets, plus `pods/log`. The only layer that holds
+   against a determined prompt injection. RBAC has no deny, so the core group
+   is enumerated without `secrets` and every other API group is listed by
+   name; a new API group is invisible to the Agent until it is added there.
 2. **`approvals.deny` globs** — fnmatch rules checked before yolo and before
    `approvals.mode`, so they hold even if the mode is loosened. This is the
    load-bearing in-process layer: with `*kubectl*rollout*` removed, the smoke
@@ -160,6 +169,23 @@ healthy Investigation starting.
 ## The login
 
 The seat is authenticated once with a device-code flow inside the pod, or by
-seeding `auth.json` onto the PVC. The runbook lives in the Incidents Repo,
-ticket #9. Being signed in to the workspace account before opening the device
-page avoids the invalid-state failure.
+seeding `auth.json` onto the PVC. The runbook is `docs/agent-login.md` in the
+Incidents Repo. Two traps it exists for: be signed in to the workspace account
+before opening the device page, and run the login through
+`/command/s6-setuidgid hermes` — `kubectl exec` lands as uid 0 and a root-owned
+`auth.json` is unreadable to the gateway's uid 10000.
+
+## Why Hermes runs as uid 0
+
+`main-wrapper.sh` in the image refuses any uid that is neither 0 nor 10000, so
+the pod's `runAsUser: 65534` cannot apply to the Hermes containers. They carry
+a container-level `runAsNonRoot: false`, `runAsUser: 0` instead, and s6-overlay
+bootstraps the volume and then drops every real process to uid 10000 with
+`s6-setuidgid`. That drop is why `capabilities: {drop: ["ALL"]}` must not be
+copied from the Gate here — it kills the boot and leaves `config.yaml`
+root-owned — and why `allowPrivilegeEscalation` is `true`. The Gate stays on
+the pod default: uid 65534, all capabilities dropped.
+
+The root filesystem is read-only for all three Hermes containers, with
+emptyDirs at `/run` (s6's supervision tree) and `/tmp`. Neither is optional: an
+`/run` that is missing or `noexec` fails the boot.

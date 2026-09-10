@@ -7,10 +7,19 @@ resources:
   - ./externalsecret.yaml
   - ./helmrelease.yaml
   - ./pvc.yaml
+  - ./rbac.yaml
 configMapGenerator:
   - name: alert-agent-configmap
     files:
       - gate.py=./scripts/gate.py
+  - name: alert-agent-hermes-configmap
+    files:
+      - hermes-config.yaml=./resources/hermes-config.yaml
+      - hermes-config-render.sh=./resources/hermes-config-render.sh
+      - hermes-cron-bootstrap.sh=./resources/hermes-cron-bootstrap.sh
+      - hermes-heartbeat.sh=./resources/hermes-heartbeat.sh
+      - hermes-prune.sh=./resources/hermes-prune.sh
+      - hermes.env.example=./resources/hermes.env.example
 generatorOptions:
   disableNameSuffixHash: true
   annotations:

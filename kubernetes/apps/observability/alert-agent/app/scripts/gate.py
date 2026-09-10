@@ -635,7 +635,7 @@ You are the alert-investigation Agent for the solen-ops Kubernetes cluster (Talo
 $alerts
 
 ## Step 1: read the Runbooks first
-Clone the Incidents Repo shallowly (`gh repo clone $incidents_repo -- --depth 1`), then read `runbooks/$alertname.md` if it exists and EVERY file under `runbooks/patterns/`. Runbooks hold this cluster's incident history as hypotheses and how to check them. Start from their hypotheses instead of rediscovering them; a node-wide symptom described in a pattern Runbook must be recognised as one.
+Clone the Incidents Repo shallowly into this run's own directory (`gh repo clone $incidents_repo /tmp/incidents-$issue_number -- --depth 1`; if that path already exists from an earlier attempt, use it as it is), then read `runbooks/$alertname.md` under it if it exists and EVERY file under its `runbooks/patterns/`. Runbooks hold this cluster's incident history as hypotheses and how to check them. Start from their hypotheses instead of rediscovering them; a node-wide symptom described in a pattern Runbook must be recognised as one.
 
 ## Step 2: gather evidence, read-only
 - kubectl read verbs only: get, describe, logs, top, events, api-resources, explain. Secrets are not readable and must not be attempted.

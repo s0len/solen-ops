@@ -19,6 +19,13 @@ mkdir -p "${scripts_dir}" "${HERMES_HOME}/cron" "${HERMES_HOME}/heartbeat"
 install -m 0755 "${SRC_DIR}/hermes-heartbeat.sh" "${scripts_dir}/hermes-heartbeat.sh"
 install -m 0755 "${SRC_DIR}/hermes-prune.sh" "${scripts_dir}/hermes-prune.sh"
 
+# The Gate mounts $HERMES_HOME/heartbeat as a subPath. If kubelet ever creates
+# that directory before this runs, it lands root-owned and the heartbeat job
+# fails silently, which reads as a dead login. Warn rather than exit: the Gate
+# shares this pod and must not be held down by a broken heartbeat.
+[ -w "${HERMES_HOME}/heartbeat" ] || \
+    echo "[bootstrap] WARNING: ${HERMES_HOME}/heartbeat is not writable by uid $(id -u); the heartbeat job will fail" >&2
+
 job_exists() {
     [ -f "${jobs_file}" ] || return 1
     JOBS_FILE="${jobs_file}" JOB_NAME="$1" python3 - <<'PY'

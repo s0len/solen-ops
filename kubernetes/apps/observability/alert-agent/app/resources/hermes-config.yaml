@@ -12,6 +12,13 @@ model:
   # Top tier = gpt-5.6-sol — pin the `fix` cron to it. Investigations run one tier down.
   default: "gpt-5.6-terra"
 
+# The gateway's own working directory is /opt/hermes: root-owned, and read-only
+# in the pod. A terminal command that writes anything relative fails there, so
+# the tool starts inside the write-safe root instead. A bound profile scope
+# ignores the container environment, which is why this lives in the config.
+terminal:
+  cwd: /opt/data/workspace
+
 agent:
   max_turns: 30
   # kanban is here because the cron platform default enables it; without it the

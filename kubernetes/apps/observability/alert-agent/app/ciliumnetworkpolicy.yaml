@@ -5,8 +5,9 @@ kind: CiliumNetworkPolicy
 metadata:
   name: alert-agent
 spec:
-  # This pod holds the machine account's GitHub token and the Hermes route
-  # secret, so both directions are pinned.
+  # This pod holds the machine account's GitHub token, the Hermes route secret
+  # and the OpenAI refresh token, so both directions are pinned. The selector is
+  # the POD: the Gate and Hermes share one identity and one egress surface.
   endpointSelector:
     matchLabels:
       app.kubernetes.io/name: alert-agent
@@ -24,7 +25,7 @@ spec:
               protocol: TCP
   egress:
     # The DNS rules are load-bearing for toFQDNs below: Cilium learns the
-    # GitHub addresses from the proxied answers.
+    # GitHub and OpenAI addresses from the proxied answers.
     - toEndpoints:
         - matchLabels:
             k8s:io.kubernetes.pod.namespace: kube-system
@@ -38,8 +39,45 @@ spec:
           rules:
             dns:
               - matchPattern: "*"
+    # kubectl. The Agent's identity is the read-only ClusterRole, not this rule.
+    - toEntities:
+        - kube-apiserver
+    # The Investigation's evidence path: PromQL, LogsQL and the Alertmanager API.
+    - toEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: observability
+            app.kubernetes.io/name: prometheus
+      toPorts:
+        - ports:
+            - port: "9090"
+              protocol: TCP
+    - toEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: observability
+            app.kubernetes.io/name: alertmanager
+      toPorts:
+        - ports:
+            - port: "9093"
+              protocol: TCP
+    - toEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: observability
+            app.kubernetes.io/name: victoria-logs-single
+      toPorts:
+        - ports:
+            - port: "9428"
+              protocol: TCP
+    # api.github.com is the Gate and `gh`; github.com is `gh repo clone` and the
+    # Fix run's push. chatgpt.com is the openai-codex provider's only backend
+    # (hermes_cli/auth_constants.py: DEFAULT_CODEX_BASE_URL) and auth.openai.com
+    # serves the device-code endpoints and the token refresh. api.openai.com is
+    # deliberately absent: no code path reaches it while model.provider is
+    # openai-codex.
     - toFQDNs:
         - matchName: api.github.com
+        - matchName: github.com
+        - matchName: chatgpt.com
+        - matchName: auth.openai.com
       toPorts:
         - ports:
             - port: "443"
