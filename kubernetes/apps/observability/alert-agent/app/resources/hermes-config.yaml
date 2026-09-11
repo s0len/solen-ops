@@ -18,12 +18,6 @@ model:
 # ignores the container environment, which is why this lives in the config.
 terminal:
   cwd: /opt/data/workspace
-  # Tool subprocesses get a scrubbed env: any name containing KEY, TOKEN,
-  # SECRET, AUTH and friends is dropped, so gh arrives unauthenticated and the
-  # Agent can read the cluster but cannot post its Diagnosis. This is the
-  # documented opt-in. The token is the machine account's, scoped to the two
-  # repositories, and the deny globs above keep gh to its issue verbs.
-  env_passthrough: [GITHUB_TOKEN]
 
 agent:
   max_turns: 30
@@ -134,6 +128,8 @@ approvals:
     - "*.hermes/config.yaml*"
     - "*opt/data/.env*"
     - "*opt/data/auth.json*"
+    - "*gh/hosts.yml*"
+    - "*opt/data/.gitconfig*"
 
 security:
   redact_secrets: true

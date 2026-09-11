@@ -44,6 +44,8 @@ spec:
             envFrom:
               - secretRef:
                   name: alert-agent-webhook-secret
+              - secretRef:
+                  name: alert-agent-github-secret
             securityContext: &hermesSecurityContext
               # main-wrapper.sh refuses any uid that is neither 0 nor 10000, so the
               # pod default (65534) cannot apply here; s6-setuidgid drops to 10000.
