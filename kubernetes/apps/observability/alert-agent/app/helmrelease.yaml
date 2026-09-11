@@ -34,7 +34,7 @@ spec:
           render-config:
             image: &hermesImage
               repository: ghcr.io/s0len/hermes-agent
-              tag: v2026.9.7@sha256:6ad7b93f1d4f365a8e060a830b6d51187fb52eeb86c57648aa3fa607c037ae9d
+              tag: v2026.9.7@sha256:64efb0d37583a6228c68510485e83a41a672f6cf3b2f443b183a5d3f18e2b298
             # args, not command: the image's entrypoint runs s6-overlay, which
             # bootstraps the data volume and drops to uid 10000 before the script.
             args: ["bash", "/opt/config-template/hermes-config-render.sh"]
