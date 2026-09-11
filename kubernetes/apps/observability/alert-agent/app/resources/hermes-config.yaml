@@ -91,7 +91,11 @@ approvals:
     - "*gh*release*"
     - "*gh*secret*"
     - "*gh*repo*delete*"
-    - "*gh*auth*"
+    - "*gh*auth*login*"
+    - "*gh*auth*logout*"
+    - "*gh*auth*token*"
+    - "*gh*auth*refresh*"
+    - "*gh*auth*switch*"
     - "*helm*install*"
     - "*helm*uninstall*"
     - "*helm*upgrade*"
@@ -129,7 +133,7 @@ approvals:
     - "*opt/data/.env*"
     - "*opt/data/auth.json*"
     - "*gh/hosts.yml*"
-    - "*opt/data/.gitconfig*"
+    - "*opt/data/home/.gitconfig*"
 
 security:
   redact_secrets: true

@@ -86,7 +86,9 @@ if [ -n "${GITHUB_TOKEN:-}" ]; then
 import os
 import pathlib
 
-home = pathlib.Path(os.environ["HERMES_HOME"])
+# The terminal tool runs commands with HOME=$HERMES_HOME/home, its own sandbox
+# home, not $HERMES_HOME. gh reads hosts.yml relative to that, so write there.
+home = pathlib.Path(os.environ["HERMES_HOME"]) / "home"
 hosts = home / ".config" / "gh" / "hosts.yml"
 hosts.parent.mkdir(parents=True, exist_ok=True)
 user = os.environ.get("GITHUB_USER") or "x-access-token"
@@ -114,7 +116,7 @@ if not gitconfig.exists():
 
 uid = int(os.environ.get("HERMES_UID", "10000"))
 gid = int(os.environ.get("HERMES_GID", os.environ.get("HERMES_UID", "10000")))
-for path in (hosts, hosts.parent, hosts.parent.parent, gitconfig):
+for path in (hosts, hosts.parent, hosts.parent.parent, home, gitconfig):
     try:
         os.chown(path, uid, gid)
     except (PermissionError, OSError, FileNotFoundError):
