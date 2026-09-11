@@ -22,11 +22,48 @@ spec:
       home-assistant:
         annotations:
           reloader.stakater.com/auto: "true"
-        containers:
-          app:
-            image:
+        initContainers:
+          # The venv on the cache claim outlives the image. When the image
+          # changes it keeps whatever the previous version resolved, and a
+          # venv package shadows the image's own copy: a stale
+          # bleak-retry-connector 4.6.3 against 2026.9.1 removed the symbol
+          # habluetooth imports and Home Assistant would not start at all.
+          # Rebuild the venv whenever the image reference changes.
+          venv-guard:
+            image: &appImage
               repository: ghcr.io/home-operations/home-assistant
               tag: 2026.9.1@sha256:1bcf770d15bd91a55491d04f12494febb35da68b025e1f6612a167a2e190a8c7
+            command: ["/bin/sh", "-c"]
+            args:
+              - |
+                set -eu
+                stamp=/config/.venv-image-stamp
+                # Fingerprint the image's own installed distributions rather
+                # than the tag: no version string to keep in step with
+                # Renovate, and a digest-only rebuild that moves a dependency
+                # is caught just as a version bump is.
+                want="$(python -c "import importlib.metadata as m, hashlib; print(hashlib.sha256(repr(sorted((d.metadata['Name'] or '', d.version) for d in m.distributions())).encode()).hexdigest())")"
+                have="$(cat "$stamp" 2>/dev/null || true)"
+                if [ "$have" = "$want" ]; then
+                  echo "venv matches the image's packages ($want)"
+                  exit 0
+                fi
+                echo "image packages changed ${have:-none} -> ${want}; rebuilding the venv"
+                find /venv -mindepth 1 -maxdepth 1 ! -name lost+found -exec rm -rf {} +
+                printf '%s' "$want" > "$stamp"
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities: { drop: ["ALL"] }
+            resources:
+              requests:
+                cpu: 10m
+              limits:
+                memory: 128Mi
+
+        containers:
+          app:
+            image: *appImage
             env:
               TZ: ${TIMEZONE}
               HASS_HTTP_TRUSTED_PROXY_1: 10.69.0.0/16
@@ -135,6 +172,8 @@ spec:
           home-assistant:
             app:
               - path: /config/.venv
+            venv-guard:
+              - path: /venv
       tmp:
         type: emptyDir
         advancedMounts:
