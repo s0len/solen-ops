@@ -1,0 +1,56 @@
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/monitoring.coreos.com/prometheusrule_v1.json
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: alert-agent-rules
+spec:
+  groups:
+    - name: alert-agent.rules
+      rules:
+        # The heartbeat file is written by the daily 04:00 cron only when the model
+        # actually answers, so its age is live proof that the OpenAI login works.
+        # heartbeat_file_present guards the absent-file sentinel (1e9 seconds): before
+        # the very first run that sentinel exceeds every threshold and would page a
+        # fresh deploy until 04:00 came round. The file disappearing later cannot go
+        # unnoticed — it lives on the Hermes home PVC, the prune job only touches
+        # cron/output, and a volume the pod cannot mount surfaces as AlertAgentGateDown.
+        - alert: AlertAgentHeartbeatStale
+          expr: |
+            alert_agent_gate_heartbeat_age_seconds > 93600
+              and alert_agent_gate_heartbeat_file_present == 1
+          for: 15m
+          annotations:
+            summary: >-
+              The alert Agent's Hermes heartbeat is {{ $value | humanizeDuration }} old
+            description: >-
+              The daily 04:00 heartbeat has not been written for
+              {{ $value | humanizeDuration }}, so the OpenAI login has died or the Hermes
+              cron scheduler has stopped. Re-run the login runbook docs/agent-login.md in
+              s0len/solen-ops-incidents. Until it is fixed the Gate keeps filing Incident
+              Issues for every Alert Group past the Floor, they simply carry no Diagnosis.
+          labels:
+            severity: critical
+
+        # up == 0 alone cannot catch a Gate that is down: a deleted or unready pod takes
+        # its endpoint out of service discovery, so the series stops existing rather than
+        # going to zero. absent() is the branch that covers a pod scaled to zero. Both
+        # branches carry job="alert-agent", which is half the Alertmanager group key, so
+        # they group as one alert. No absent() guard on the heartbeat rule above: when the
+        # Gate is down its metrics vanish with it and this alert is the one that fires.
+        - alert: AlertAgentGateDown
+          expr: |
+            up{job="alert-agent"} == 0 or absent(up{job="alert-agent"})
+          for: 10m
+          annotations:
+            summary: >-
+              The alert Agent's Gate has been unreachable for 10 minutes
+            description: >-
+              Prometheus cannot scrape the Gate, so the pod is down, unready or gone from
+              service discovery. While it is down Alertmanager's webhook deliveries fail
+              and no Incident Issue is filed at all, not even a Bare Issue, so anything
+              that fires now leaves no trace in the Incidents Repo. Pushover paging is
+              unaffected either way. Check the pod with kubectl -n observability describe
+              pod -l app.kubernetes.io/name=alert-agent
+          labels:
+            severity: critical
