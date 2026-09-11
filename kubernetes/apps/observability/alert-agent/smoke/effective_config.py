@@ -12,11 +12,15 @@ import sys
 
 sys.path.insert(0, "/opt/hermes")
 
+from agent.reasoning_effort import (  # noqa: E402
+    CODEX_ASTRA_EFFORTS, CODEX_GPT56_EFFORTS, clamp_effort, is_astra_model)
 from cron.scheduler import _resolve_cron_disabled_toolsets  # noqa: E402
+from cron.scheduler import _resolve_job_reasoning_config  # noqa: E402
 from gateway.config import load_gateway_config  # noqa: E402
 from hermes_cli.approvals_test import evaluate_command  # noqa: E402
 from hermes_cli.config import load_config_readonly  # noqa: E402
 from hermes_cli.tools_config import _get_platform_tools  # noqa: E402
+from hermes_constants import resolve_reasoning_config  # noqa: E402
 from tools import approval_context as ctx  # noqa: E402
 from tools.approval import check_all_command_guards  # noqa: E402
 
@@ -24,6 +28,28 @@ EXPECTED_MAX_TURNS = 30
 EXPECTED_DISABLED_TOOLSETS = {"memory", "skills", "session_search", "cronjob", "kanban"}
 EXPECTED_WEBHOOK_TOOLSETS = ["terminal"]
 EXPECTED_CRON_TOOLSETS = ["terminal"]
+
+# The two tiers, and the heartbeat floor. Must match the declarations in
+# app/resources/hermes-config.yaml and app/resources/hermes-cron-bootstrap.sh.
+EXPECTED_INVESTIGATE_MODEL = "gpt-6-astra"
+EXPECTED_INVESTIGATE_EFFORT = "high"
+EXPECTED_FIX_MODEL = "gpt-5.6-luna"
+EXPECTED_FIX_EFFORT = "max"
+EXPECTED_HEARTBEAT_EFFORT = "low"
+
+
+def effort_level(resolved) -> str:
+    """The level a Hermes resolver settled on, as a comparable string.
+
+    The resolvers return ``parse_reasoning_effort``'s dict, and a disabled level
+    is ``{"enabled": False}`` with no ``effort`` key at all — so reading
+    ``["effort"]`` would silently read "off" as "unset".
+    """
+    if not isinstance(resolved, dict):
+        return ""
+    if not resolved.get("enabled", True):
+        return "none"
+    return str(resolved.get("effort") or "")
 
 # The Investigation and Fix runs must be able to do all of this.
 MUST_ALLOW = [
@@ -192,6 +218,51 @@ def main() -> int:
         failures.append(f"model.provider is {model.get('provider')!r}, expected 'openai-codex'")
     if not model.get("default"):
         failures.append("model.default is unset")
+
+    # Both tiers RESOLVED, not read back: the effort an Investigation would run
+    # at comes from resolve_reasoning_config (the single chokepoint every surface
+    # uses), and the Fix run's from the scheduler's own per-job resolver. A
+    # global effort that a per-job pin was silently overriding, or a level the
+    # model's wire does not accept, fails here rather than in production.
+    investigate_model = str(model.get("default") or "")
+    if investigate_model != EXPECTED_INVESTIGATE_MODEL:
+        failures.append(
+            f"Investigations resolve to model {investigate_model!r}, expected {EXPECTED_INVESTIGATE_MODEL!r}")
+    if not is_astra_model(investigate_model):
+        failures.append(f"{investigate_model!r} is not on the astra effort ladder")
+
+    investigate_effort = effort_level(resolve_reasoning_config(cfg, investigate_model))
+    if investigate_effort != EXPECTED_INVESTIGATE_EFFORT:
+        failures.append(
+            f"Investigations resolve to effort {investigate_effort!r}, expected {EXPECTED_INVESTIGATE_EFFORT!r}")
+    # Resolution is only half of it: the transport clamps to the model's declared
+    # set, so a level astra does not accept would land weaker than declared.
+    if clamp_effort(investigate_effort, CODEX_ASTRA_EFFORTS) != EXPECTED_INVESTIGATE_EFFORT:
+        failures.append(
+            f"effort {investigate_effort!r} clamps to "
+            f"{clamp_effort(investigate_effort, CODEX_ASTRA_EFFORTS)!r} on astra's wire")
+
+    # The heartbeat floor. Astra publishes no `none`, so `none` clamps UP: this
+    # is what makes `low` the cheapest level the heartbeat can actually buy, and
+    # it fails the day a release widens the ladder and a cheaper floor exists.
+    if clamp_effort("none", CODEX_ASTRA_EFFORTS) != EXPECTED_HEARTBEAT_EFFORT:
+        failures.append(
+            f"astra's cheapest effort is now "
+            f"{clamp_effort('none', CODEX_ASTRA_EFFORTS)!r}, not {EXPECTED_HEARTBEAT_EFFORT!r}")
+
+    # A per-job pin must beat agent.reasoning_effort, or the Fix run would
+    # quietly inherit the Investigation tier's effort instead of its own.
+    fix_effort = effort_level(_resolve_job_reasoning_config(
+        {"id": "fix", "reasoning_effort": EXPECTED_FIX_EFFORT}, cfg, EXPECTED_FIX_MODEL))
+    if fix_effort != EXPECTED_FIX_EFFORT:
+        failures.append(
+            f"the Fix run resolves to effort {fix_effort!r}, expected {EXPECTED_FIX_EFFORT!r}")
+    if clamp_effort(fix_effort, CODEX_GPT56_EFFORTS) != EXPECTED_FIX_EFFORT:
+        failures.append(
+            f"effort {fix_effort!r} clamps to "
+            f"{clamp_effort(fix_effort, CODEX_GPT56_EFFORTS)!r} on the gpt-5.6 wire")
+    if is_astra_model(EXPECTED_FIX_MODEL):
+        failures.append(f"{EXPECTED_FIX_MODEL!r} is on the astra ladder; the gpt-5.6 clamp above is wrong")
 
     # The gateway reads config.yaml through its own loader, which never expands
     # ${...}; asserting through it is the only honest check of the live route.

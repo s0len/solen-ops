@@ -8,9 +8,15 @@ _config_version: 41
 
 model:
   provider: "openai-codex"
-  # Tier ladder on this seat, strongest first: gpt-5.6-sol, gpt-5.6-terra, gpt-5.6-luna.
-  # Top tier = gpt-5.6-sol — pin the `fix` cron to it. Investigations run one tier down.
-  default: "gpt-5.6-terra"
+  # Live per-account catalog for this seat, strongest first: gpt-6-astra,
+  # gpt-5.6-sol, gpt-5.6-terra, gpt-5.6-luna, gpt-5.5 (every slug but gpt-5.5
+  # also as -900k). gpt-6-astra is ACCOUNT-GATED: codex_models.py's
+  # _drop_undiscovered_astra strips it from the curated offline fallback, so it
+  # is present only when the live OAuth catalog serves it — a login-less
+  # container (smoke, CI) never sees it, and that is not a regression.
+  # Investigations (the webhook `investigate` route) and the unpinned heartbeat
+  # run here; the `fix` cron pins gpt-5.6-luna on the job itself.
+  default: "gpt-6-astra"
 
 # The gateway's own working directory is /opt/hermes: root-owned, and read-only
 # in the pod. A terminal command that writes anything relative fails there, so
@@ -21,6 +27,11 @@ terminal:
 
 agent:
   max_turns: 30
+  # Governs the Investigation path only: both cron jobs pin their own effort on
+  # the job, and _resolve_job_reasoning_config lets that pin beat this.
+  # Astra's wire ladder is low/medium/high/xhigh/max — it has NO `none`, and a
+  # `none` request clamps UP to low, so thinking cannot be switched off here.
+  reasoning_effort: "high"
   # kanban is here because the cron platform default enables it; without it the
   # resolved cron surface is [kanban, terminal], not the [terminal] declared below.
   disabled_toolsets: [memory, skills, session_search, cronjob, kanban]

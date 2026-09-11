@@ -89,54 +89,96 @@ config. The script exits non-zero on any failure and prints the gateway log.
 
 ## Changing model tiers
 
-The tier ladder available to the seat, strongest first:
-`gpt-5.6-sol`, `gpt-5.6-terra`, `gpt-5.6-luna`, `gpt-5.5`
-(`hermes_cli/codex_models.py::DEFAULT_CODEX_MODELS`).
+The live per-account catalog for this seat, strongest first:
+`gpt-6-astra`, `gpt-5.6-sol`, `gpt-5.6-terra`, `gpt-5.6-luna`, `gpt-5.5` — every
+slug but `gpt-5.5` also as a `-900k` large-context variant.
 
-Investigations run one tier down from the top. Changing that is one line in
-`app/resources/hermes-config.yaml`:
+`gpt-6-astra` is **account-gated**. `codex_models.py::_drop_undiscovered_astra`
+strips it from the curated offline fallback, so it appears only when the live
+OAuth catalog serves it: a login-less container (the smoke script, CI) lists the
+fallback without it, and that is not a regression. Read the real catalog with
+`get_codex_model_ids(access_token=...)`; without a token you are reading
+`DEFAULT_CODEX_MODELS`, which is not this seat's catalog.
 
-```yaml
-model:
-  default: "gpt-5.6-terra"
-```
+The two paths are tuned independently — a newer-generation model at high effort
+on the frequent path, a smaller model given maximum thinking on the rare one:
 
-The `fix` cron pins the top tier on the job itself, in
-`app/resources/hermes-cron-bootstrap.sh` (`FIX_MODEL`, `FIX_PROVIDER`), so the
-two tiers move independently. Re-run the smoke script after either change.
+| Path | Where | Model | Effort |
+| --- | --- | --- | --- |
+| Investigation (webhook `investigate`) | `hermes-config.yaml` — `model.default`, `agent.reasoning_effort` | `gpt-6-astra` | `high` |
+| Fix (`fix` cron) | `hermes-cron-bootstrap.sh` — `FIX_MODEL`, `FIX_PROVIDER`, `FIX_EFFORT` | `gpt-5.6-luna` | `max` |
+| Heartbeat (`heartbeat` cron) | follows `model.default`; `HEARTBEAT_EFFORT` | unpinned | `low` |
 
-Both axes are pinned on purpose. The scheduler's drift guard skips a run whose
-**unpinned** model or provider has resolved differently since the job was
-created — sensible for spend, but it would silently stop Fix runs the next time
-`model.default` moves. A pinned axis never counts as drift. Changing `FIX_MODEL`
-does **not** re-create an existing job: the bootstrap only creates jobs that are
-missing. Move a live job with `hermes cron edit <id> --model <name> --provider
-openai-codex`, or delete it and let the next pod start recreate it.
+Effort ladders differ by model generation (`agent/reasoning_effort.py`). The
+gpt-5.6 line takes `none, low, medium, high, xhigh, max`. **Astra takes
+`low, medium, high, xhigh, max` and has no `none`** — a `none` request clamps
+*up* to `low`, so thinking cannot be switched off on the Investigation path.
+That is why the heartbeat's floor is `low` and not `none`. `agent.reasoning_effort`
+is global; `agent.reasoning_overrides` maps a model name to an effort and beats
+it; a per-job cron pin beats both. Re-run the smoke script after any change — it
+asserts the *resolved* model and effort for both paths, not just that the keys
+are set.
+
+Both inference axes are pinned on the `fix` job on purpose. The scheduler's
+drift guard skips a run whose **unpinned** model or provider has resolved
+differently since the job was created — sensible for spend, but it would
+silently stop Fix runs the next time `model.default` moves. A pinned axis
+carries no snapshot and never counts as drift.
+
+The heartbeat is the deliberate exception: it stays unpinned on model because
+its whole job is to prove the login behind `model.default` still answers. That
+exposes it to the same guard, which is why the bootstrap reconciles snapshots
+(below) rather than only creating missing jobs.
+
+### The bootstrap reconciles; it does not just create
+
+`app/resources/hermes-cron-bootstrap.sh` is a declaration applied on every pod
+start, and it is idempotent by *shape*, not merely by name:
+
+- **missing** → created.
+- **schedule / model / provider / effort differ** → `hermes cron edit <id>` drags
+  the live job back to the declaration. Matching is by job **id**; `cron/jobs.py`'s
+  `_with_job` compares `job["id"]` only, so a name will not do.
+- **unpinned model whose `model_snapshot` has gone stale** → removed and created
+  again. `update_job` re-snapshots only when an inference axis actually changes,
+  so `hermes cron edit` *cannot* re-take a snapshot on a job that must stay
+  unpinned. Re-creation is the only way, and without it the heartbeat would be
+  skipped by the drift guard on every fire and read as a dead login.
+
+Editing the flags in that script is therefore enough to move a live job; the
+older "delete it and let the next pod start recreate it" step is no longer
+needed. The job **prompt** is still not reconciled — it is stored verbatim in
+`jobs.json` at creation, so a reworded `hermes-fix-prompt.md` still needs
+`hermes cron remove fix` (the next start recreates it).
 
 ## Cron jobs
 
 Hermes has no config-file surface for cron jobs; they live in
 `/opt/data/cron/jobs.json` and are created with `hermes cron create`.
-`app/resources/hermes-cron-bootstrap.sh` is that declaration, applied
-idempotently — safe to run on every pod start.
+`app/resources/hermes-cron-bootstrap.sh` is that declaration, reconciled on every
+pod start (see above) — safe to run repeatedly.
 
-- `heartbeat` — daily, default model, one terminal turn that runs
-  `hermes-heartbeat.sh` and writes `/opt/data/heartbeat/last`. The Gate exports
-  that file's age; a dead login stops the write and the age alert fires. It is
-  deliberately **not** a `--script` job: a script would run whether or not the
-  model answered, and would prove nothing about the login.
+- `heartbeat` — daily, `model.default` (currently `gpt-6-astra`) at `low` effort,
+  one terminal turn that runs `hermes-heartbeat.sh` and writes
+  `/opt/data/heartbeat/last`. The Gate exports that file's age; a dead login
+  stops the write and the age alert fires. It is deliberately **not** a
+  `--script` job: a script would run whether or not the model answered, and
+  would prove nothing about the login. Effort is at the floor for the same
+  reason — proving the login answers needs no thinking tokens.
 - `prune` — daily, `--no-agent`, deletes cron output older than thirty days. No
   model call. Session transcripts are **not** files: they live in `state.db` and
   are retained by `sessions.auto_prune` + `sessions.retention_days: 30`. The one
   thing under `/opt/data/sessions` is the gateway's live routing map, which the
   script must never age out.
-- `fix` — every five minutes, top tier, terminal toolset, output to local files.
+- `fix` — every five minutes, `gpt-5.6-luna` at `max` effort, terminal toolset,
+  output to local files.
   It takes the oldest open Incident Issue labelled `ready-for-agent`, re-verifies
   the Diagnosis read-only, and opens ONE pull request here (ADR-0001). It is the
   only job that writes anything, and the only thing it writes is a branch and a
   pull request. The prompt is `app/resources/hermes-fix-prompt.md`; it is stored
   verbatim in `jobs.json` at creation, so **editing the file does not change a
-  job that already exists** — `hermes cron remove fix` and restart the pod, or
+  job that already exists** — the bootstrap reconciles the pins and the schedule
+  but not the prompt, so `hermes cron remove fix` and restart the pod, or
   `hermes cron edit`, to pick up a reworded prompt. The run is idempotent
   against being cut off: it looks for an open pull request on
   `agent/incident-<n>` before doing anything, so a run that dies between

@@ -88,7 +88,7 @@ spec:
               TZ: ${TIMEZONE}
               PORT: &port 8080
               GITHUB_INCIDENTS_REPO: s0len/solen-ops-incidents
-              RUN_BUDGET_PER_DAY: "10"
+              RUN_BUDGET_PER_DAY: "20"
               BUDGET_STATE_FILE: /state/run-budget.json
               INCIDENT_INDEX_FILE: /state/incident-index.json
               # Plural /webhooks/. Emptying this is the kill switch: Incident

@@ -239,6 +239,67 @@ require "re-running is a no-op for heartbeat" "cron job 'heartbeat' already pres
 require "re-running is a no-op for prune" "cron job 'prune' already present" "${second}"
 require "re-running is a no-op for fix" "cron job 'fix' already present" "${second}"
 refute "re-running creates nothing" "creating cron job" "${second}"
+refute "re-running repins nothing" "repinning cron job" "${second}"
+refute "re-running recreates nothing" "recreating cron job" "${second}"
+
+# The bootstrap is a declaration, not a first-run installer: a live job left on
+# an older pin must be dragged back to it. Without this the flags in the script
+# can be retuned and the running cluster silently keeps the old model.
+step "cron reconcile"
+# jobs.json is an OBJECT with a "jobs" list, not a bare list; iterating it
+# directly walks the keys and every lookup below dies on a string.
+job_id_of() {
+    docker exec "${CONTAINER}" python3 -c '
+import json, sys
+jobs = json.load(open("/opt/data/cron/jobs.json"))
+if isinstance(jobs, dict):
+    jobs = jobs.get("jobs", [])
+print(next(job["id"] for job in jobs if job["name"] == sys.argv[1]))
+' "$1" 2>&1
+}
+fix_id="$(job_id_of fix)"
+docker exec "${CONTAINER}" hermes cron edit "${fix_id}" \
+    --model gpt-5.6-sol --provider openai-codex --reasoning-effort medium >/dev/null 2>&1
+drifted="$(docker exec "${CONTAINER}" cat /opt/data/cron/jobs.json 2>&1)"
+require "the fix job was knocked onto an older pin" '"model": "gpt-5.6-sol"' "${drifted}"
+repin="$(docker exec -e SRC_DIR=/opt/smoke/resources "${CONTAINER}" bash /opt/smoke/resources/hermes-cron-bootstrap.sh 2>&1)"
+require "bootstrap notices the drifted pin" "repinning cron job 'fix'" "${repin}"
+require "bootstrap names the axes that drifted" "effort,model" "${repin}"
+repinned="$(docker exec "${CONTAINER}" cat /opt/data/cron/jobs.json 2>&1)"
+require "the fix job is back on the declared model" '"model": "gpt-5.6-luna"' "${repinned}"
+require "the fix job is back on the declared effort" '"reasoning_effort": "max"' "${repinned}"
+refute "no stale model pin survives" "gpt-5.6-sol" "${repinned}"
+settled="$(docker exec -e SRC_DIR=/opt/smoke/resources "${CONTAINER}" bash /opt/smoke/resources/hermes-cron-bootstrap.sh 2>&1)"
+refute "reconciling twice changes nothing" "repinning cron job" "${settled}"
+
+# An unpinned job carries a creation snapshot of the resolved default and the
+# scheduler SKIPS its runs once that snapshot goes stale — for the heartbeat that
+# reads as a dead login. `hermes cron edit` cannot re-take a snapshot, so the
+# bootstrap must re-create the job instead.
+heartbeat_id="$(job_id_of heartbeat)"
+if ! docker exec "${CONTAINER}" python3 -c '
+import json
+path = "/opt/data/cron/jobs.json"
+payload = json.load(open(path))
+jobs = payload.get("jobs", []) if isinstance(payload, dict) else payload
+for job in jobs:
+    if job["name"] == "heartbeat":
+        job["model_snapshot"] = "gpt-5.6-terra"
+json.dump(payload, open(path, "w"), indent=2)
+' 2>"${WORKDIR}/stale-snapshot.log"; then
+    fail "could not back-date the heartbeat model snapshot"
+    cat "${WORKDIR}/stale-snapshot.log" >&2
+fi
+resnap="$(docker exec -e SRC_DIR=/opt/smoke/resources "${CONTAINER}" bash /opt/smoke/resources/hermes-cron-bootstrap.sh 2>&1)"
+require "bootstrap notices the stale snapshot" "recreating cron job 'heartbeat'" "${resnap}"
+require "bootstrap names the snapshot that went stale" "model_snapshot 'gpt-5.6-terra'" "${resnap}"
+resnapped="$(docker exec "${CONTAINER}" cat /opt/data/cron/jobs.json 2>&1)"
+refute "the stale snapshot is gone" '"model_snapshot": "gpt-5.6-terra"' "${resnapped}"
+require "the heartbeat snapshot was re-taken on the current default" \
+    '"model_snapshot": "gpt-6-astra"' "${resnapped}"
+refute "the heartbeat job was replaced, not edited in place" "${heartbeat_id}" "${resnapped}"
+settled_hb="$(docker exec -e SRC_DIR=/opt/smoke/resources "${CONTAINER}" bash /opt/smoke/resources/hermes-cron-bootstrap.sh 2>&1)"
+refute "re-snapshotting twice changes nothing" "recreating cron job" "${settled_hb}"
 
 jobs="$(docker exec "${CONTAINER}" cat /opt/data/cron/jobs.json 2>&1)"
 require "heartbeat job persisted" '"name": "heartbeat"' "${jobs}"
@@ -247,9 +308,25 @@ require "prune job runs no agent" '"no_agent": true' "${jobs}"
 require "heartbeat job writes the Gate's heartbeat file" "hermes-heartbeat.sh" "${jobs}"
 require "fix job persisted" '"name": "fix"' "${jobs}"
 require "fix job runs every five minutes" '"expr": "*/5 * * * *"' "${jobs}"
-require "fix job pins the top model tier" '"model": "gpt-5.6-sol"' "${jobs}"
-require "fix job pins the provider so the drift guard cannot skip it" \
-    '"provider": "openai-codex"' "${jobs}"
+
+# Per job, not a substring of the whole file: "max" and "low" both appear in
+# jobs.json and a file-wide match cannot tell which job carries which.
+pins="$(docker exec "${CONTAINER}" python3 -c '
+import json
+payload = json.load(open("/opt/data/cron/jobs.json"))
+jobs = payload.get("jobs", []) if isinstance(payload, dict) else payload
+for job in jobs:
+    print("%s=%s/%s/%s" % (job["name"], job.get("model") or "-",
+                           job.get("provider") or "-", job.get("reasoning_effort") or "-"))
+' 2>&1)"
+require "fix job pins the small model at maximum thinking, provider included" \
+    "fix=gpt-5.6-luna/openai-codex/max" "${pins}"
+# A trivial daily "reply ok" buys nothing from thinking tokens. low is the floor
+# because the heartbeat follows model.default (gpt-6-astra), whose ladder
+# publishes no `none`. Model stays unpinned so it tracks the default it proves.
+require "heartbeat job is unpinned on model and runs at its model's cheapest effort" \
+    "heartbeat=-/-/low" "${pins}"
+require "prune job pins nothing; it never calls a model" "prune=-/-/-" "${pins}"
 require "fix job takes the oldest ready-for-agent issue" \
     "take the issue with the OLDEST" "${jobs}"
 require "fix job spends the label exactly once" \
