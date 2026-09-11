@@ -1,5 +1,5 @@
 [tools]
-talosctl = "1.13.9"
+talosctl = "1.14.0"
 
 [env]
 _.file = '{{config_root}}/.talos.env'
