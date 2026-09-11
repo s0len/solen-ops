@@ -203,8 +203,13 @@ spec:
       securityContext:
         runAsNonRoot: true
         runAsUser: 65534
-        runAsGroup: 65534
-        fsGroup: 65534
+        # gid 10000 is the Hermes runtime user's group. The projected service
+        # account token is mounted root:fsGroup 0640, so with any other fsGroup
+        # Hermes is neither owner nor group and every kubectl call fails with a
+        # permission denied on the token. The Gate only needs its own subPath,
+        # which fsGroup makes group-writable either way.
+        runAsGroup: 10000
+        fsGroup: 10000
         fsGroupChangePolicy: OnRootMismatch
         seccompProfile:
           type: RuntimeDefault
