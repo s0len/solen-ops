@@ -133,15 +133,20 @@ class FakeGitHub:
             self.next_number = 1
             self.hide_new_from_listing = False
             self.hidden = set()
+            self.stale_open_in_listing = set()
 
     def release_listing(self):
         """Everything created during the lag becomes visible to the listing."""
         with self.lock:
             self.hidden = set()
 
-    def close_issue(self, number):
+    def close_issue(self, number, listing_still_open=False):
+        """Close an issue; `listing_still_open` keeps the listing reporting it
+        as open, which is what the real endpoint does for a second or more."""
         with self.lock:
             self.issues[number]["state"] = "closed"
+            if listing_still_open:
+                self.stale_open_in_listing.add(number)
 
     def declare_issue(self, body, title="declared", state="open", labels=(), pull_request=False):
         with self.lock:
@@ -221,6 +226,8 @@ class FakeGitHub:
                     items = sorted(fake.issues.values(), key=lambda i: i["number"])
                     items = [i for i in items if i["number"] not in fake.hidden]
                 if state != "all":
+                    items = [dict(i, state="open") if i["number"] in fake.stale_open_in_listing
+                             else i for i in items]
                     items = [i for i in items if i["state"] == state]
                 start = (page - 1) * per_page
                 self._json(200, items[start:start + per_page])
@@ -1028,6 +1035,39 @@ class IncidentIndexTests(unittest.TestCase):
         self.assertEqual(len(self.github.created), 1)
         self.assertEqual(len(self.github.comments), 1)
         self.assertEqual(len(self.hermes.requests), 1)
+
+    # -- the comment on a closed issue that reached production
+
+    def test_closing_an_incident_issue_starts_a_new_one_even_while_the_listing_lags(self):
+        """The listing reports a just-closed issue as open; only the by-number
+        read is consistent, so it must decide. Live on 2026-09-11 the Gate
+        dropped the stale index entry, then trusted the listing and commented
+        on the closed issue instead of opening a new one."""
+        gate = self.start_gate()
+        payload = notification()
+
+        first = gate.post(payload)[1]
+        self.github.close_issue(first["issue"], listing_still_open=True)
+        status, body = gate.post(payload)
+
+        self.assertEqual(status, 200, body)
+        self.assertEqual(body["action"], "created")
+        self.assertNotEqual(body["issue"], first["issue"])
+        self.assertEqual(len(self.github.created), 2)
+        self.assertEqual(self.github.comments, [])
+
+    def test_an_open_issue_found_only_through_the_listing_is_still_used(self):
+        """The index knows nothing after a restart, so the listing must still
+        work: its hit is confirmed by number, not discarded."""
+        gate = self.start_gate()
+        declared = self.github.declare_issue(body=f"stale\n\n{marker_for(notification()['groupKey'])}")
+
+        status, body = gate.post(notification())
+
+        self.assertEqual(status, 200, body)
+        self.assertEqual(body, {"action": "still-firing", "issue": declared})
+        self.assertEqual(self.github.created, [])
+        self.assertEqual(len(self.github.comments), 1)
 
     def test_resolved_immediately_after_creation_comments_instead_of_being_dropped(self):
         gate = self.start_gate()

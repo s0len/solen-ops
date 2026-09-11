@@ -890,7 +890,12 @@ class Gate:
 
     def _find_incident_issue(self, n: Notification, marker: str, now: datetime,
                              context: dict) -> Optional[dict]:
-        """The index first, the listing second; whatever the listing finds is indexed."""
+        """The index first, the listing second; both are confirmed by number.
+
+        The listing lags a write in both directions, so it can report a
+        just-closed Incident Issue as open. Only the by-number read is
+        consistent, so it decides either way.
+        """
         key = group_hash(n.group_key)
         number = self.index.lookup(key)
         if number is not None:
@@ -901,10 +906,17 @@ class Gate:
                 return indexed
             self.index.forget(key)
             log("incident_index_dropped", issue=number, reason=reason, **context)
-        issue = self.github.find_incident_issue(marker)
-        if issue is not None:
-            self.index.remember(key, int(issue["number"]), now)
-        return issue
+        listed = self.github.find_incident_issue(marker)
+        if listed is None:
+            return None
+        found = int(listed["number"])
+        confirmed = self.github.get_issue(found)
+        reason = self._not_the_incident_issue(confirmed, marker)
+        if reason is not None:
+            log("incident_listing_rejected", issue=found, reason=reason, **context)
+            return None
+        self.index.remember(key, found, now)
+        return confirmed
 
     @staticmethod
     def _not_the_incident_issue(issue: Optional[dict], marker: str) -> Optional[str]:
