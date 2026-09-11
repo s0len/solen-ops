@@ -40,8 +40,30 @@ MUST_ALLOW = [
     "gh issue comment 12 --repo s0len/solen-ops-incidents --body-file /tmp/diagnosis.md",
     "gh issue close 12 --repo s0len/solen-ops-incidents",
     "gh issue edit 12 --repo s0len/solen-ops-incidents --add-label ready-for-human",
+    "gh issue edit 12 --repo s0len/solen-ops-incidents --remove-label ready-for-agent",
+    "gh issue edit 12 --repo s0len/solen-ops-incidents --remove-label ready-for-agent --add-label needs-info",
     "gh pr create --fill --head fix/incident-12",
     "git push -u origin fix/incident-12",
+    # The Fix run, end to end (ADR-0001). Everything it writes is a branch and a
+    # pull request; every piece of prose travels in a file, never on a command line.
+    # The resume check: a run cut off after `gh pr create` must not open a second one.
+    "gh pr list --repo s0len/solen-ops --state open --head agent/incident-12 --json number,url",
+    "gh repo clone s0len/solen-ops /tmp/fix-12 -- --depth 1",
+    "git -C /tmp/fix-12 checkout -b agent/incident-12",
+    "grep -rn CephNodeDiskspaceWarning /tmp/fix-12/kubernetes",
+    "sed -i 's/for: 5m/for: 15m/' /tmp/fix-12/kubernetes/apps/observability/x/app/prometheusrule.yaml",
+    "cat > /tmp/fix-12/kubernetes/apps/observability/silence-operator/silences/silences.yaml <<'EOF'",
+    "python3 /tmp/edit-12.py",
+    "git -C /tmp/fix-12 diff",
+    "git -C /tmp/fix-12 add kubernetes/apps/observability/silence-operator/silences/silences.yaml",
+    "git -C /tmp/fix-12 commit -F /tmp/commit-12.txt",
+    "git -C /tmp/fix-12 push -u origin agent/incident-12",
+    "cd /tmp/fix-12 && gh pr create --base main --head agent/incident-12 --fill --body-file /tmp/pr-body-12.md",
+    # A Fix PR names this cluster's two commonest resource kinds. Both were
+    # refused by the blanket `*gh*release*` / `*gh*secret*` globs before they
+    # were narrowed to their write verbs.
+    'gh pr create --base main --head agent/incident-12 --title "fix(observability): Correct the HelmRelease values" --body-file /tmp/pr-body-12.md',
+    'gh pr create --base main --head agent/incident-12 --title "fix(external-secrets): Correct the ExternalSecret remote key" --body-file /tmp/pr-body-12.md',
     "kubectl get pods -A",
     "kubectl -n observability describe pod alert-agent-0",
     "kubectl logs deploy/alert-agent -c gate --tail=200",
@@ -91,9 +113,15 @@ MUST_BLOCK = [
     "gh api repos/s0len/solen-ops/issues -f title=x",
     "gh api repos/s0len/solen-ops/issues --field title=x",
     "gh pr merge 12 --squash",
+    "gh pr merge 12 --auto --squash",
     "gh workflow run image.yaml",
     "gh release create v1",
+    "gh release delete v1",
+    "gh release edit v1",
+    "gh release upload v1 ./file",
     "gh secret set FOO",
+    "gh secret delete FOO",
+    "gh secret remove FOO",
     "gh repo delete s0len/solen-ops",
     "gh auth login",
     "helm upgrade --install app ./chart",
@@ -109,10 +137,16 @@ MUST_BLOCK = [
     "talosctl -n 10.0.0.1 wipe disk nvme0n1",
     "git push origin HEAD:main",
     "git push --force origin fix/incident-12",
+    "git -C /tmp/fix-12 push origin HEAD:main",
+    "git -C /tmp/fix-12 push --force origin agent/incident-12",
+    "kubectl apply --dry-run=client -f /tmp/fix-12/x.yaml",
     "cat /opt/data/config.yaml",
     "grep -r secret /opt/data/config.yaml",
     "cat /opt/data/auth.json",
     "cat /opt/data/.env",
+    # Written by hermes-config-render.sh into the terminal tool's own HOME.
+    "cat /opt/data/home/.config/gh/hosts.yml",
+    "cat /opt/data/home/.gitconfig",
     "kubectl get pods && kubectl delete pod x",
 ]
 

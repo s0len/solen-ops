@@ -18,6 +18,7 @@ configMapGenerator:
       - hermes-config.yaml=./resources/hermes-config.yaml
       - hermes-config-render.sh=./resources/hermes-config-render.sh
       - hermes-cron-bootstrap.sh=./resources/hermes-cron-bootstrap.sh
+      - hermes-fix-prompt.md=./resources/hermes-fix-prompt.md
       - hermes-heartbeat.sh=./resources/hermes-heartbeat.sh
       - hermes-prune.sh=./resources/hermes-prune.sh
       - hermes.env.example=./resources/hermes.env.example

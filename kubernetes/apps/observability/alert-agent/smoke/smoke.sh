@@ -154,7 +154,11 @@ fi
 deadline=$(( $(date +%s) + BOOT_TIMEOUT ))
 listening=0
 while [ "$(date +%s)" -lt "${deadline}" ]; do
-    if [ -f "${GATEWAY_LOG}" ] && grep -aq "\[webhook\] Listening on" "${GATEWAY_LOG}"; then
+    # Both lines, not just the listener: "Gateway running with N platform(s)" is
+    # written a fraction of a second later, and the assertion below reads it.
+    if [ -f "${GATEWAY_LOG}" ] \
+        && grep -aq "\[webhook\] Listening on" "${GATEWAY_LOG}" \
+        && grep -aq "Gateway running with" "${GATEWAY_LOG}"; then
         listening=1
         break
     fi
@@ -229,9 +233,11 @@ step "cron declarations"
 first="$(docker exec -e SRC_DIR=/opt/smoke/resources "${CONTAINER}" bash /opt/smoke/resources/hermes-cron-bootstrap.sh 2>&1)"
 require "bootstrap creates heartbeat" "creating cron job 'heartbeat'" "${first}"
 require "bootstrap creates prune" "creating cron job 'prune'" "${first}"
+require "bootstrap creates fix" "creating cron job 'fix'" "${first}"
 second="$(docker exec -e SRC_DIR=/opt/smoke/resources "${CONTAINER}" bash /opt/smoke/resources/hermes-cron-bootstrap.sh 2>&1)"
 require "re-running is a no-op for heartbeat" "cron job 'heartbeat' already present" "${second}"
 require "re-running is a no-op for prune" "cron job 'prune' already present" "${second}"
+require "re-running is a no-op for fix" "cron job 'fix' already present" "${second}"
 refute "re-running creates nothing" "creating cron job" "${second}"
 
 jobs="$(docker exec "${CONTAINER}" cat /opt/data/cron/jobs.json 2>&1)"
@@ -239,6 +245,26 @@ require "heartbeat job persisted" '"name": "heartbeat"' "${jobs}"
 require "prune job persisted" '"name": "prune"' "${jobs}"
 require "prune job runs no agent" '"no_agent": true' "${jobs}"
 require "heartbeat job writes the Gate's heartbeat file" "hermes-heartbeat.sh" "${jobs}"
+require "fix job persisted" '"name": "fix"' "${jobs}"
+require "fix job runs every five minutes" '"expr": "*/5 * * * *"' "${jobs}"
+require "fix job pins the top model tier" '"model": "gpt-5.6-sol"' "${jobs}"
+require "fix job pins the provider so the drift guard cannot skip it" \
+    '"provider": "openai-codex"' "${jobs}"
+require "fix job takes the oldest ready-for-agent issue" \
+    "take the issue with the OLDEST" "${jobs}"
+require "fix job spends the label exactly once" \
+    "--remove-label ready-for-agent" "${jobs}"
+require "fix job checks for an existing PR before opening another" \
+    "--state open --head agent/incident-" "${jobs}"
+require "fix job closes the Incident Issue across repositories" \
+    "Closes s0len/solen-ops-incidents#" "${jobs}"
+require "fix job is forbidden to merge" "NEVER merge" "${jobs}"
+require "fix job is forbidden to push to main" "NEVER push to main" "${jobs}"
+
+# There is no per-job overlap flag; the scheduler's in-flight guard is the
+# mechanism, so assert the mechanism rather than a setting that does not exist.
+overlap="$(docker exec -w /opt/hermes "${CONTAINER}" python -c 'import sys; sys.path.insert(0, "/opt/hermes"); from cron.scheduler import try_register_running_job as t, release_running_job as r; print("first", t("job-x"), "second", t("job-x")); r("job-x")' 2>&1)"
+require "a second fire of a running job is skipped" "first True second False" "${overlap}"
 
 step "prune"
 if ! docker exec "${CONTAINER}" bash /opt/smoke/bin/seed_prune_fixtures.sh > "${WORKDIR}/seed.log" 2>&1; then

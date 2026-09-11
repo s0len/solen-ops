@@ -4,13 +4,19 @@
 # This script is that declaration, applied idempotently — run it on every pod
 # start; existing jobs (matched by name) are left untouched.
 #
-# Needs the two scripts from this directory reachable at $SRC_DIR.
+# Needs the two job scripts and hermes-fix-prompt.md from this directory
+# reachable at $SRC_DIR.
 set -euo pipefail
 
 HERMES_HOME="${HERMES_HOME:-/opt/data}"
 SRC_DIR="${SRC_DIR:-$(cd "$(dirname "$0")" && pwd)}"
 HEARTBEAT_SCHEDULE="${HEARTBEAT_SCHEDULE:-0 4 * * *}"
 PRUNE_SCHEDULE="${PRUNE_SCHEDULE:-0 5 * * *}"
+FIX_SCHEDULE="${FIX_SCHEDULE:-*/5 * * * *}"
+# Top of the tier ladder in hermes-config.yaml; Investigations run one down.
+# Both axes are pinned because the drift guard only skips runs on UNPINNED ones.
+FIX_MODEL="${FIX_MODEL:-gpt-5.6-sol}"
+FIX_PROVIDER="${FIX_PROVIDER:-openai-codex}"
 
 scripts_dir="${HERMES_HOME}/scripts"
 jobs_file="${HERMES_HOME}/cron/jobs.json"
@@ -60,5 +66,26 @@ else
         --name prune \
         --script hermes-prune.sh \
         --no-agent \
+        --deliver local
+fi
+
+# ADR-0001: this is the one job that writes, and the only thing it writes is a
+# pull request. "One at a time" needs no flag — `hermes cron create` has none.
+# The scheduler's in-flight guard (cron/scheduler.py::try_register_running_job)
+# skips a due fire while the previous run of the SAME job id is still running
+# ("Job 'fix' already running — skipping"), unconditionally and for every job.
+# Do NOT reach for cron.max_parallel_jobs: 1 instead — that serialises ALL jobs
+# onto one worker, so a long Fix run would delay the heartbeat that proves the
+# login is alive.
+# Toolset comes from platform_toolsets.cron: [terminal]; `hermes cron create`
+# exposes no per-job toolset flag.
+if job_exists fix; then
+    echo "[bootstrap] cron job 'fix' already present"
+else
+    echo "[bootstrap] creating cron job 'fix'"
+    hermes cron create "${FIX_SCHEDULE}" "$(cat "${SRC_DIR}/hermes-fix-prompt.md")" \
+        --name fix \
+        --model "${FIX_MODEL}" \
+        --provider "${FIX_PROVIDER}" \
         --deliver local
 fi

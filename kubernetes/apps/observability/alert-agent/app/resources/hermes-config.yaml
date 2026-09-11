@@ -88,8 +88,17 @@ approvals:
     - "*gh*api*--input*"
     - "*gh*pr*merge*"
     - "*gh*workflow*run*"
-    - "*gh*release*"
-    - "*gh*secret*"
+    # Write verbs only, for the reason `*gh*auth*` is: a glob matches the WHOLE
+    # command string, so bare `*gh*release*` and `*gh*secret*` also refuse
+    # `gh pr create --title "...HelmRelease..."` and `"...ExternalSecret..."`,
+    # the two commonest nouns in this repository. Keep them spaced and verbed.
+    - "*gh* release create*"
+    - "*gh* release delete*"
+    - "*gh* release edit*"
+    - "*gh* release upload*"
+    - "*gh* secret set*"
+    - "*gh* secret delete*"
+    - "*gh* secret remove*"
     - "*gh*repo*delete*"
     - "*gh*auth*login*"
     - "*gh*auth*logout*"

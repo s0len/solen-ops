@@ -29,6 +29,8 @@ This is a Kubernetes home operations repository for a self-hosted bare-metal clu
 - For urgent fixes, offer to `flux reconcile` after pushing to skip the polling interval.
 - If working from a worktree on a non-main branch, push the commit straight to main with `git push origin HEAD:main` (fast-forward) rather than opening a PR.
 
+**The one exception (ADR-0001):** the unattended alert Agent (`kubernetes/apps/observability/alert-agent`, machine account `solen-ops-agent`) proposes every change as a pull request from an `agent/incident-<n>` branch, because nobody reviewed its diff before it was written. Its PRs are never merged automatically and nothing in this repository automerges. Leave that as it is — a Fix PR is not a mistake to "correct" into a commit on main, and the Agent must never be given a shortcut past the owner's review.
+
 ## Agent skills
 
 ### Issue tracker

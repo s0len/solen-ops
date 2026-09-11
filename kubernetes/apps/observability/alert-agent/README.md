@@ -28,7 +28,8 @@ ADR-0003 and the parent spec in the Incidents Repo.
 | `app/scripts/gate.py` | The Gate. Shipped in a ConfigMap with Flux substitution disabled. |
 | `app/resources/hermes-config.yaml` | The Hermes config **template**. |
 | `app/resources/hermes-config-render.sh` | Init step: substitutes the route secret and writes `/opt/data/config.yaml`. |
-| `app/resources/hermes-cron-bootstrap.sh` | Idempotent `heartbeat` + `prune` cron declarations. |
+| `app/resources/hermes-cron-bootstrap.sh` | Idempotent `heartbeat` + `prune` + `fix` cron declarations. |
+| `app/resources/hermes-fix-prompt.md` | The `fix` job's prompt, passed to `hermes cron create` verbatim. |
 | `app/resources/hermes-heartbeat.sh` | Written by the `heartbeat` job's model turn. |
 | `app/resources/hermes-prune.sh` | The `prune` job. No model call. |
 | `app/resources/hermes.env.example` | Non-secret env, and which keys come from Secrets. |
@@ -100,9 +101,17 @@ model:
   default: "gpt-5.6-terra"
 ```
 
-The `fix` cron pins the top tier on the job itself (`hermes cron edit <id>
---model gpt-5.6-sol`), so the two tiers move independently. Re-run the smoke
-script after either change.
+The `fix` cron pins the top tier on the job itself, in
+`app/resources/hermes-cron-bootstrap.sh` (`FIX_MODEL`, `FIX_PROVIDER`), so the
+two tiers move independently. Re-run the smoke script after either change.
+
+Both axes are pinned on purpose. The scheduler's drift guard skips a run whose
+**unpinned** model or provider has resolved differently since the job was
+created — sensible for spend, but it would silently stop Fix runs the next time
+`model.default` moves. A pinned axis never counts as drift. Changing `FIX_MODEL`
+does **not** re-create an existing job: the bootstrap only creates jobs that are
+missing. Move a live job with `hermes cron edit <id> --model <name> --provider
+openai-codex`, or delete it and let the next pod start recreate it.
 
 ## Cron jobs
 
@@ -121,6 +130,27 @@ idempotently — safe to run on every pod start.
   are retained by `sessions.auto_prune` + `sessions.retention_days: 30`. The one
   thing under `/opt/data/sessions` is the gateway's live routing map, which the
   script must never age out.
+- `fix` — every five minutes, top tier, terminal toolset, output to local files.
+  It takes the oldest open Incident Issue labelled `ready-for-agent`, re-verifies
+  the Diagnosis read-only, and opens ONE pull request here (ADR-0001). It is the
+  only job that writes anything, and the only thing it writes is a branch and a
+  pull request. The prompt is `app/resources/hermes-fix-prompt.md`; it is stored
+  verbatim in `jobs.json` at creation, so **editing the file does not change a
+  job that already exists** — `hermes cron remove fix` and restart the pod, or
+  `hermes cron edit`, to pick up a reworded prompt. The run is idempotent
+  against being cut off: it looks for an open pull request on
+  `agent/incident-<n>` before doing anything, so a run that dies between
+  `gh pr create` and removing the label reconciles instead of duplicating.
+
+**"One at a time" is not a setting.** `hermes cron create` has no overlap flag
+and `jobs.json` has no field for one. The scheduler dedupes per job id instead:
+`try_register_running_job` refuses a due fire while the previous run of the same
+job is still in flight and logs `Job 'fix' already running — skipping`. That is
+unconditional, applies to every job, and is what the smoke script asserts.
+`cron.max_parallel_jobs: 1` exists but is the wrong tool — it serialises *all*
+jobs onto one worker, so a long Fix run would hold up the heartbeat that proves
+the login is alive. A run wedged in-flight for longer than
+`cron.inflight_max_minutes` (default 30) is force-released by the stale sweep.
 
 ## What actually stops a write
 
@@ -141,6 +171,24 @@ In descending order of trust:
 3. **`approvals.mode: manual`** — a webhook session has no human and no
    `/approve` channel, so a command the dangerous-pattern detector flags fails
    closed instead of being waved through by the default `smart` guardian LLM.
+
+The Fix run's write lane is deliberately narrow: `git push -u origin <branch>`
+and `gh pr create` are allowed, while `*git*push*main*`, `*git*push*--force*`,
+`*gh*pr*merge*` (which also catches `--auto`) and `*gh*workflow*run*` are not.
+Two globs had to be narrowed to their write verbs to keep that lane usable —
+they match the WHOLE command string, so the blanket `*gh*release*` refused
+`gh pr create --title "...HelmRelease..."` and `*gh*secret*` refused
+`...ExternalSecret...`. That is the `*gh*auth*` lesson again: an over-broad glob
+does not fail loudly, it fails as an unrelated-looking refusal in the one run
+that mattered. The prompt also keeps every piece of prose in a file
+(`--body-file`, `commit -F`, `gh pr create --fill`) so free text never reaches a
+command line where an ordinary word can trip a rule.
+
+git authenticates from `$HERMES_HOME/home/.config/gh/hosts.yml` plus the
+`!gh auth git-credential` helper in `$HERMES_HOME/home/.gitconfig`, both written
+by `hermes-config-render.sh`. `GITHUB_TOKEN` is scrubbed out of every tool
+subprocess (it is on Hermes' provider blocklist), so the helper is the only path
+— and both files are on the deny list so the Agent cannot read its own token.
 
 `approvals.unattended_mode` and `approvals.cron_mode` are set to `deny` and kept
 for correctness, but they do **not** govern terminal commands in this runtime:
