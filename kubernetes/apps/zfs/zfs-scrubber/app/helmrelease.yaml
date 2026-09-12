@@ -28,6 +28,9 @@ spec:
           concurrencyPolicy: Forbid
           timeZone: ${TIMEZONE}
           backoffLimit: 0
+          # Twice a month, so nothing re-runs inside the week to re-derive a
+          # failed scrub; the Job and its pod have to last until the owner looks.
+          ttlSecondsAfterFinished: 604800
         containers:
           app:
             image:

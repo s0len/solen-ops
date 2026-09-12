@@ -32,8 +32,9 @@ spec:
           timeZone: ${TIMEZONE}
           concurrencyPolicy: Forbid
           successfulJobsHistory: 1
-          failedJobsHistory: 3
+          failedJobsHistory: 1
           backoffLimit: 2
+          ttlSecondsAfterFinished: 86400
           activeDeadlineSeconds: 600
 
         containers:

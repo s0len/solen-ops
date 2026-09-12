@@ -39,6 +39,7 @@ spec:
           timeZone: &timeZone ${TIMEZONE}
           successfulJobsHistory: 1
           failedJobsHistory: 1
+          ttlSecondsAfterFinished: 86400
         containers:
           app: &container_app
             image:
@@ -95,6 +96,9 @@ spec:
         cronjob:
           <<: *cronjob
           schedule: "5 1 */7 * *"
+          # Weekly, unlike the sibling jobs sharing this block: nothing follows a
+          # failed run inside a day to re-derive the failure from.
+          ttlSecondsAfterFinished: 604800
         containers:
           app:
             <<: *container_app

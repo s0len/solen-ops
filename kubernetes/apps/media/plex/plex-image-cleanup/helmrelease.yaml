@@ -26,6 +26,9 @@ spec:
           concurrencyPolicy: Forbid
           successfulJobsHistory: 1
           failedJobsHistory: 1
+          # Weekly, so a failed run has no successor before next Monday; the Job
+          # and its pod last until the run that would replace them.
+          ttlSecondsAfterFinished: 604800
 
         containers:
           app:

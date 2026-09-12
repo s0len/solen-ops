@@ -25,6 +25,7 @@ spec:
           schedule: "0 */6 * * *"
           successfulJobsHistory: 1
           failedJobsHistory: 1
+          ttlSecondsAfterFinished: 86400
         containers:
           app:
             image:
