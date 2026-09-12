@@ -1,0 +1,14 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: alert-remediator-ledger
+  namespace: observability
+  annotations:
+    # Seeded once and then owned by the Remediator. Without IfNotPresent every
+    # Flux reconcile would reset the Run Ledger to empty and `max_runs` would
+    # mean nothing.
+    kustomize.toolkit.fluxcd.io/ssa: IfNotPresent
+data:
+  ledger.json: |
+    {"version": 1, "runs": []}

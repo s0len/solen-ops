@@ -1,0 +1,111 @@
+---
+version: 1
+failure: ceph-mgr-module-crash
+summary: >-
+  RECENT_MGR_MODULE_CRASH is a LATCHED Ceph health check: once a mgr module has
+  recorded a crash it holds HEALTH_WARN for fourteen days, survives a daemon
+  restart and a mgr failover, and clears only when the crash report is archived.
+  Archiving is therefore the whole remediation, and the alert cannot be waited
+  out. CephHealthWarning is deliberately NOT catalogued: ceph_health_status == 1
+  covers every warning Ceph can raise, including MDS_SLOW_METADATA_IO, and no
+  command is a correct answer to all of them.
+entries:
+  - id: ceph-mgr-module-crash/archive-new-crashes
+    alertname: CephMgrModuleCrash
+    enabled: true
+    match:
+      cluster: "^rook-ceph$"
+    bind:
+      cluster: "{cluster}"
+    blast_radius: >-
+      Marks already-recorded Ceph crash reports as acknowledged in the mgr's
+      crash module. It deletes nothing, touches no OSD, pool, PG or CRUSH rule,
+      and cannot change cluster state: `ceph crash ls` still lists the report
+      and `ceph crash info <id>` still prints it in full, it simply stops
+      appearing in `ls-new` and stops latching the health check. What it does
+      cost is the owner's chance to notice an unread crash, which is why the
+      preconditions demand a demonstrably healthy cluster first and why the
+      budget is one run a week: a crash that keeps coming back must reach a
+      human rather than be archived again. The commands run through
+      `kubectl exec` into rook-ceph-tools, which is a full Ceph admin shell;
+      what bounds that is the ValidatingAdmissionPolicy in
+      remediator/app/validatingadmissionpolicy.yaml, which refuses any exec
+      from this ServiceAccount whose argv[0] is not `ceph` and whose command
+      is not exactly `ceph status`, `ceph health [detail]` or
+      `ceph crash archive|info|ls|ls-new|stat`. `ceph osd` and `ceph pg` are
+      refused outright: every destructive Ceph verb lives under one of them.
+    max_runs:
+      count: 1
+      window_hours: 168
+    preconditions:
+      - id: health-check-is-latched
+        describe: RECENT_MGR_MODULE_CRASH is the check that is actually set
+        promql: 'max(ceph_health_detail{name="RECENT_MGR_MODULE_CRASH"})'
+        expect:
+          value_equals: 1
+      - id: all-osds-up
+        describe: >-
+          No OSD is down. A mgr module crash while the cluster is degraded is a
+          symptom of the degradation — the devicehealth module logs
+          "disk I/O error" when libcephsqlite loses RADOS — and archiving it
+          would hide the real fault.
+        promql: "count(ceph_osd_up == 0) or vector(0)"
+        expect:
+          value_equals: 0
+      - id: all-osds-in
+        describe: No OSD has been taken out of the cluster
+        promql: "count(ceph_osd_in == 0) or vector(0)"
+        expect:
+          value_equals: 0
+      - id: all-pgs-active
+        describe: Every placement group is active
+        promql: "max(ceph_pg_total - ceph_pg_active)"
+        expect:
+          value_equals: 0
+      - id: all-pgs-clean
+        describe: Every placement group is clean, so no recovery or backfill is in flight
+        promql: "max(ceph_pg_total - ceph_pg_clean)"
+        expect:
+          value_equals: 0
+      - id: toolbox-pod
+        describe: The rook-ceph-tools pod to run ceph in
+        run:
+          - kubectl
+          - "-n"
+          - rook-ceph
+          - get
+          - pod
+          - "-l"
+          - app=rook-ceph-tools
+          - "--field-selector=status.phase=Running"
+          - "-o"
+          - "jsonpath={.items[0].metadata.name}"
+        capture: tools_pod
+        expect:
+          matches: "^rook-ceph-tools-[a-z0-9-]+$"
+      - id: new-crash-reports
+        describe: >-
+          The unarchived crash reports, which are exactly what the health check
+          is latched on. An empty list means something else already archived
+          them and there is nothing to do.
+        run: ["kubectl", "-n", "rook-ceph", "exec", "{tools_pod}", "--", "ceph", "crash", "ls-new", "-f", "json"]
+        capture_list:
+          name: crash_ids
+          json_pluck: crash_id
+          item_matches: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9:.]+Z_[0-9a-f-]{36}$"
+        expect:
+          list_length_at_least: 1
+          list_length_at_most: 10
+    steps:
+      - describe: Archive each new crash report by id, never `crash archive-all`
+        for_each: crash_ids
+        run: ["kubectl", "-n", "rook-ceph", "exec", "{tools_pod}", "--", "ceph", "crash", "archive", "{item}"]
+    verify:
+      - id: no-new-crash-reports-left
+        describe: Nothing is left to latch the health check
+        run: ["kubectl", "-n", "rook-ceph", "exec", "{tools_pod}", "--", "ceph", "crash", "ls-new", "-f", "json"]
+        expect:
+          matches: "^\\[\\s*\\]$"
+    evidence:
+      - describe: What Ceph says about its own health once the crash is archived
+        run: ["kubectl", "-n", "rook-ceph", "exec", "{tools_pod}", "--", "ceph", "health", "detail"]

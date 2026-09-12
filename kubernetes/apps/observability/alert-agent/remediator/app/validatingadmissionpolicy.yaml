@@ -1,0 +1,137 @@
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/admissionregistration.k8s.io/validatingadmissionpolicy_v1.json
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: alert-remediator-writes
+spec:
+  # RBAC has no way to say "delete only objects named volsync-<something>-src",
+  # so it grants `delete persistentvolumeclaims` cluster-wide and this policy is
+  # what makes that grant narrow. It applies to one ServiceAccount and is
+  # inert for every other actor in the cluster, the owner included.
+  failurePolicy: Fail
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["DELETE"]
+        resources: ["persistentvolumeclaims"]
+      - apiGroups: ["snapshot.storage.k8s.io"]
+        apiVersions: ["*"]
+        operations: ["DELETE"]
+        resources: ["volumesnapshots"]
+      - apiGroups: ["batch"]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "DELETE"]
+        resources: ["jobs"]
+  matchConditions:
+    - name: only-the-remediator
+      expression: request.userInfo.username == 'system:serviceaccount:observability:alert-remediator'
+  validations:
+    - expression: >-
+        request.resource.resource != 'persistentvolumeclaims' ||
+        request.name.matches('^volsync-[a-z0-9-]{1,53}-src$')
+      message: >-
+        the Remediator may delete only a VolSync temporary clone PVC, named
+        volsync-<replicationsource>-src
+      reason: Forbidden
+    - expression: >-
+        request.resource.resource != 'volumesnapshots' ||
+        request.name.matches('^volsync-[a-z0-9-]{1,53}-src$')
+      message: >-
+        the Remediator may delete only a VolSync temporary VolumeSnapshot, named
+        volsync-<replicationsource>-src
+      reason: Forbidden
+    # A Job the Remediator deletes is either a VolSync mover Job or a tombstone
+    # a CronJob owns and has already finished with. oldObject is the object as
+    # it stands, which is what carries the ownerReferences and the conditions
+    # on a DELETE. The finished-or-failed condition is what keeps a RUNNING
+    # CronJob Job out of reach: an in-flight etcd-defrag-<stamp> holds an
+    # os:admin Talos credential, and deleting it mid-defragment would leave a
+    # member compacting with nothing watching it.
+    - expression: >-
+        !(request.resource.resource == 'jobs' && request.operation == 'DELETE') ||
+        request.name.startsWith('volsync-src-') ||
+        (has(oldObject.metadata.ownerReferences) &&
+         oldObject.metadata.ownerReferences.exists(o, o.kind == 'CronJob') &&
+         has(oldObject.status) && has(oldObject.status.conditions) &&
+         oldObject.status.conditions.exists(c,
+           c.status == 'True' && (c.type == 'Complete' || c.type == 'Failed')))
+      message: >-
+        the Remediator may delete only a VolSync mover Job or a Job owned by a
+        CronJob that has already completed or failed
+      reason: Forbidden
+    # The one Job it may create is a manual run of the reviewed etcd-defrag
+    # CronJob, whose pod holds an os:admin Talos credential. Name, namespace and
+    # controller owner are all pinned, so `--from=cronjob` cannot be pointed at
+    # a different CronJob.
+    - expression: >-
+        !(request.resource.resource == 'jobs' && request.operation == 'CREATE') ||
+        (request.namespace == 'kube-system' &&
+         object.metadata.name.matches('^etcd-defrag-[0-9]{12}$') &&
+         has(object.metadata.ownerReferences) &&
+         object.metadata.ownerReferences.exists(o, o.kind == 'CronJob' && o.name == 'etcd-defrag'))
+      message: >-
+        the Remediator may create only kube-system/etcd-defrag-<run stamp>, owned
+        by the etcd-defrag CronJob
+      reason: Forbidden
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/admissionregistration.k8s.io/validatingadmissionpolicybinding_v1.json
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: alert-remediator-writes
+spec:
+  policyName: alert-remediator-writes
+  validationActions: ["Deny"]
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/admissionregistration.k8s.io/validatingadmissionpolicy_v1.json
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: alert-remediator-ceph-exec
+spec:
+  # Separate from the policy above so that a failure here costs only the Ceph
+  # entry. On a CONNECT to pods/exec the object under review is a
+  # PodExecOptions, whose `command` is the argv the exec will run — which is the
+  # only place in Kubernetes where the contents of an exec can be constrained.
+  failurePolicy: Fail
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CONNECT"]
+        resources: ["pods/exec"]
+  matchConditions:
+    - name: only-the-remediator
+      expression: request.userInfo.username == 'system:serviceaccount:observability:alert-remediator'
+  validations:
+    - expression: request.namespace == 'rook-ceph' && request.name.startsWith('rook-ceph-tools-')
+      message: the Remediator may exec only into the rook-ceph toolbox
+      reason: Forbidden
+    # Whole commands, not a verb prefix. `ceph osd` and `ceph pg` are not on
+    # this list because `osd out`, `osd purge` and `pg repair` live under them,
+    # and `ceph health mute` is why `health` is pinned to `detail`: every
+    # top-level ceph verb has a destructive subcommand somewhere under it.
+    - expression: >-
+        has(object.command) && size(object.command) >= 2 && size(object.command) <= 6 &&
+        object.command[0] == 'ceph' && (
+          (object.command[1] == 'status' && size(object.command) == 2) ||
+          (object.command[1] == 'health' &&
+            (size(object.command) == 2 || (size(object.command) == 3 && object.command[2] == 'detail'))) ||
+          (object.command[1] == 'crash' && size(object.command) >= 3 &&
+            object.command[2] in ['archive', 'info', 'ls', 'ls-new', 'stat'])
+        )
+      message: >-
+        the Remediator may run only `ceph status`, `ceph health [detail]` or
+        `ceph crash archive|info|ls|ls-new|stat` in the toolbox
+      reason: Forbidden
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/admissionregistration.k8s.io/validatingadmissionpolicybinding_v1.json
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: alert-remediator-ceph-exec
+spec:
+  policyName: alert-remediator-ceph-exec
+  validationActions: ["Deny"]

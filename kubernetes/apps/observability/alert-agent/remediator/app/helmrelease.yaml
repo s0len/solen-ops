@@ -1,0 +1,176 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s-labs/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: &app alert-remediator
+  namespace: observability
+spec:
+  interval: 30m
+  chartRef:
+    kind: OCIRepository
+    name: app-template
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      strategy: rollback
+      retries: 3
+
+  values:
+    controllers:
+      alert-remediator:
+        type: cronjob
+        cronjob:
+          # Offset from the Hermes `fix` job's */5 so the two lanes' runs do not
+          # start in the same second and contend for the GitHub API. Which of
+          # them runs first no longer matters: they read different labels, and
+          # no cron offset could have ordered them anyway — a label applied
+          # between two firings reaches whichever of them runs next.
+          schedule: "3-59/5 * * * *"
+          timeZone: ${TIMEZONE}
+          concurrencyPolicy: Forbid
+          successfulJobsHistory: 1
+          failedJobsHistory: 3
+          backoffLimit: 0
+          # A failed run exits non-zero on purpose and its Job is meant to be
+          # seen, so it ages out in a day rather than latching KubeJobFailed.
+          ttlSecondsAfterFinished: 86400
+          activeDeadlineSeconds: 1200
+
+        initContainers:
+          # The catalogue is authored and reviewed as YAML; the Remediator reads
+          # it as JSON because the slim python image has no YAML parser and
+          # nothing is installed at runtime.
+          render-catalogue:
+            image:
+              repository: docker.io/mikefarah/yq
+              tag: "4.53.6"
+            command:
+              - /bin/sh
+              - -c
+              - yq ea -o=json -I=0 '[.]' /catalogue/*.yaml > /work/catalogue.json
+            securityContext: &securityContext
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities: { drop: ["ALL"] }
+            resources:
+              requests:
+                cpu: 10m
+                memory: 32Mi
+              limits:
+                memory: 128Mi
+
+        containers:
+          app:
+            image:
+              # stdlib-only script, so nothing is installed at runtime and the
+              # tag must stay in step with gate-tests.yaml.
+              repository: python
+              tag: 3.14-alpine
+            command: ["python3", "/scripts/remediate.py"]
+            env:
+              TZ: ${TIMEZONE}
+              GITHUB_INCIDENTS_REPO: s0len/solen-ops-incidents
+              CATALOGUE_FILE: /work/catalogue.json
+              KUBECTL_PATH: /opt/kubectl/bin/kubectl
+              LEDGER_NAMESPACE: observability
+              LEDGER_NAME: alert-remediator-ledger
+              # The human's one-shot authorisation for a live cluster action,
+              # and deliberately not the Fix lane's `ready-for-agent`: one
+              # label read by two lanes is a race neither can win, and asking
+              # for a pull request is not the same decision as asking for a
+              # delete. The label has to exist in the Incidents Repo before
+              # this is enabled.
+              TRIGGER_LABEL: ready-for-remediation
+              HANDBACK_LABEL: ready-for-human
+              ALERTMANAGER_URL: http://alertmanager-operated.observability.svc.cluster.local:9093
+              PROMETHEUS_URL: http://prometheus-operated.observability.svc.cluster.local:9090
+              PYTHONDONTWRITEBYTECODE: "1"
+              PYTHONUNBUFFERED: "1"
+              HOME: /tmp
+              TMPDIR: /tmp
+              # "true" runs the preconditions for real, prints the commands
+              # they guard without executing any of them, and stops there: no
+              # verification against an unchanged cluster, no Run Ledger write,
+              # no label edit. The run ends at `dry_run` and exits 0, and the
+              # issue keeps its label, so the next run does it again.
+              DRY_RUN: "false"
+            envFrom:
+              - secretRef:
+                  name: alert-agent-github-secret
+            securityContext: *securityContext
+            resources:
+              requests:
+                cpu: 50m
+                memory: 64Mi
+              limits:
+                memory: 256Mi
+
+    defaultPodOptions:
+      automountServiceAccountToken: true
+      enableServiceLinks: false
+      # ndots:5 makes the resolver try the search domains first and this cluster
+      # answers api.github.com.observability.svc.cluster.local with a real
+      # address, which Cilium then never associates with the toFQDNs rule.
+      dnsConfig:
+        options:
+          - name: ndots
+            value: "1"
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534
+        runAsGroup: 65534
+        fsGroup: 65534
+        seccompProfile:
+          type: RuntimeDefault
+
+    serviceAccount:
+      alert-remediator: {}
+
+    persistence:
+      catalogue:
+        type: configMap
+        name: alert-remediator-catalogue
+        defaultMode: 0444
+        advancedMounts:
+          alert-remediator:
+            render-catalogue:
+              - path: /catalogue
+                readOnly: true
+      scripts:
+        type: configMap
+        name: alert-remediator-configmap
+        defaultMode: 0555
+        advancedMounts:
+          alert-remediator:
+            app:
+              - path: /scripts/remediate.py
+                subPath: remediate.py
+                readOnly: true
+      # The rendered catalogue, handed from the init container to the script.
+      work:
+        type: emptyDir
+        sizeLimit: 4Mi
+        globalMounts:
+          - path: /work
+      # The kubectl binary, mounted from its own distroless image at
+      # /opt/kubectl/bin/kubectl rather than installed into the python image,
+      # the way etcd-defrag mounts talosctl.
+      kubectl:
+        type: image
+        image:
+          repository: registry.k8s.io/kubectl
+          tag: v1.34.1
+        pullPolicy: IfNotPresent
+        advancedMounts:
+          alert-remediator:
+            app:
+              - path: /opt/kubectl
+      tmp:
+        type: emptyDir
+        sizeLimit: 16Mi
+        globalMounts:
+          - path: /tmp

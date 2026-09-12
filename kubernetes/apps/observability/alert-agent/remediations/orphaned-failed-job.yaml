@@ -1,0 +1,123 @@
+---
+version: 1
+failure: orphaned-failed-job
+summary: >-
+  KubeJobFailed reads kube_job_failed, which has a series for exactly as long as
+  the Job object exists. A CronJob without ttlSecondsAfterFinished keeps its
+  failed Job forever, so a single bad run latches the alert permanently even
+  after the next scheduled run succeeds and even after the Job's pods have been
+  garbage-collected and its logs are gone. Deleting the tombstone is the only
+  thing that clears it. The durable fix is ttlSecondsAfterFinished on the
+  CronJob, which is a diff and belongs in a Fix PR, not here.
+entries:
+  - id: orphaned-failed-job/delete-tombstone
+    alertname: KubeJobFailed
+    enabled: true
+    match:
+      namespace: "^[a-z0-9][a-z0-9-]{0,61}[a-z0-9]$"
+      job_name: "^[a-z0-9][a-z0-9.-]{0,61}[a-z0-9]$"
+      condition: "^true$"
+    bind:
+      ns: "{namespace}"
+      job: "{job_name}"
+    notes: >-
+      Only a CronJob-owned Job is ever deleted. A standalone Job someone created
+      by hand has no CronJob parent that could prove the work has since
+      succeeded, so precondition owned-by-a-cronjob refuses it and the issue
+      goes back to a human.
+    blast_radius: >-
+      One failed Job object in one namespace, owned by a CronJob that has
+      completed successfully since that failure. Its pods are already gone, so
+      no running work is interrupted and no log is lost that `kubectl logs`
+      could still have shown. Nothing the Job produced is touched: a CronJob's
+      output lives in whatever it wrote, not in the Job record. Worst case if
+      the diagnosis is wrong: the record of one failed run is gone from
+      `kubectl get jobs`, and the events and any alert history for it remain.
+    max_runs:
+      count: 1
+      window_hours: 24
+    preconditions:
+      - id: job-has-failed
+        describe: The Job carries a Failed condition, not merely a failed pod count
+        run:
+          - kubectl
+          - "-n"
+          - "{ns}"
+          - get
+          - job
+          - "{job}"
+          - "-o"
+          - 'jsonpath={.status.conditions[?(@.type=="Failed")].status}'
+        expect:
+          equals: "True"
+      - id: no-active-pods
+        describe: Nothing is still running under this Job
+        run: ["kubectl", "-n", "{ns}", "get", "job", "{job}", "-o", "jsonpath={.status.active}"]
+        expect:
+          integer_at_most: 0
+      - id: pods-garbage-collected
+        describe: >-
+          The Job's pods are already gone, so deleting the Job destroys no
+          evidence a human could still have read. While a pod survives, its logs
+          are the most valuable thing about the failure and this must not run.
+        run:
+          - kubectl
+          - "-n"
+          - "{ns}"
+          - get
+          - pod
+          - "-l"
+          - "batch.kubernetes.io/job-name={job}"
+          - "-o"
+          - name
+        expect:
+          not_empty: false
+      - id: failed-long-enough
+        describe: A full day old, so this is a latched tombstone and not a failure still unfolding
+        run:
+          - kubectl
+          - "-n"
+          - "{ns}"
+          - get
+          - job
+          - "{job}"
+          - "-o"
+          - 'jsonpath={.status.conditions[?(@.type=="Failed")].lastTransitionTime}'
+        capture: failed_at
+        expect:
+          older_than_hours: 24
+      - id: owned-by-a-cronjob
+        describe: The Job was created by a CronJob, which is what can prove the work recovered
+        run:
+          - kubectl
+          - "-n"
+          - "{ns}"
+          - get
+          - job
+          - "{job}"
+          - "-o"
+          - 'jsonpath={.metadata.ownerReferences[?(@.kind=="CronJob")].name}'
+        capture: cronjob
+        expect:
+          matches: "^[a-z0-9][a-z0-9.-]{0,61}[a-z0-9]$"
+      - id: cronjob-has-succeeded-since
+        describe: >-
+          The parent CronJob has completed a run AFTER this failure, so the work
+          itself is healthy and only the record of the old failure is left.
+        run: ["kubectl", "-n", "{ns}", "get", "cronjob", "{cronjob}", "-o", "jsonpath={.status.lastSuccessfulTime}"]
+        expect:
+          newer_than_capture: failed_at
+    steps:
+      - describe: Delete the tombstone, which is the only thing keeping kube_job_failed alive
+        run: ["kubectl", "-n", "{ns}", "delete", "job", "{job}"]
+    verify:
+      - id: tombstone-gone
+        describe: The Job object is gone, so the metric series goes with it
+        run: ["kubectl", "-n", "{ns}", "get", "job", "{job}", "--ignore-not-found=true", "-o", "name"]
+        expect:
+          not_empty: false
+      - id: cronjob-untouched
+        describe: The parent CronJob is exactly as it was and still scheduled
+        run: ["kubectl", "-n", "{ns}", "get", "cronjob", "{cronjob}", "-o", "jsonpath={.spec.schedule}"]
+        expect:
+          not_empty: true

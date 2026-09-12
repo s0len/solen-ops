@@ -1,0 +1,203 @@
+---
+version: 1
+failure: volsync-ghost-snapshot
+summary: >-
+  A VolSync temporary VolumeSnapshot reports readyToUse: true over an RBD image
+  that no longer exists in ceph-blockpool, so every clone of it fails with
+  "rbd: ret=-2", the temp PVC stays Pending forever and the mover pod never
+  schedules. VolSync logs "temporary snapshot reconciled … operation:
+  unchanged" every 60s: it reuses an existing snapshot indefinitely and never
+  recreates one, so the source can never back up again on its own. Seen on
+  security/kanidm 2026-09-10..11, where it cost 37h of hourly restore points.
+entries:
+  - id: volsync-ghost-snapshot/backup-stale
+    alertname: VolSyncBackupStale
+    enabled: true
+    match:
+      namespace: "^[a-z0-9][a-z0-9-]{0,61}[a-z0-9]$"
+      name: "^[a-z0-9][a-z0-9-]{0,61}[a-z0-9]$"
+    bind:
+      ns: "{namespace}"
+      rs: "{name}"
+    blast_radius: >-
+      Three VolSync-owned temporary objects in one namespace — the mover Job
+      volsync-src-<rs>, the temp clone PVC volsync-<rs>-src and the temporary
+      VolumeSnapshot volsync-<rs>-src — all named after one ReplicationSource.
+      The source PVC holding the real data is never named by any step, and the
+      preconditions refuse to run unless that PVC is Bound. Worst case if the
+      diagnosis is wrong: one backup cycle is lost and VolSync takes a fresh
+      snapshot on its next 60s reconcile.
+    max_runs:
+      count: 2
+      window_hours: 24
+    preconditions: &ghost-snapshot-preconditions
+      - id: replicationsource-exists
+        describe: The ReplicationSource named by the alert exists and names its source PVC
+        run: ["kubectl", "-n", "{ns}", "get", "replicationsource", "{rs}", "-o", "jsonpath={.spec.sourcePVC}"]
+        capture: source_pvc
+        expect:
+          matches: "^[a-z0-9][a-z0-9.-]{0,61}[a-z0-9]$"
+      - id: source-pvc-bound
+        describe: >-
+          The real data PVC is Bound. This is the guard that stops the sequence
+          below ever touching real data: a source PVC that is anything but
+          Bound means the failure is not the one this entry describes.
+        run: ["kubectl", "-n", "{ns}", "get", "pvc", "{source_pvc}", "-o", "jsonpath={.status.phase}"]
+        expect:
+          equals: Bound
+      - id: temp-pvc-pending
+        describe: The temporary clone PVC is stuck Pending, never Bound
+        run: ["kubectl", "-n", "{ns}", "get", "pvc", "volsync-{rs}-src", "-o", "jsonpath={.status.phase}"]
+        expect:
+          equals: Pending
+      - id: temp-pvc-clones-the-snapshot
+        describe: >-
+          The Pending PVC is provisioning from the temporary VolumeSnapshot, so
+          it is VolSync's own scratch clone and not an application claim that
+          happens to share the name.
+        run:
+          - kubectl
+          - "-n"
+          - "{ns}"
+          - get
+          - pvc
+          - "volsync-{rs}-src"
+          - "-o"
+          - "jsonpath={.spec.dataSource.kind}/{.spec.dataSource.name}"
+        expect:
+          equals: "VolumeSnapshot/volsync-{rs}-src"
+      - id: snapshot-claims-to-be-ready
+        describe: >-
+          The ghost signature: the snapshot reports readyToUse while nothing can
+          clone it. A snapshot still provisioning would report false and must be
+          left alone.
+        run:
+          - kubectl
+          - "-n"
+          - "{ns}"
+          - get
+          - volumesnapshot
+          - "volsync-{rs}-src"
+          - "-o"
+          - "jsonpath={.status.readyToUse}"
+        expect:
+          equals: "true"
+      - id: mover-job-has-not-completed
+        describe: Zero completions, so nothing that finished is being thrown away
+        run: ["kubectl", "-n", "{ns}", "get", "job", "volsync-src-{rs}", "-o", "jsonpath={.status.succeeded}"]
+        expect:
+          integer_at_most: 0
+      - id: mover-job-still-running
+        describe: The mover Job still has an active pod, which is the one waiting on the PVC
+        run: ["kubectl", "-n", "{ns}", "get", "job", "volsync-src-{rs}", "-o", "jsonpath={.status.active}"]
+        expect:
+          integer_at_least: 1
+      - id: mover-job-older-than-an-hour
+        describe: >-
+          A healthy sync finishes well inside an hour — the worst observed here
+          is 80 minutes for a first run, and VolSync recreates a mover Job about
+          every 36 minutes, so an hour of one Job with no completion is a wedge
+          rather than a slow backup.
+        run: ["kubectl", "-n", "{ns}", "get", "job", "volsync-src-{rs}", "-o", "jsonpath={.status.startTime}"]
+        expect:
+          older_than_hours: 1
+    steps: &ghost-snapshot-steps
+      - describe: >-
+          Delete the mover Job first. While it exists VolSync keeps recreating
+          the temp PVC within 8 seconds of every delete, and the PVC is what
+          holds the snapshot's volumesnapshot-as-source-protection finalizer.
+        run:
+          - kubectl
+          - "-n"
+          - "{ns}"
+          - delete
+          - job
+          - "volsync-src-{rs}"
+          - "--wait=false"
+          - "--ignore-not-found=true"
+      - describe: >-
+          Delete the temp clone PVC, which releases the finalizer on the
+          snapshot. Every delete in this sequence ignores an absent object, so
+          a run entered after a partial manual attempt continues from wherever
+          that attempt stopped rather than exiting at its first step.
+        run:
+          - kubectl
+          - "-n"
+          - "{ns}"
+          - delete
+          - pvc
+          - "volsync-{rs}-src"
+          - "--wait=false"
+          - "--ignore-not-found=true"
+      - describe: >-
+          Mark the ghost snapshot for deletion. On the 2026-09-11 run this was
+          already Terminating from an earlier manual attempt and this step was a
+          no-op; from a cold start it is the step that makes the sequence work,
+          because VolSync reuses an existing snapshot forever and would never
+          recreate this one. Deleting it BEFORE the Job and the PVC does not
+          work: the finalizer blocks it for as long as a PVC is provisioning
+          from it.
+        run:
+          - kubectl
+          - "-n"
+          - "{ns}"
+          - delete
+          - volumesnapshot
+          - "volsync-{rs}-src"
+          - "--wait=false"
+          - "--ignore-not-found=true"
+      - describe: Let the finalizer drain before VolSync's next reconcile
+        run:
+          - kubectl
+          - "-n"
+          - "{ns}"
+          - wait
+          - "--for=delete"
+          - "volumesnapshot/volsync-{rs}-src"
+          - "--timeout=45s"
+        timeout_seconds: 60
+    verify: &ghost-snapshot-verify
+      - id: ghost-snapshot-gone
+        describe: The snapshot is really gone, not merely marked
+        run:
+          - kubectl
+          - "-n"
+          - "{ns}"
+          - get
+          - volumesnapshot
+          - "volsync-{rs}-src"
+          - "--ignore-not-found=true"
+          - "-o"
+          - name
+        expect:
+          not_empty: false
+      - id: source-pvc-still-bound
+        describe: The application's data PVC is exactly as it was
+        run: ["kubectl", "-n", "{ns}", "get", "pvc", "{source_pvc}", "-o", "jsonpath={.status.phase}"]
+        expect:
+          equals: Bound
+
+  - id: volsync-ghost-snapshot/mover-job-not-completing
+    alertname: KubeJobNotCompleted
+    enabled: true
+    match:
+      namespace: "^[a-z0-9][a-z0-9-]{0,61}[a-z0-9]$"
+      job_name: "^volsync-src-[a-z0-9][a-z0-9-]{0,49}[a-z0-9]$"
+    bind:
+      ns: "{namespace}"
+      rs:
+        from: "{job_name}"
+        strip_prefix: volsync-src-
+    blast_radius: >-
+      Identical to volsync-ghost-snapshot/backup-stale, which is the same
+      failure seen from the Job's side rather than the ReplicationSource's:
+      KubeJobNotCompleted fires on the wedged mover Job about twelve hours
+      before VolSyncBackupStale is certain, and both Incident Issues clear on
+      the one sequence. The match is anchored on the volsync-src- prefix, so no
+      other application's long-running Job can reach these commands.
+    max_runs:
+      count: 2
+      window_hours: 24
+    preconditions: *ghost-snapshot-preconditions
+    steps: *ghost-snapshot-steps
+    verify: *ghost-snapshot-verify

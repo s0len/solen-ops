@@ -1,0 +1,60 @@
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/cilium.io/ciliumnetworkpolicy_v2.json
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: alert-remediator
+  namespace: observability
+spec:
+  # This pod holds the machine account's GitHub token and a ServiceAccount that
+  # can delete objects, so egress is pinned and there is no ingress at all: a
+  # CronJob listens on nothing.
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/name: alert-remediator
+  egress:
+    # Load-bearing for toFQDNs below: Cilium learns GitHub's addresses from the
+    # proxied answers.
+    - toEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: kube-system
+            k8s-app: kube-dns
+      toPorts:
+        - ports:
+            - port: "53"
+              protocol: UDP
+            - port: "53"
+              protocol: TCP
+          rules:
+            dns:
+              - matchPattern: "*"
+    # Every catalogue command. What this identity may do there is the
+    # ClusterRole in rbac.yaml, not this rule.
+    - toEntities:
+        - kube-apiserver
+    # Preconditions expressed as PromQL.
+    - toEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: observability
+            app.kubernetes.io/name: prometheus
+      toPorts:
+        - ports:
+            - port: "9090"
+              protocol: TCP
+    # Whether the alert is still firing, which is condition 2 of 4.
+    - toEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: observability
+            app.kubernetes.io/name: alertmanager
+      toPorts:
+        - ports:
+            - port: "9093"
+              protocol: TCP
+    # The Incident Issues. github.com is deliberately absent: the Remediator
+    # never clones, never pushes and never opens a pull request.
+    - toFQDNs:
+        - matchName: api.github.com
+      toPorts:
+        - ports:
+            - port: "443"
+              protocol: TCP

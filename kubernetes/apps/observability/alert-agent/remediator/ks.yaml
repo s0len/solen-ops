@@ -1,0 +1,30 @@
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/kustomize.toolkit.fluxcd.io/kustomization_v1.json
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: &app alert-remediator
+  namespace: &namespace observability
+spec:
+  # No targetNamespace: it overrides the namespace of EVERY namespaced resource
+  # in this Kustomization, and two of them — the rook-ceph Role and RoleBinding
+  # that let the Ceph entry exec into the toolbox — have to stay where they are.
+  # Everything that belongs in observability says so in its own metadata.
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: *app
+  dependsOn:
+    # alert-agent owns the machine account Secret this reads GITHUB_TOKEN from,
+    # and the Incident Issues the trigger label is applied to.
+    - name: alert-agent
+      namespace: observability
+  path: ./kubernetes/apps/observability/alert-agent/remediator/app
+  prune: true
+  retryInterval: 2m
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+    namespace: flux-system
+  wait: false
+  interval: 30m
+  timeout: 5m

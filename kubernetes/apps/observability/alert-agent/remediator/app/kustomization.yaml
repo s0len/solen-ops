@@ -1,0 +1,21 @@
+---
+# yaml-language-server: $schema=https://json.schemastore.org/kustomization
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../../remediations
+  - ./ciliumnetworkpolicy.yaml
+  - ./helmrelease.yaml
+  - ./ledger.yaml
+  - ./rbac.yaml
+  # - ./rbac-etcd-defrag.yaml
+  - ./validatingadmissionpolicy.yaml
+configMapGenerator:
+  - name: alert-remediator-configmap
+    namespace: observability
+    files:
+      - remediate.py=./scripts/remediate.py
+generatorOptions:
+  disableNameSuffixHash: true
+  annotations:
+    kustomize.toolkit.fluxcd.io/substitute: disabled

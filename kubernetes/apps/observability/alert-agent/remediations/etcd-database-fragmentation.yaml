@@ -1,0 +1,124 @@
+---
+version: 1
+failure: etcd-database-fragmentation
+summary: >-
+  A merge burst grows etcd's boltdb file and it never shrinks again on its own,
+  so the in-use/allocated ratio falls under 50% and stays there. A defragment
+  is the only thing that returns the space. The etcd-defrag CronJob in
+  kube-system already does exactly that, but it runs monthly (47 4 1 * *), so
+  between the first of one month and the first of the next the alert can only
+  be cleared by running that job early. A "resolved" notice in between is a
+  write spike enlarging the in-use half, not a repair.
+entries:
+  - id: etcd-database-fragmentation/run-defrag-cronjob
+    alertname: etcdDatabaseHighFragmentationRatio
+    enabled: false
+    match:
+      job: "^kube-etcd$"
+    bind:
+      job: "{job}"
+    notes: >-
+      SHIPPED DISABLED, and the reason is a credential. `talosctl -n <node> etcd
+      defrag` is the command a human types for this, and the Remediator
+      deliberately cannot run it: talosctl needs a talos.dev/v1alpha1
+      ServiceAccount with the os:admin role, which is the same credential that
+      can wipe a node's disks and reinstall it, and no unattended process in
+      this cluster holds that. The etcd-defrag CronJob already holds it,
+      narrowed to one script that only defragments, refuses to start if any
+      member reports no leader or an active etcd alarm, does one member at a
+      time with a 60s settle between them, and does the leader last. Starting
+      that Job is therefore the entire remediation with none of the credential.
+      What the owner has to decide before setting enabled: true is whether a
+      Remediator that can start an existing Job is acceptable at all, because
+      `create job --from=cronjob` is in general a way to run whatever a
+      CronJob's container runs — and this container holds an os:admin Talos
+      identity. Two things narrow it and both are in this diff: RBAC grants
+      `create jobs` only in kube-system (remediator/app/rbac-etcd-defrag.yaml,
+      itself commented out of the kustomization), and the
+      ValidatingAdmissionPolicy refuses any Job this ServiceAccount creates
+      whose name is not etcd-defrag-<12 digits> and whose controller owner is
+      not the etcd-defrag CronJob.
+    blast_radius: >-
+      One Job in kube-system, created from the etcd-defrag CronJob's own
+      template with --from, so the image, script, arguments, Talos credential
+      and resource limits are the ones already reviewed in
+      kubernetes/apps/kube-system/etcd-defrag. The defragment itself is a boltdb
+      compaction that blocks writes on ONE member for the seconds it runs, while
+      the other two hold quorum; the script re-surveys all three members before
+      each one and aborts if the leader moved mid-run. Worst case if the
+      diagnosis is wrong: a defragment runs a few weeks earlier than its monthly
+      schedule and finds nothing over the 100MB floor to compact, which the
+      script reports as "nothing to defragment" and exits 0.
+    max_runs:
+      count: 1
+      window_hours: 168
+    preconditions:
+      - id: all-members-scraping
+        describe: All three etcd members are up and being scraped
+        promql: 'count(up{job="kube-etcd"} == 1)'
+        expect:
+          value_equals: 3
+      - id: all-members-have-a-leader
+        describe: No member has lost the leader, which is the script's own first refusal
+        promql: 'count(etcd_server_has_leader{job="kube-etcd"} == 1)'
+        expect:
+          value_equals: 3
+      - id: exactly-one-leader
+        describe: Exactly one member believes it is the leader, so no election is in flight
+        promql: 'count(etcd_server_is_leader{job="kube-etcd"} == 1)'
+        expect:
+          value_equals: 1
+      - id: fragmentation-is-real
+        describe: At least one member really is under the 50% ratio right now
+        promql: >-
+          count(etcd_mvcc_db_total_size_in_use_in_bytes{job="kube-etcd"}
+            / etcd_mvcc_db_total_size_in_bytes{job="kube-etcd"} < 0.5)
+        expect:
+          value_at_least: 1
+      - id: defrag-cronjob-not-suspended
+        describe: The reviewed CronJob this borrows its template from is live
+        run: ["kubectl", "-n", "kube-system", "get", "cronjob", "etcd-defrag", "-o", "jsonpath={.spec.suspend}"]
+        expect:
+          equals: "false"
+      - id: no-defrag-already-running
+        describe: >-
+          The CronJob has no active Job. concurrencyPolicy: Forbid would refuse
+          a second one anyway; this refuses it earlier and says so on the issue.
+        run: ["kubectl", "-n", "kube-system", "get", "cronjob", "etcd-defrag", "-o", "jsonpath={.status.active}"]
+        expect:
+          not_empty: false
+    steps:
+      - describe: >-
+          Start one run of the reviewed CronJob. The Job name carries the run
+          stamp so it is unique, matches the admission policy, and is obvious in
+          `kubectl get jobs -n kube-system`.
+        run:
+          - kubectl
+          - "-n"
+          - kube-system
+          - create
+          - job
+          - "etcd-defrag-{run_stamp}"
+          - "--from=cronjob/etcd-defrag"
+    verify:
+      - id: defrag-completed
+        describe: The Job ran to completion rather than being left in flight
+        run:
+          - kubectl
+          - "-n"
+          - kube-system
+          - wait
+          - "--for=condition=complete"
+          - "job/etcd-defrag-{run_stamp}"
+          - "--timeout=600s"
+        timeout_seconds: 660
+        expect:
+          matches: "condition met"
+      - id: defrag-succeeded
+        describe: One successful completion, which the script only reports when every member it queued was defragmented
+        run: ["kubectl", "-n", "kube-system", "get", "job", "etcd-defrag-{run_stamp}", "-o", "jsonpath={.status.succeeded}"]
+        expect:
+          integer_at_least: 1
+    evidence:
+      - describe: The script's own log, which names each member, its before and after size, and what it skipped
+        run: ["kubectl", "-n", "kube-system", "logs", "job/etcd-defrag-{run_stamp}", "--tail=60"]

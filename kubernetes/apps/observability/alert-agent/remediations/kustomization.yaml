@@ -1,0 +1,19 @@
+---
+# yaml-language-server: $schema=https://json.schemastore.org/kustomization
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+configMapGenerator:
+  # The Remediator reads these as JSON, rendered by its init container. Files
+  # are named one by one rather than globbed so that adding a Catalogued
+  # Remediation is a visible line in the diff that ships it.
+  - name: alert-remediator-catalogue
+    namespace: observability
+    files:
+      - ceph-mgr-module-crash.yaml=./ceph-mgr-module-crash.yaml
+      - etcd-database-fragmentation.yaml=./etcd-database-fragmentation.yaml
+      - orphaned-failed-job.yaml=./orphaned-failed-job.yaml
+      - volsync-ghost-snapshot.yaml=./volsync-ghost-snapshot.yaml
+generatorOptions:
+  disableNameSuffixHash: true
+  annotations:
+    kustomize.toolkit.fluxcd.io/substitute: disabled

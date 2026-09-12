@@ -1,0 +1,113 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: alert-remediator
+rules:
+  # Reads. Every precondition and every verification in the catalogue is one of
+  # these; `watch` is here because `kubectl wait` watches rather than polls.
+  - apiGroups: [""]
+    resources:
+      - persistentvolumeclaims
+      - pods
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["batch"]
+    resources:
+      - cronjobs
+      - jobs
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["snapshot.storage.k8s.io"]
+    resources: ["volumesnapshots"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["volsync.backube"]
+    resources: ["replicationsources"]
+    verbs: ["get", "list"]
+
+  # Writes. Three verbs, three kinds, and nothing else in the cluster: no
+  # create, no patch, no update, no exec outside the Role below, no Secrets at
+  # any level. RBAC cannot express "only objects named volsync-*-src", so the
+  # ValidatingAdmissionPolicy alongside this file does, and these three rules
+  # are deliberately the only ones it has to bound.
+  - apiGroups: [""]
+    resources: ["persistentvolumeclaims"]
+    verbs: ["delete"]
+  - apiGroups: ["batch"]
+    resources: ["jobs"]
+    verbs: ["delete"]
+  - apiGroups: ["snapshot.storage.k8s.io"]
+    resources: ["volumesnapshots"]
+    verbs: ["delete"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: alert-remediator
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: alert-remediator
+subjects:
+  - kind: ServiceAccount
+    name: alert-remediator
+    namespace: observability
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: alert-remediator-ledger
+  namespace: observability
+rules:
+  # The Run Ledger and nothing else in the namespace: resourceNames is exact,
+  # so this cannot reach another ConfigMap even by name collision. `create` is
+  # absent because the ledger ships in git with
+  # kustomize.toolkit.fluxcd.io/ssa: IfNotPresent.
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    resourceNames: ["alert-remediator-ledger"]
+    verbs: ["get", "patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: alert-remediator-ledger
+  namespace: observability
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: alert-remediator-ledger
+subjects:
+  - kind: ServiceAccount
+    name: alert-remediator
+    namespace: observability
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: alert-remediator-ceph-tools
+  namespace: rook-ceph
+rules:
+  # pods/exec into rook-ceph-tools is the broadest grant in this app: the
+  # toolbox holds client.admin, so a shell in it is Ceph admin. Nothing in RBAC
+  # can narrow an exec to a command, which is why the ValidatingAdmissionPolicy
+  # restricts argv[0] to `ceph` and its subcommand to a read-only set plus
+  # `crash`.
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list"]
+  - apiGroups: [""]
+    resources: ["pods/exec"]
+    verbs: ["create"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: alert-remediator-ceph-tools
+  namespace: rook-ceph
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: alert-remediator-ceph-tools
+subjects:
+  - kind: ServiceAccount
+    name: alert-remediator
+    namespace: observability

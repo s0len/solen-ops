@@ -79,5 +79,29 @@ A pull request authored by the Agent against this repository proposing a change 
 _Avoid_: patch, auto-fix, remediation
 
 **Resolution**:
-A change on the main branch that removes an alert's cause, or deliberately silences it with a recorded reason. A live cluster action is never a Resolution.
-_Avoid_: fix (for live actions), remediation, workaround
+Something reviewed on the main branch that removes an alert's cause: a change to a file, a silence with a recorded reason, or a Catalogued Remediation that ran. An improvised live cluster action is never a Resolution.
+_Avoid_: fix (for improvised live actions), workaround
+
+**Catalogued Remediation**:
+A live cluster action written out in full in this repository — its exact commands, its preconditions, its blast radius — and merged before it is ever run. The commands are the artefact a human reviews; running them is not a judgement anyone makes afterwards.
+_Avoid_: auto-remediation, self-healing, runbook automation
+
+**Remediation Catalogue**:
+The set of Catalogued Remediations, one file per known failure. An entry is added only after a human has run the sequence by hand and seen it work.
+_Avoid_: playbook, action library
+
+**Remediator**:
+The deterministic executor that runs a Catalogued Remediation. It matches an Incident Issue to an entry and runs that entry unchanged; it never composes a command, never calls a model, and never changes a file. Distinct from the Agent, which reasons and cannot act.
+_Avoid_: healer, operator, fixer
+
+**Precondition**:
+A read-only check an entry must pass before any of its commands run, re-proving on live state the diagnosis the entry was written for. All of them must pass; the first failure stops the run.
+_Avoid_: guard, assertion, sanity check
+
+**Blast Radius**:
+The sentence in an entry naming everything its commands can touch and what is lost if the diagnosis is wrong. It is quoted back onto the Incident Issue whenever the entry runs.
+_Avoid_: impact, scope
+
+**Run Ledger**:
+The record of which entries have run, against which target and when. It enforces each entry's maximum runs per window and is what makes an interrupted run visible rather than silent.
+_Avoid_: history, audit log, state

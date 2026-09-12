@@ -8,6 +8,7 @@ components:
 resources:
   - ./no-auth-securitypolicy.yaml
   - ./alert-agent/ks.yaml
+  # - ./alert-agent/remediator/ks.yaml
   # - ./dcmg-exporter/ks.yaml
   - ./fluent-bit/ks.yaml
   - ./gatus/ks.yaml
