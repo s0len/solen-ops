@@ -89,6 +89,10 @@ spec:
               PORT: &port 8080
               GITHUB_INCIDENTS_REPO: s0len/solen-ops-incidents
               RUN_BUDGET_PER_DAY: "20"
+              # Investigations of that budget a non-critical Alert Group can
+              # never take, so a night of warnings cannot leave a critical
+              # alert with a Bare Issue and no Diagnosis.
+              RUN_BUDGET_CRITICAL_RESERVE: "3"
               BUDGET_STATE_FILE: /state/run-budget.json
               INCIDENT_INDEX_FILE: /state/incident-index.json
               # Plural /webhooks/. Emptying this is the kill switch: Incident

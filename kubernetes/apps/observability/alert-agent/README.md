@@ -18,8 +18,13 @@ age it exports, and `gate/` read-write for the Run Budget and the incident
 index. Under the pod's `fsGroup: 65534` a whole-volume mount would make Hermes'
 credential group-readable by the Gate.
 
+`remediator/` alongside this is a separate app with its own Flux Kustomization,
+ServiceAccount and lifecycle: it runs Catalogued Remediations from
+`remediations/` and is the one part of this system that changes the cluster.
+Read `remediator/README.md` before touching either. It ships disabled.
+
 Vocabulary is `CONTEXT.md`; the decisions behind this app are ADR-0001 to
-ADR-0003 and the parent spec in the Incidents Repo.
+ADR-0004 and the parent spec in the Incidents Repo.
 
 ## Layout
 

@@ -12,18 +12,33 @@ otherwise open a second Incident Issue.
 Decision per notification, in order:
 
   * resolved, open Incident Issue      -> "resolved at" comment, never close
-  * resolved, no open Incident Issue   -> log and drop
+  * resolved, closed Incident Issue    -> log and drop; only a firing
+                                          notification ever reopens one
+  * resolved, no Incident Issue        -> log and drop
   * firing,   open Incident Issue      -> "still firing at" comment
-  * firing,   no open Incident Issue,
+  * firing,   closed Incident Issue,
+    nothing in the group predates
+    the close                          -> a new episode: reopen it, put back
+                                          the triage label and comment, so a
+                                          human's close is durable instead of
+                                          being answered with a fresh issue
+  * firing,   closed Incident Issue,
+    something in the group predates
+    the close                          -> log and drop: this is the condition
+                                          the owner closed while it was still
+                                          firing, and that close has to hold
+  * firing,   no Incident Issue,
     Run Budget remaining               -> create the Incident Issue, consume one
                                           slot, forward the signed Investigation
                                           prompt to Hermes
-  * firing,   no open Incident Issue,
+  * firing,   no Incident Issue,
     Run Budget exhausted               -> create a Bare Issue, forward nothing
 
-The Run Budget is a per-UTC-day counter in a JSON file on the PVC; it and the
-Incident Issue index are the only things the Gate writes to disk. Stdlib only:
-runs on the slim python image as non-root with a read-only root filesystem.
+The Run Budget is a per-UTC-day counter in a JSON file on the PVC, part of it
+reserved for critical Alert Groups so a flood of warnings cannot starve one; it
+and the Incident Issue index are the only things the Gate writes to disk.
+Stdlib only: runs on the slim python image as non-root with a read-only root
+filesystem.
 """
 import hashlib
 import hmac
@@ -46,6 +61,7 @@ from typing import Any, Callable, Optional
 DEFAULT_INCIDENTS_REPO = "s0len/solen-ops-incidents"
 DEFAULT_API_URL = "https://api.github.com"
 DEFAULT_RUN_BUDGET_PER_DAY = 10
+DEFAULT_RUN_BUDGET_CRITICAL_RESERVE = 3
 DEFAULT_PROMETHEUS_URL = "http://prometheus-operated.observability.svc.cluster.local:9090"
 DEFAULT_VICTORIALOGS_URL = "http://victoria-logs-server.observability.svc.cluster.local:9428"
 DEFAULT_ALERTMANAGER_URL = "http://alertmanager-operated.observability.svc.cluster.local:9093"
@@ -71,6 +87,14 @@ WEBHOOK_PATH = "/webhook"
 HEALTH_PATHS = ("/healthz", "/health")
 METRICS_PATH = "/metrics"
 IDENTIFYING_LABELS = ("namespace", "pod", "container", "node", "instance", "job", "severity")
+CRITICAL_SEVERITY = "critical"
+RESOLVED_STATUS = "resolved"
+# Go's zero time, which is how Alertmanager writes "this timestamp is unset".
+ZERO_TIMESTAMP_PREFIX = "0001-"
+# Prometheus stamps startsAt and GitHub stamps closed_at from two unsynchronised
+# clocks. An alert that began inside this window either side of the close cannot
+# be dated against it, so it is read as a new episode: see `classify_episode`.
+NEW_EPISODE_CLOCK_SKEW_SECONDS = 120
 
 
 # --------------------------------------------------------------------------- logging
@@ -89,6 +113,37 @@ def now_iso(now: Optional[datetime] = None) -> str:
     return now.astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
+def parse_timestamp(value: Any) -> Optional[datetime]:
+    """One RFC3339 instant as Alertmanager and GitHub write it, or None.
+
+    Alertmanager stamps `startsAt` with nanosecond precision and GitHub stamps
+    `closed_at` to the whole second, neither of which `datetime` takes as it
+    stands, so the fraction is padded or truncated to microseconds and a
+    trailing Z becomes an explicit UTC offset. Go's zero time is not an instant
+    but Alertmanager's way of writing "unset", and reads as absent. A timestamp
+    without an offset is read as UTC, which is the only zone anything here
+    emits.
+    """
+    text = str(value or "").strip()
+    if not text or text.startswith(ZERO_TIMESTAMP_PREFIX):
+        return None
+    if text[-1] in "Zz":
+        text = text[:-1] + "+00:00"
+    whole, dot, fraction = text.partition(".")
+    if dot:
+        digits = ""
+        for char in fraction:
+            if not char.isdigit():
+                break
+            digits += char
+        text = f"{whole}.{digits[:6]:0<6}{fraction[len(digits):]}"
+    try:
+        parsed = datetime.fromisoformat(text)
+    except ValueError:
+        return None
+    return parsed if parsed.tzinfo is not None else parsed.replace(tzinfo=timezone.utc)
+
+
 # --------------------------------------------------------------------------- config
 
 @dataclass(frozen=True)
@@ -99,6 +154,7 @@ class Config:
     incidents_repo: str = DEFAULT_INCIDENTS_REPO
     github_timeout: float = 15.0
     run_budget_per_day: int = DEFAULT_RUN_BUDGET_PER_DAY
+    run_budget_critical_reserve: int = DEFAULT_RUN_BUDGET_CRITICAL_RESERVE
     budget_state_file: str = ""
     incident_index_file: str = ""
     hermes_webhook_url: str = ""
@@ -120,6 +176,8 @@ class Config:
             incidents_repo=env.get("GITHUB_INCIDENTS_REPO", DEFAULT_INCIDENTS_REPO),
             github_timeout=float(env.get("GITHUB_TIMEOUT_SECONDS", "15")),
             run_budget_per_day=int(env.get("RUN_BUDGET_PER_DAY", str(DEFAULT_RUN_BUDGET_PER_DAY))),
+            run_budget_critical_reserve=int(
+                env.get("RUN_BUDGET_CRITICAL_RESERVE", str(DEFAULT_RUN_BUDGET_CRITICAL_RESERVE))),
             budget_state_file=env.get("BUDGET_STATE_FILE", ""),
             incident_index_file=env.get("INCIDENT_INDEX_FILE", ""),
             hermes_webhook_url=env.get("HERMES_WEBHOOK_URL", ""),
@@ -175,6 +233,21 @@ class Notification:
         return "unknown-alert"
 
     @property
+    def critical(self) -> bool:
+        """True when anything in the group is critical.
+
+        Alertmanager only lifts a label into commonLabels when every alert
+        carries the same value, so a group that mixes severities shows none
+        there and has to be read alert by alert. One critical alert makes the
+        whole group critical: the group gets one Incident Issue, and it is the
+        worst alert in it that decides what that issue is worth.
+        """
+        for labels in (self.group_labels, self.common_labels, *(a.get("labels", {}) for a in self.alerts)):
+            if str(labels.get("severity", "")).strip().lower() == CRITICAL_SEVERITY:
+                return True
+        return False
+
+    @property
     def summary(self) -> str:
         for annotations in (self.common_annotations, *(a.get("annotations", {}) for a in self.alerts)):
             summary = annotations.get("summary")
@@ -226,6 +299,68 @@ def parse_notification(raw: bytes) -> Notification:
         receiver=str(data.get("receiver") or ""),
         version=str(data.get("version") or ""),
     )
+
+
+# --------------------------------------------------------------------------- episode
+
+@dataclass(frozen=True)
+class Episode:
+    """Whether a firing notification is a new episode, and what decided it."""
+
+    new: bool
+    reason: str
+    closed_at: str = ""
+    earliest_starts_at: str = ""
+
+
+def classify_episode(n: Notification, issue: dict,
+                     skew_seconds: int = NEW_EPISODE_CLOCK_SKEW_SECONDS) -> Episode:
+    """Is this firing a new episode, or the one whose Incident Issue is closed?
+
+    Closing an Incident Issue while its alert is still firing is a legitimate
+    thing to do — the condition is known, accepted and not going away — and that
+    close has to stick. Alertmanager re-notifies the same group every
+    `repeatInterval` and on every change to its membership, so a Gate that
+    reopened on any firing would answer the close within twelve hours and leave
+    the queue exactly as undrainable as filing a fresh issue did.
+
+    The close holds while ANY alert still in the group demonstrably began
+    before it: one sighting of the old condition is enough, so the group is
+    judged by its EARLIEST start, not its latest. Judging it by the latest
+    would let one new member of a churning group — a fourth crash-looping pod
+    under an alertname the owner has already accepted — undo the close, which
+    is the same failure with an extra step. Only when nothing left in the group
+    predates the close has the condition actually cleared and come back, and
+    Alertmanager gives a returning alert a fresh `startsAt`, so a real new
+    episode shows up as exactly that.
+
+    Alerts the notification itself marks resolved are not evidence of anything
+    still running and are skipped.
+
+    Everything unreadable fails toward reopening: a missing or unparseable
+    `closed_at`, a group with no readable `startsAt`, and a start inside
+    NEW_EPISODE_CLOCK_SKEW_SECONDS of the close, where the two clocks cannot
+    be told apart. A needless reopen is visible and the owner closes it again;
+    a wrong suppression leaves a firing alert inside a closed issue that no
+    `gh issue list` will ever show.
+    """
+    closed_at = parse_timestamp(issue.get("closed_at"))
+    if closed_at is None:
+        return Episode(True, "closed_at_unreadable")
+    cutoff = closed_at - timedelta(seconds=max(0, skew_seconds))
+    earliest = None
+    for alert in n.alerts:
+        if str(alert.get("status", "")).strip().lower() == RESOLVED_STATUS:
+            continue
+        started = parse_timestamp(alert.get("startsAt"))
+        if started is not None and (earliest is None or started < earliest):
+            earliest = started
+    closed_stamp = now_iso(closed_at)
+    if earliest is None:
+        return Episode(True, "no_readable_start", closed_stamp)
+    if earliest <= cutoff:
+        return Episode(False, "started_before_close", closed_stamp, now_iso(earliest))
+    return Episode(True, "started_after_close", closed_stamp, now_iso(earliest))
 
 
 # --------------------------------------------------------------------------- marker
@@ -335,6 +470,18 @@ def render_still_firing_comment(n: Notification, now: str) -> str:
     return "\n".join(lines) + "\n"
 
 
+def render_reopened_comment(n: Notification, now: str, closed_at: str) -> str:
+    count = len(n.alerts)
+    closed = f"closed at {closed_at}" if closed_at else "closed"
+    lines = [
+        f"Firing again at {now} — {count} alert{'s' if count != 1 else ''} in this Alert Group "
+        f"after this Incident Issue was {closed}. The Gate reopened it instead of filing a new one.",
+        "",
+    ]
+    lines.extend(render_alert_list(n))
+    return "\n".join(lines) + "\n"
+
+
 def render_resolved_comment(n: Notification, now: str) -> str:
     count = len(n.alerts)
     lines = [
@@ -408,19 +555,27 @@ class GitHubClient:
         return issue if isinstance(issue, dict) else None
 
     def find_incident_issue(self, marker: str) -> Optional[dict]:
-        """The oldest open issue whose body contains `marker`, or None.
+        """The most recently created issue whose body contains `marker`, or None.
 
-        Lists open issues oldest-first and filters locally: exact match, no
-        dependency on the search index catching up, no per-group labels. The
-        listing lags a create by a second or more, so the Incident Issue index
-        is asked first and this stays the fallback.
+        Lists issues in both states oldest-first and filters locally: exact
+        match, no dependency on the search index catching up, no per-group
+        labels. Closed issues are listed too, because a firing notification is
+        answered against the Incident Issue a human closed — reopened for a new
+        episode, left alone for the one they accepted — rather than by filing a
+        second one. A group that has been through several episodes therefore has
+        several matches, and the newest is the only one whose comments belong
+        to this incident, so the scan keeps the last match instead of returning
+        the first. The listing lags a create by a second or more, so the
+        Incident Issue index is asked first and this stays the fallback, and
+        the state it reports is never trusted: the caller re-reads by number.
         """
+        latest = None
         for page in range(1, MAX_ISSUE_PAGES + 1):
             items = self._request(
                 "GET",
                 f"/repos/{self.repo}/issues",
                 params={
-                    "state": "open",
+                    "state": "all",
                     "sort": "created",
                     "direction": "asc",
                     "per_page": ISSUES_PER_PAGE,
@@ -433,11 +588,11 @@ class GitHubClient:
                 if not isinstance(item, dict) or "pull_request" in item:
                     continue
                 if marker in (item.get("body") or ""):
-                    return item
+                    latest = item
             if len(items) < ISSUES_PER_PAGE:
-                return None
+                return latest
         log("issue_listing_capped", pages=MAX_ISSUE_PAGES, repo=self.repo)
-        return None
+        return latest
 
     def create_incident_issue(self, title: str, body: str, labels: list) -> dict:
         issue = self._request(
@@ -449,12 +604,46 @@ class GitHubClient:
             raise GitHubError("GitHub did not return the created issue")
         return issue
 
+    def set_state(self, issue_number: int, state: str) -> dict:
+        """Move an issue between open and closed. The Gate only ever reopens."""
+        issue = self._request(
+            "PATCH",
+            f"/repos/{self.repo}/issues/{issue_number}",
+            body={"state": state},
+        )
+        if not isinstance(issue, dict) or "number" not in issue:
+            raise GitHubError("GitHub did not return the updated issue")
+        return issue
+
+    def add_labels(self, issue_number: int, labels: list) -> Any:
+        """Add labels to an issue without disturbing the ones already on it.
+
+        `POST .../labels` is additive. The PATCH that carries a `labels` array
+        replaces the whole set instead, and would silently drop whatever a
+        human had put there.
+        """
+        return self._request(
+            "POST",
+            f"/repos/{self.repo}/issues/{issue_number}/labels",
+            body={"labels": list(labels)},
+        )
+
     def comment(self, issue_number: int, body: str) -> Any:
         return self._request(
             "POST",
             f"/repos/{self.repo}/issues/{issue_number}/comments",
             body={"body": body},
         )
+
+
+def issue_label_names(issue: dict) -> set:
+    """The label names on an issue, from GitHub's list of label objects."""
+    names = set()
+    for label in issue.get("labels") or []:
+        name = label.get("name") if isinstance(label, dict) else label
+        if isinstance(name, str) and name:
+            names.add(name)
+    return names
 
 
 # --------------------------------------------------------------------------- incident index
@@ -468,8 +657,10 @@ class IncidentIndex:
     over a second later, while `GET /repos/{repo}/issues/{number}` returned it
     on the first attempt. An Alertmanager retry inside that window used to open
     a second Incident Issue. Every hit here is therefore re-read by number
-    before it is trusted, and a hit that is gone, closed, a pull request or no
-    longer carrying the marker is dropped so the listing decides instead.
+    before it is trusted, and a hit that is gone, a pull request or no longer
+    carrying the marker is dropped so the listing decides instead. A hit that
+    is merely closed is kept: that read is what carries the `closed_at` a
+    firing notification is dated against.
 
     Same discipline as the Run Budget: the file is authoritative and re-read on
     every question, writes go to a sibling temp file and are renamed into
@@ -554,17 +745,26 @@ class IncidentIndex:
 class RunBudget:
     """The per-UTC-day Investigation budget, persisted as one small JSON file.
 
+    Part of the limit is reserved for critical Alert Groups: a non-critical one
+    may take a slot only while fewer than `limit - reserve` of today's slots
+    have gone to non-critical groups, a critical one may take any free slot.
+    A night of warnings can therefore never spend the budget a critical alert
+    needs, which is what happened on 2026-09-10.
+
     The file is authoritative and re-read on every question, so a restart in the
     same UTC day continues the count and an edit by hand takes effect at once.
     Writes go to a sibling temp file and are renamed into place. Without a
-    state file the count lives in memory only.
+    state file the count lives in memory only. A file written before the
+    reserve existed has no `critical` key and counts as no critical slots
+    spent, which is the truth for a day the old code decided.
     """
 
-    def __init__(self, limit: int, state_file: str = ""):
+    def __init__(self, limit: int, reserve: int = 0, state_file: str = ""):
         self.limit = max(0, int(limit))
+        self.reserve = min(self.limit, max(0, int(reserve)))
         self.state_file = state_file
         self._lock = threading.Lock()
-        self._memory = {"date": "", "used": 0}
+        self._memory = {"date": "", "used": 0, "critical": 0}
 
     @staticmethod
     def day(now: datetime) -> str:
@@ -583,7 +783,10 @@ class RunBudget:
             return dict(self._memory)
         if (isinstance(data, dict) and isinstance(data.get("date"), str)
                 and isinstance(data.get("used"), int) and data["used"] >= 0):
-            return {"date": data["date"], "used": data["used"]}
+            critical = data.get("critical", 0)
+            if not isinstance(critical, int) or isinstance(critical, bool) or critical < 0:
+                critical = 0
+            return {"date": data["date"], "used": data["used"], "critical": min(critical, data["used"])}
         log("budget_state_invalid", file=self.state_file)
         return dict(self._memory)
 
@@ -602,19 +805,38 @@ class RunBudget:
         except OSError as exc:
             log("budget_state_write_failed", file=self.state_file, error=str(exc))
 
-    def used(self, now: datetime) -> int:
+    def _today(self, now: datetime) -> dict:
         state = self._load()
-        return state["used"] if state["date"] == self.day(now) else 0
+        if state["date"] != self.day(now):
+            return {"date": self.day(now), "used": 0, "critical": 0}
+        return state
+
+    def used(self, now: datetime) -> int:
+        return self._today(now)["used"]
+
+    def critical_used(self, now: datetime) -> int:
+        return self._today(now)["critical"]
 
     def remaining(self, now: datetime) -> int:
         return max(0, self.limit - self.used(now))
 
-    def consume(self, now: datetime) -> int:
-        """Count one Investigation against today and return today's total."""
+    def remaining_for(self, now: datetime, critical: bool) -> int:
+        """Slots an Alert Group of this severity may still take today."""
+        state = self._today(now)
+        free = max(0, self.limit - state["used"])
+        if critical:
+            return free
+        general = max(0, state["used"] - state["critical"])
+        return max(0, min(free, self.limit - self.reserve - general))
+
+    def consume(self, now: datetime, critical: bool = False) -> dict:
+        """Count one Investigation against today and return today's counts."""
         with self._lock:
-            used = self.used(now) + 1
-            self._store({"date": self.day(now), "used": used})
-            return used
+            state = self._today(now)
+            state = {"date": self.day(now), "used": state["used"] + 1,
+                     "critical": state["critical"] + (1 if critical else 0)}
+            self._store(state)
+            return state
 
 
 # --------------------------------------------------------------------------- investigation prompt
@@ -643,6 +865,7 @@ Clone the Incidents Repo shallowly into this run's own directory (`gh repo clone
 - LogsQL against VictoriaLogs at $victorialogs_url, for example: curl -s '$victorialogs_url/select/logsql/query' --data-urlencode 'query=<logsql>' --data-urlencode 'limit=100'
 - The Alertmanager API at $alertmanager_url, for example: curl -s '$alertmanager_url/api/v2/alerts' (co-firing alerts) and '$alertmanager_url/api/v2/silences'
 - Each alert's generatorURL above carries the exact expression that fired; query it and its neighbours over the firing window.
+- A Job and its pod are temporary evidence: every CronJob this repository owns sets ttlSecondsAfterFinished, so `kubectl get jobs` and `kubectl logs job/<job>` stop reproducing a day after the run finished — a week for the jobs that run less often than daily — while the owner may read this issue days later. VictoriaLogs keeps the same output for 14 days and is unaffected by the Job being gone: `curl -s '$victorialogs_url/select/logsql/query' --data-urlencode 'query="k_labels_batch.kubernetes.io/job-name":"<job>" | limit 100'`. For anything about a Job, cite that query beside the kubectl one and paste the excerpt you relied on, so the Diagnosis still stands when the Job does not. The exception is volsync-system's kopia-maint CronJobs, which VolSync generates and whose CRD has no TTL field: their Jobs are never deleted, so a failed one keeps KubeJobFailed firing until the Job itself is removed.
 - Your commands are screened before they run. Inline interpreter scripts are refused: never `python3 -c`, `sh -c`, `bash -c`, `perl -e` or any `-c`/`-e` form, and never pipe into one. There is no `jq`. Shape JSON with the tools that are allowed instead: `kubectl -o jsonpath=...` or `-o custom-columns=...`, `curl ... | head -n`, or `curl ... -o /tmp/x.json` and then read the file.
 - A refused command is not the end of the Investigation. Note it, gather what you can by another route, and record in the Diagnosis what you could not check and why.
 
@@ -777,8 +1000,11 @@ class HermesForwarder:
 COUNTERS = {
     "notifications_received_total": "Alertmanager notifications received on the webhook.",
     "issues_created_total": "Incident Issues created, Bare Issues included.",
+    "issues_reopened_total": "Closed Incident Issues reopened because their Alert Group fired again.",
+    "reopens_suppressed_total": "Firing notifications that left a closed Incident Issue closed, because the "
+                               "Alert Group was already firing when it was closed.",
     "bare_issues_total": "Bare Issues created: Run Budget exhausted or forwarding disabled.",
-    "comments_total": "Still-firing and resolved comments posted on Incident Issues.",
+    "comments_total": "Still-firing, reopened and resolved comments posted on Incident Issues.",
     "forwards_total": "Investigation prompts Hermes accepted.",
     "forward_failures_total": "Investigation prompts Hermes did not accept.",
     "github_errors_total": "Notifications that failed on a GitHub call.",
@@ -876,7 +1102,8 @@ class Gate:
         marker = group_marker(n.group_key)
         now = self.clock()
         stamp = now_iso(now)
-        context = {"group_key": n.group_key, "alertname": n.alertname, "status": n.status, "alerts": len(n.alerts)}
+        context = {"group_key": n.group_key, "alertname": n.alertname, "status": n.status,
+                   "alerts": len(n.alerts), "critical": n.critical}
         try:
             with self._lock:
                 outcome = self._decide(n, marker, now, stamp, context)
@@ -893,8 +1120,9 @@ class Gate:
         """The index first, the listing second; both are confirmed by number.
 
         The listing lags a write in both directions, so it can report a
-        just-closed Incident Issue as open. Only the by-number read is
-        consistent, so it decides either way.
+        just-closed Incident Issue as open and a just-reopened one as closed.
+        Only the by-number read is consistent, so the issue this returns
+        carries the state the caller acts on.
         """
         key = group_hash(n.group_key)
         number = self.index.lookup(key)
@@ -920,11 +1148,14 @@ class Gate:
 
     @staticmethod
     def _not_the_incident_issue(issue: Optional[dict], marker: str) -> Optional[str]:
-        """Why an indexed issue must not absorb this notification, or None."""
+        """Why an issue cannot be this Alert Group's Incident Issue, or None.
+
+        Being closed is not a reason: whether a firing notification reopens it
+        or leaves the close standing, and that a resolved one is dropped, are
+        the caller's decisions.
+        """
         if issue is None:
             return "gone"
-        if issue.get("state") != "open":
-            return "closed"
         if "pull_request" in issue:
             return "pull_request"
         if marker not in (issue.get("body") or ""):
@@ -935,6 +1166,18 @@ class Gate:
         issue = self._find_incident_issue(n, marker, now, context)
         if issue is not None:
             number = int(issue["number"])
+            if issue.get("state") != "open":
+                if n.firing:
+                    episode = classify_episode(n, issue)
+                    if episode.new:
+                        return self._reopen_incident_issue(n, issue, episode, now, stamp, context)
+                    self.metrics.inc("reopens_suppressed_total")
+                    log("reopen_suppressed", issue=number, url=issue.get("html_url"),
+                        reason=episode.reason, closed_at=episode.closed_at,
+                        earliest_starts_at=episode.earliest_starts_at, **context)
+                    return Outcome("suppressed", number)
+                log("resolved_with_closed_incident_issue", issue=number, **context)
+                return Outcome("dropped")
             if n.firing:
                 self.github.comment(number, render_still_firing_comment(n, stamp))
                 self.metrics.inc("comments_total")
@@ -949,8 +1192,64 @@ class Gate:
             return Outcome("dropped")
         return self._open_incident_issue(n, marker, now, stamp, context)
 
+    def _reopen_incident_issue(self, n: Notification, issue: dict, episode: Episode, now: datetime,
+                               stamp: str, context: dict) -> Outcome:
+        """Reopen the Incident Issue a human closed, rather than filing a new one.
+
+        Only ever called for a new episode; the condition the owner closed
+        while it was firing leaves the issue closed. The reopen goes first: a
+        comment on an issue that is still closed is the failure this replaces,
+        so the state change has to succeed before anything is written into it.
+        No Run Budget slot and no forward — the issue already carries whatever
+        Diagnosis it was given, and a group that flaps across a close would
+        otherwise spend the budget on repeats.
+        """
+        number = int(issue["number"])
+        closed_at = str(issue.get("closed_at") or "")
+        self.github.set_state(number, "open")
+        self.metrics.inc("issues_reopened_total")
+        restored = self._restore_triage_labels(number, issue, context)
+        self.github.comment(number, render_reopened_comment(n, stamp, closed_at))
+        self.metrics.inc("comments_total")
+        self.index.remember(group_hash(n.group_key), number, now)
+        log("incident_issue_reopened", issue=number, url=issue.get("html_url"),
+            closed_at=closed_at, reason=episode.reason,
+            earliest_starts_at=episode.earliest_starts_at, labels_added=restored, **context)
+        return Outcome("reopened", number)
+
+    def _restore_triage_labels(self, number: int, issue: dict, context: dict) -> list:
+        """Put back the triage label a new Incident Issue would carry.
+
+        Closing strips nothing, but by the time an issue is closed the Fix flow
+        has removed `ready-for-agent` and an Investigation may have added
+        `needs-info`, so a reopened issue carries whatever the last hand to
+        touch it left behind — often no triage label at all. It then re-enters
+        the open list invisible to `gh issue list --label needs-triage` with
+        nothing to surface it to the owner.
+
+        NEW_ISSUE_LABELS are the only labels the Gate owns, and they are added,
+        never replaced: `needs-info`, `ready-for-human` and `wontfix` are a
+        human's judgement about an issue the Gate cannot make, and all of them
+        survive the reopen untouched.
+
+        A failure here is logged, not raised. The issue is already open by this
+        point, so a retried notification would find it open, comment "still
+        firing" and never reopen it again; losing that reopen comment costs
+        more than the label is worth.
+        """
+        missing = sorted(set(NEW_ISSUE_LABELS) - issue_label_names(issue))
+        if not missing:
+            return []
+        try:
+            self.github.add_labels(number, missing)
+        except GitHubError as exc:
+            log("reopen_labels_failed", issue=number, labels=missing, error=str(exc), **context)
+            return []
+        return missing
+
     def _open_incident_issue(self, n: Notification, marker: str, now: datetime, stamp: str, context: dict) -> Outcome:
-        remaining = self.run_budget.remaining(now)
+        critical = n.critical
+        remaining = self.run_budget.remaining_for(now, critical)
         investigate = self.forwarder.enabled and remaining > 0
         labels = list(NEW_ISSUE_LABELS)
         if not investigate:
@@ -960,14 +1259,23 @@ class Gate:
         self.index.remember(group_hash(n.group_key), number, now)
         self.metrics.inc("issues_created_total")
         if investigate:
-            used = self.run_budget.consume(now)
+            state = self.run_budget.consume(now, critical)
             log("incident_issue_created", issue=number, url=issue.get("html_url"),
-                budget_used=used, budget_limit=self.run_budget.limit, **context)
+                budget_used=state["used"], budget_critical_used=state["critical"],
+                budget_limit=self.run_budget.limit, budget_critical_reserve=self.run_budget.reserve, **context)
             return Outcome("created", number, issue=issue)
         self.metrics.inc("bare_issues_total")
-        reason = "forwarding_disabled" if not self.forwarder.enabled else "run_budget_exhausted"
+        if not self.forwarder.enabled:
+            reason = "forwarding_disabled"
+        elif self.run_budget.remaining(now) > 0:
+            reason = "run_budget_critical_reserve"
+        else:
+            reason = "run_budget_exhausted"
         log("bare_issue_created", issue=number, url=issue.get("html_url"), reason=reason,
-            budget_used=self.run_budget.used(now), budget_limit=self.run_budget.limit, **context)
+            budget_used=self.run_budget.used(now), budget_critical_used=self.run_budget.critical_used(now),
+            budget_limit=self.run_budget.limit, budget_critical_reserve=self.run_budget.reserve,
+            budget_remaining=self.run_budget.remaining(now),
+            budget_noncritical_remaining=self.run_budget.remaining_for(now, False), **context)
         return Outcome("created-bare", number)
 
 
@@ -1064,14 +1372,24 @@ def make_server(config: Config, host: str = "0.0.0.0") -> GateServer:
     github = GitHubClient(config.github_api_url, config.github_token, config.incidents_repo, config.github_timeout)
     metrics = Metrics()
     index = IncidentIndex(config.incident_index_file)
-    budget = RunBudget(config.run_budget_per_day, config.budget_state_file)
+    budget = RunBudget(config.run_budget_per_day, config.run_budget_critical_reserve, config.budget_state_file)
     services = {"prometheus": config.prometheus_url, "victorialogs": config.victorialogs_url,
                 "alertmanager": config.alertmanager_url}
     forwarder = HermesForwarder(config.hermes_webhook_url, config.hermes_webhook_secret, config.hermes_timeout,
                                 metrics, config.incidents_repo, services)
     metrics.gauge("run_budget_limit", "Investigations allowed per UTC day.", lambda: budget.limit)
     metrics.gauge("run_budget_used", "Investigations forwarded so far today (UTC).", lambda: budget.used(clock()))
-    metrics.gauge("run_budget_remaining", "Investigations left today (UTC).", lambda: budget.remaining(clock()))
+    metrics.gauge("run_budget_remaining", "Investigations left today (UTC), the critical reserve included.",
+                  lambda: budget.remaining(clock()))
+    metrics.gauge("run_budget_noncritical_remaining",
+                  "Investigations a non-critical Alert Group may still take today (UTC); reaching zero here "
+                  "while run_budget_remaining is still positive means every warning is now filed as a Bare Issue.",
+                  lambda: budget.remaining_for(clock(), False))
+    metrics.gauge("run_budget_critical_reserve",
+                  "Investigations of the daily limit only critical Alert Groups may take.",
+                  lambda: budget.reserve)
+    metrics.gauge("run_budget_critical_used", "Investigations forwarded today (UTC) for critical Alert Groups.",
+                  lambda: budget.critical_used(clock()))
     metrics.gauge("heartbeat_age_seconds",
                   f"Age of the Hermes heartbeat file; {HEARTBEAT_ABSENT_SECONDS:g} when absent.",
                   lambda: heartbeat_age_seconds(config.heartbeat_file))
@@ -1090,6 +1408,10 @@ def main() -> int:
         log("startup_warning", warning="HERMES_WEBHOOK_SECRET is empty; Hermes will reject every forward")
     if not config.budget_state_file:
         log("startup_warning", warning="BUDGET_STATE_FILE is empty; the Run Budget resets on restart")
+    if config.run_budget_per_day > 0 and config.run_budget_critical_reserve >= config.run_budget_per_day:
+        log("startup_warning",
+            warning="RUN_BUDGET_CRITICAL_RESERVE covers the whole Run Budget; "
+                    "only critical Alert Groups will be investigated")
     if not config.incident_index_file:
         log("startup_warning",
             warning="INCIDENT_INDEX_FILE is empty; the Incident Issue index resets on restart")
@@ -1105,6 +1427,7 @@ def main() -> int:
     signal.signal(signal.SIGINT, shutdown)
     log("startup", port=config.port, incidents_repo=config.incidents_repo, github_api_url=config.github_api_url,
         hermes_webhook_url=config.hermes_webhook_url, run_budget_per_day=config.run_budget_per_day,
+        run_budget_critical_reserve=config.run_budget_critical_reserve,
         budget_state_file=config.budget_state_file, incident_index_file=config.incident_index_file,
         heartbeat_file=config.heartbeat_file,
         prometheus_url=config.prometheus_url, victorialogs_url=config.victorialogs_url,
