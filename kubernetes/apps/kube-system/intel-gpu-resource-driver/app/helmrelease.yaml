@@ -10,8 +10,6 @@ spec:
     name: intel-gpu-resource-driver
   interval: 1h
   values:
-    image:
-      repository: ghcr.io/intel/intel-resource-drivers-for-kubernetes
     kubeletPlugin:
       # v0.10.0 moved health monitoring to a separate xpumd daemon that we don't
       # deploy. Disable it and read hardware details directly from sysfs instead.
