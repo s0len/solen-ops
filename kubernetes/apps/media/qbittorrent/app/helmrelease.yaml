@@ -136,18 +136,16 @@ spec:
               VPN_INTERFACE: tun0
               VPN_SERVICE_PROVIDER: airvpn
               WIREGUARD_MTU: 1420
-              # Pin to Stockholm servers sharing one prefix/ASN to keep MAM's
+              # Pin to AirVPN servers under AS51430 (AltusHost) to keep MAM's
               # ASN-locked session stable. SERVER_COUNTRIES=Sweden randomly
-              # rotated between Stockholm hosters with different ASNs, which
-              # triggered MAM session invalidations every few weeks. Lupus and
-              # Ain both sit in 128.127.104.0/23 under AS51430 (AltusHost, as
-              # of July 2026 — the pin predates AirVPN consolidating Stockholm
-              # under AltusHost), so failover between them keeps the same ASN;
-              # mamapi absorbs the exit-IP change. Ain was added after a
-              # Lupus-only outage took torrenting down entirely (2026-07-15).
+              # rotated between hosters with different ASNs, which triggered
+              # MAM session invalidations every few weeks. Norma (31.3.152.0/22)
+              # and Copernicus (79.142.76.0/23) both sit under AS51430, so
+              # failover between them keeps the same ASN; mamapi absorbs the
+              # exit-IP change.
               # NOTE: these are AirVPN server_names → SERVER_NAMES, NOT
               # SERVER_HOSTNAMES (AirVPN has no hostname filter; that broke startup).
-              SERVER_NAMES: Lupus,Ain,Norma,Segin
+              SERVER_NAMES: Norma,Copernicus
             envFrom:
               - secretRef:
                   name: qbittorrent-secret
