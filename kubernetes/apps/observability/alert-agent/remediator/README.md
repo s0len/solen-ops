@@ -9,12 +9,23 @@ It is not the Agent. There is no model in this process. `app/scripts/remediate.p
 is stdlib Python that matches an Incident Issue to a catalogue entry and runs
 that entry unchanged.
 
-**It ships disabled.** Its reference in
-`kubernetes/apps/observability/kustomization.yaml` is commented out, the repo's
-convention for a disabled app, so nothing exists in the cluster until the owner
-uncomments `# - ./alert-agent/remediator/ks.yaml`. Enabling it also means adding
-the `ready-for-remediation` label to the Incidents Repo; until it exists there,
-the Remediator finds no issue to act on and every run is a no-op.
+**It is live.** It was enabled on main on 2026-09-12 in
+`feat(alert-agent): Enable the Remediator`: `./alert-agent/remediator/ks.yaml`
+is no longer commented out in
+`kubernetes/apps/observability/kustomization.yaml`, the CronJob
+`alert-remediator` runs `3-59/5 * * * *` in `observability` with `DRY_RUN`
+false, and `ready-for-remediation` exists in the Incidents Repo. A run can
+therefore delete an object today.
+
+What stands between a firing alert and that delete is not the kustomization any
+more; it is the four conditions below, all of which must hold: a human has put
+`ready-for-remediation` on an open Incident Issue; the alert is still firing,
+with exactly one member matching the entry, and that member is one the Gate
+recorded in that issue's body; the catalogue entry it matches is
+`enabled: true`; and every one of that entry's preconditions passes. Miss any
+of them and the run does nothing and says why. `etcd-database-fragmentation`
+is still `enabled: false`, for the credential reason set out further down, so
+the label on an `etcdDatabaseHighFragmentationRatio` issue is a no-op.
 
 Vocabulary is `CONTEXT.md`; the decision is ADR-0004, which amends ADR-0001.
 
@@ -188,8 +199,9 @@ that remains is only there so the two runs do not start in the same second.
 
 The second reason is the one that matters more: "turn this into a pull request I
 will review" and "run these commands against the cluster now" are different
-decisions, and after this they need different labels. Adding
-`ready-for-remediation` to the Incidents Repo is part of enabling this app.
+decisions, and they need different labels. Adding `ready-for-remediation` to
+the Incidents Repo was part of enabling this app; it is there now, described as
+authorising one catalogued live action rather than a pull request.
 
 ## Logs and state
 
