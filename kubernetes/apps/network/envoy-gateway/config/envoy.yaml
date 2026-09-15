@@ -48,11 +48,13 @@ metadata:
   name: envoy-external
   annotations:
     external-dns.alpha.kubernetes.io/target: &hostname "external.${SECRET_DOMAIN}"
+    external-dns.kubernetes.io/target: *hostname
 spec:
   gatewayClassName: envoy
   infrastructure:
     annotations:
       external-dns.alpha.kubernetes.io/hostname: *hostname
+      external-dns.kubernetes.io/hostname: *hostname
       lbipam.cilium.io/ips: "${NGINX_EXTERNAL_IP}"
   listeners:
     - name: http
@@ -81,12 +83,15 @@ metadata:
   name: envoy-internal
   annotations:
     external-dns.alpha.kubernetes.io/target: &hostname "internal.${SECRET_DOMAIN}"
+    external-dns.kubernetes.io/target: *hostname
     external-dns.alpha.kubernetes.io/cloudflare-proxied: "false"
+    external-dns.kubernetes.io/cloudflare-proxied: "false"
 spec:
   gatewayClassName: envoy
   infrastructure:
     annotations:
       external-dns.alpha.kubernetes.io/hostname: *hostname
+      external-dns.kubernetes.io/hostname: *hostname
       lbipam.cilium.io/ips: "${NGINX_INTERNAL_IP}"
   listeners:
     - name: http
@@ -166,6 +171,7 @@ metadata:
   name: https-redirect
   annotations:
     external-dns.alpha.kubernetes.io/controller: none
+    external-dns.kubernetes.io/controller: none
 spec:
   parentRefs:
     - name: envoy-external
