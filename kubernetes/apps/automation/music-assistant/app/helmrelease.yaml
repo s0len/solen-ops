@@ -57,7 +57,6 @@ spec:
         type: LoadBalancer
         annotations:
           lbipam.cilium.io/ips: "${MUSIC_ASSISTANT_LB_IP}"
-          external-dns.alpha.kubernetes.io/hostname: "ma.${SECRET_DOMAIN}"
           external-dns.kubernetes.io/hostname: "ma.${SECRET_DOMAIN}"
         ports:
           http:

@@ -4,7 +4,6 @@ kind: Service
 metadata:
   name: postgres-lb
   annotations:
-    external-dns.alpha.kubernetes.io/hostname: "postgres.${SECRET_DOMAIN}"
     external-dns.kubernetes.io/hostname: "postgres.${SECRET_DOMAIN}"
     lbipam.cilium.io/ips: "${CLOUDNATIVE_PG_IP}"
 spec:

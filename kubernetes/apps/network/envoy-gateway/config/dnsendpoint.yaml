@@ -12,7 +12,5 @@ spec:
       recordType: A
       targets: ["${NGINX_INTERNAL_IP}"]
       providerSpecific:
-        - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
-          value: "false"
         - name: external-dns.kubernetes.io/cloudflare-proxied
           value: "false"
