@@ -45,7 +45,7 @@ spec:
           mariadb:
             image:
               repository: docker.io/library/mariadb
-              tag: 12.3.3
+              tag: 13.0.2
             env:
               MARIADB_DATABASE: grimmory
               MARIADB_USER: grimmory
@@ -84,7 +84,7 @@ spec:
           wait-for-mariadb:
             image:
               repository: docker.io/library/mariadb
-              tag: 12.3.3
+              tag: 13.0.2
             command:
               - bash
               - -c
