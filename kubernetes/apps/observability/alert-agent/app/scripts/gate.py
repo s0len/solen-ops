@@ -21,7 +21,9 @@ Decision per notification, in order:
     the close                          -> a new episode: reopen it, put back
                                           the triage label and comment, so a
                                           human's close is durable instead of
-                                          being answered with a fresh issue
+                                          being answered with a fresh issue,
+                                          and investigate it again when it
+                                          carries no Diagnosis at all
   * firing,   closed Incident Issue,
     something in the group predates
     the close                          -> log and drop: this is the condition
@@ -76,6 +78,7 @@ MARKER_SUFFIX = " -->"
 MARKER_HASH_CHARS = 24
 NEW_ISSUE_LABELS = ("needs-triage",)
 BARE_ISSUE_LABEL = "uninvestigated"
+DIAGNOSIS_HEADINGS = ("### Verified evidence", "### Unverified hypotheses", "### Checks a human must run")
 TITLE_MAX_CHARS = 200
 MAX_REQUEST_BYTES = 8 * 1024 * 1024
 ISSUES_PER_PAGE = 100
@@ -635,6 +638,29 @@ class GitHubClient:
             body={"body": body},
         )
 
+    def list_comment_bodies(self, issue_number: int) -> list:
+        """Every comment body on one issue, oldest first.
+
+        Paged and capped like the issue listing, for the same reason: an
+        Incident Issue the owner leaves open collects one Gate comment per
+        Alertmanager repeat, so the comment that decides anything can be on
+        any page.
+        """
+        bodies = []
+        for page in range(1, MAX_ISSUE_PAGES + 1):
+            items = self._request(
+                "GET",
+                f"/repos/{self.repo}/issues/{issue_number}/comments",
+                params={"per_page": ISSUES_PER_PAGE, "page": page},
+            )
+            if not isinstance(items, list):
+                raise GitHubError("GitHub issue comment listing was not a list")
+            bodies.extend(str(item.get("body") or "") for item in items if isinstance(item, dict))
+            if len(items) < ISSUES_PER_PAGE:
+                return bodies
+        log("comment_listing_capped", issue=issue_number, pages=MAX_ISSUE_PAGES, repo=self.repo)
+        return bodies
+
 
 def issue_label_names(issue: dict) -> set:
     """The label names on an issue, from GitHub's list of label objects."""
@@ -1003,9 +1029,12 @@ COUNTERS = {
     "issues_reopened_total": "Closed Incident Issues reopened because their Alert Group fired again.",
     "reopens_suppressed_total": "Firing notifications that left a closed Incident Issue closed, because the "
                                "Alert Group was already firing when it was closed.",
+    "bare_reopens_total": "Reopened Incident Issues left uninvestigated: Run Budget exhausted or forwarding "
+                          "disabled.",
     "bare_issues_total": "Bare Issues created: Run Budget exhausted or forwarding disabled.",
     "comments_total": "Still-firing, reopened and resolved comments posted on Incident Issues.",
     "forwards_total": "Investigation prompts Hermes accepted.",
+    "reopen_forwards_total": "Investigation prompts Hermes accepted for a reopened Incident Issue.",
     "forward_failures_total": "Investigation prompts Hermes did not accept.",
     "github_errors_total": "Notifications that failed on a GitHub call.",
 }
@@ -1113,6 +1142,8 @@ class Gate:
         if outcome.issue is None:
             return outcome
         forwarded = self.forwarder.forward(outcome.issue, n, now)
+        if forwarded and outcome.action == "reopened":
+            self.metrics.inc("reopen_forwards_total")
         return replace(outcome, forwarded=forwarded, issue=None)
 
     def _find_incident_issue(self, n: Notification, marker: str, now: datetime,
@@ -1200,24 +1231,66 @@ class Gate:
         while it was firing leaves the issue closed. The reopen goes first: a
         comment on an issue that is still closed is the failure this replaces,
         so the state change has to succeed before anything is written into it.
-        No Run Budget slot and no forward — the issue already carries whatever
-        Diagnosis it was given, and a group that flaps across a close would
-        otherwise spend the budget on repeats.
+
+        A new episode is investigated again only when the issue carries no
+        Diagnosis at all, and that costs a Run Budget slot like any other
+        Investigation, so a group that flaps across a close still cannot spend
+        the budget on repeats. An issue whose only Investigation died before it
+        posted anything is not a flap, and leaving that one uninvestigated is
+        how the same incident was swallowed on 2026-09-12 and again on
+        2026-09-15.
         """
         number = int(issue["number"])
         closed_at = str(issue.get("closed_at") or "")
+        skipped = self._no_investigation_reason(number, now, n.critical)
+        bare = skipped is not None and skipped != "diagnosis_present"
         self.github.set_state(number, "open")
         self.metrics.inc("issues_reopened_total")
-        restored = self._restore_triage_labels(number, issue, context)
+        restored = self._restore_triage_labels(number, issue, context, bare)
         self.github.comment(number, render_reopened_comment(n, stamp, closed_at))
         self.metrics.inc("comments_total")
         self.index.remember(group_hash(n.group_key), number, now)
+        if skipped is None:
+            self.run_budget.consume(now, n.critical)
+        elif bare:
+            self.metrics.inc("bare_reopens_total")
         log("incident_issue_reopened", issue=number, url=issue.get("html_url"),
-            closed_at=closed_at, reason=episode.reason,
-            earliest_starts_at=episode.earliest_starts_at, labels_added=restored, **context)
-        return Outcome("reopened", number)
+            closed_at=closed_at, reason=episode.reason, no_investigation=skipped,
+            earliest_starts_at=episode.earliest_starts_at, labels_added=restored,
+            budget_used=self.run_budget.used(now), budget_limit=self.run_budget.limit, **context)
+        return Outcome("reopened", number, issue=issue if skipped is None else None)
 
-    def _restore_triage_labels(self, number: int, issue: dict, context: dict) -> list:
+    def _no_investigation_reason(self, number: int, now: datetime, critical: bool) -> Optional[str]:
+        """Why a reopened Incident Issue gets no new Investigation, or None.
+
+        The precondition the reopen used to assert, that the issue already
+        carries whatever Diagnosis it was given, is read here instead. The
+        Gate and the Agent comment through one machine account, so a comment's
+        author separates nothing; a Diagnosis is the three headings the
+        Investigation prompt mandates, all of them, which no comment the Gate
+        writes carries.
+
+        Asked before the reopen writes anything, because a GitHub call that
+        raised after `set_state` would lose the reopen to a retry that finds
+        the issue open and comments "still firing" instead.
+
+        The Diagnosis is read first even though it is the only answer that
+        costs a request. Every other reason leaves the issue with no Diagnosis
+        and the caller labels it the way a Bare Issue is labelled, so deciding
+        a spent budget before reading would stamp `uninvestigated` on issues
+        the Agent had already diagnosed and fill the queue that label exists
+        to keep clean.
+        """
+        for body in self.github.list_comment_bodies(number):
+            if all(heading in body for heading in DIAGNOSIS_HEADINGS):
+                return "diagnosis_present"
+        if not self.forwarder.enabled:
+            return "forwarding_disabled"
+        if self.run_budget.remaining_for(now, critical) < 1:
+            return "run_budget_critical_reserve" if self.run_budget.remaining(now) > 0 else "run_budget_exhausted"
+        return None
+
+    def _restore_triage_labels(self, number: int, issue: dict, context: dict, bare: bool = False) -> list:
         """Put back the triage label a new Incident Issue would carry.
 
         Closing strips nothing, but by the time an issue is closed the Fix flow
@@ -1232,12 +1305,19 @@ class Gate:
         human's judgement about an issue the Gate cannot make, and all of them
         survive the reopen untouched.
 
+        A reopen that could not be investigated carries BARE_ISSUE_LABEL
+        beside them, exactly as a Bare Issue carries it at create time, so an
+        episode the Run Budget or a disabled forwarder left with no Diagnosis
+        is one `gh issue list --label uninvestigated` away instead of visible
+        only in the log.
+
         A failure here is logged, not raised. The issue is already open by this
         point, so a retried notification would find it open, comment "still
         firing" and never reopen it again; losing that reopen comment costs
         more than the label is worth.
         """
-        missing = sorted(set(NEW_ISSUE_LABELS) - issue_label_names(issue))
+        wanted = set(NEW_ISSUE_LABELS) | ({BARE_ISSUE_LABEL} if bare else set())
+        missing = sorted(wanted - issue_label_names(issue))
         if not missing:
             return []
         try:

@@ -37,8 +37,8 @@ INCIDENTS_REPO = "example/incidents"
 TOKEN = "test-token"
 HERMES_SECRET = "hermes-route-secret-for-tests"
 COUNTER_NAMES = ("notifications_received_total", "issues_created_total", "issues_reopened_total",
-                 "reopens_suppressed_total", "bare_issues_total", "comments_total", "forwards_total",
-                 "forward_failures_total", "github_errors_total")
+                 "reopens_suppressed_total", "bare_reopens_total", "bare_issues_total", "comments_total",
+                 "forwards_total", "reopen_forwards_total", "forward_failures_total", "github_errors_total")
 GAUGE_NAMES = ("run_budget_limit", "run_budget_used", "run_budget_remaining",
                "run_budget_noncritical_remaining", "run_budget_critical_reserve", "run_budget_critical_used",
                "heartbeat_age_seconds", "heartbeat_file_present")
@@ -54,6 +54,14 @@ STARTS_AT = "2026-09-10T11:20:03.117Z"
 NEW_EPISODE_STARTS_AT = "2026-09-11T18:30:12.400Z"
 # Mirrors gate.py: how far either side of the close two clocks may disagree.
 CLOCK_SKEW_SECONDS = 120
+# Mirrors gate.py: the three headings the Investigation prompt mandates, at the
+# heading level the Gate matches on.
+DIAGNOSIS_HEADINGS = ("### Verified evidence", "### Unverified hypotheses", "### Checks a human must run")
+DIAGNOSIS = "\n\n".join((
+    f"{DIAGNOSIS_HEADINGS[0]}\n\n`kubectl -n kube-system get pods` showed two CoreDNS pods Pending.",
+    f"{DIAGNOSIS_HEADINGS[1]}\n\nThe node lost its CNI after the kernel upgrade.",
+    f"{DIAGNOSIS_HEADINGS[2]}\n\nLook at the switch port for control-2.\n",
+))
 # Mirrors gate.py: the index file is a persisted contract, so its bounds are too.
 INDEX_MAX_ENTRIES = 512
 INDEX_MAX_AGE_DAYS = 30
@@ -184,6 +192,13 @@ class FakeGitHub:
             self.issues[number] = item
             return number
 
+    def declare_comment(self, number, body):
+        """A comment already on an issue, in the same store the Gate's own
+        comments land in: one machine account writes both, so the real API
+        hands them back indistinguishable."""
+        with self.lock:
+            self.comments.append({"issue": number, "body": body})
+
     def stop(self):
         self.server.shutdown()
         self.server.server_close()
@@ -233,6 +248,19 @@ class FakeGitHub:
                     return
                 url = urlparse(self.path)
                 listing = f"/repos/{INCIDENTS_REPO}/issues"
+                if url.path.startswith(listing + "/") and url.path.endswith("/comments"):
+                    number = int(url.path[len(listing) + 1:-len("/comments")])
+                    q = parse_qs(url.query)
+                    per_page = int(q.get("per_page", ["30"])[0])
+                    start = (int(q.get("page", ["1"])[0]) - 1) * per_page
+                    with fake.lock:
+                        if number not in fake.issues:
+                            self._json(404, {"message": "Not Found"})
+                            return
+                        on_issue = [{"id": i, "body": c["body"]}
+                                    for i, c in enumerate(fake.comments, start=1) if c["issue"] == number]
+                    self._json(200, on_issue[start:start + per_page])
+                    return
                 if url.path.startswith(listing + "/"):
                     try:
                         number = int(url.path[len(listing) + 1:])
@@ -636,7 +664,7 @@ class GateTests(unittest.TestCase):
         status, body = self.gate.post(payload)
 
         self.assertEqual(status, 200, body)
-        self.assertEqual(body, {"action": "reopened", "issue": number})
+        self.assertEqual(body, {"action": "reopened", "issue": number, "forwarded": True})
         self.assertEqual(self.github.created, [])
         self.assertEqual(self.github.reopened, [number])
         self.assertEqual(self.github.issues[number]["state"], "open")
@@ -714,7 +742,7 @@ class GateTests(unittest.TestCase):
         status, body = self.gate.post(payload)
 
         self.assertEqual(status, 200, body)
-        self.assertEqual(body, {"action": "reopened", "issue": number})
+        self.assertEqual(body, {"action": "reopened", "issue": number, "forwarded": True})
         self.assertEqual(self.github.reopened, [number])
 
     def test_a_start_inside_the_clock_skew_window_reopens_rather_than_suppresses(self):
@@ -736,7 +764,10 @@ class GateTests(unittest.TestCase):
                 status, body = self.gate.post(payload)
 
                 self.assertEqual(status, 200, body)
-                self.assertEqual(body, {"action": action, "issue": number})
+                expected = {"action": action, "issue": number}
+                if action == "reopened":
+                    expected["forwarded"] = True
+                self.assertEqual(body, expected)
 
     def test_an_unreadable_closed_at_or_start_reopens_rather_than_suppresses(self):
         """Nothing that cannot be read is allowed to swallow a firing alert."""
@@ -757,7 +788,7 @@ class GateTests(unittest.TestCase):
                 status, body = self.gate.post(payload)
 
                 self.assertEqual(status, 200, body)
-                self.assertEqual(body, {"action": "reopened", "issue": number})
+                self.assertEqual(body, {"action": "reopened", "issue": number, "forwarded": True})
                 self.assertEqual(self.github.reopened, [number])
                 self.assertEqual(self.github.created, [])
 
@@ -787,7 +818,7 @@ class GateTests(unittest.TestCase):
         status, body = self.gate.post(payload)
 
         self.assertEqual(status, 200, body)
-        self.assertEqual(body, {"action": "reopened", "issue": newest})
+        self.assertEqual(body, {"action": "reopened", "issue": newest, "forwarded": True})
         self.assertEqual(self.github.reopened, [newest])
         self.assertEqual([self.github.issues[n]["state"] for n in (old, middle)], ["closed", "closed"])
         self.assertEqual([c["issue"] for c in self.github.comments], [newest])
@@ -805,7 +836,7 @@ class GateTests(unittest.TestCase):
         status, body = self.gate.post(payload)
 
         self.assertEqual(status, 200, body)
-        self.assertEqual(body, {"action": "reopened", "issue": number})
+        self.assertEqual(body, {"action": "reopened", "issue": number, "forwarded": True})
         self.assertEqual(self.github.labelled, [{"issue": number, "labels": ["needs-triage"]}])
         self.assertEqual(self.github.labels_on(number), ["needs-triage"])
 
@@ -819,7 +850,7 @@ class GateTests(unittest.TestCase):
         status, body = self.gate.post(payload)
 
         self.assertEqual(status, 200, body)
-        self.assertEqual(body, {"action": "reopened", "issue": number})
+        self.assertEqual(body, {"action": "reopened", "issue": number, "forwarded": True})
         self.assertEqual(self.github.labelled, [{"issue": number, "labels": ["needs-triage"]}])
         self.assertEqual(self.github.labels_on(number),
                          ["needs-info", "ready-for-human", "wontfix", "needs-triage"])
@@ -832,7 +863,7 @@ class GateTests(unittest.TestCase):
         status, body = self.gate.post(payload)
 
         self.assertEqual(status, 200, body)
-        self.assertEqual(body, {"action": "reopened", "issue": number})
+        self.assertEqual(body, {"action": "reopened", "issue": number, "forwarded": True})
         self.assertEqual(self.github.labelled, [])
         self.assertEqual(self.github.labels_on(number), ["needs-triage", "uninvestigated"])
         self.assertEqual([r["path"] for r in self.github.requests if r["path"].endswith("/labels")], [])
@@ -847,7 +878,7 @@ class GateTests(unittest.TestCase):
         status, body = self.gate.post(payload)
 
         self.assertEqual(status, 200, body)
-        self.assertEqual(body, {"action": "reopened", "issue": number})
+        self.assertEqual(body, {"action": "reopened", "issue": number, "forwarded": True})
         self.assertEqual(self.github.reopened, [number])
         self.assertEqual(self.github.issues[number]["state"], "open")
         self.assertEqual([c["issue"] for c in self.github.comments], [number])
@@ -1078,7 +1109,7 @@ class BudgetAndForwardTests(unittest.TestCase):
                          "prometheus-operated.observability.svc.cluster.local:9090",
                          "victoria-logs-server.observability.svc.cluster.local:9428",
                          "alertmanager-operated.observability.svc.cluster.local:9093",
-                         "Verified evidence", "Unverified hypotheses", "Checks a human must run",
+                         *DIAGNOSIS_HEADINGS,
                          "needs-info", "NEVER exec", "ONE comment", "Runbook proposal"):
             self.assertIn(expected, prompt)
         self.assertNotRegex(prompt, r"\$\{?(issue|alert|group|incidents|received|external|prometheus|victorialogs|alertmanager)")
@@ -1265,14 +1296,234 @@ class BudgetAndForwardTests(unittest.TestCase):
         self.assertEqual(suppressed[0]["closed_at"], CLOSED_AT)
         self.assertEqual(suppressed[0]["earliest_starts_at"], "2026-09-10T11:20:03Z")
         self.assertEqual(suppressed[0]["issue"], number)
+        self.assertEqual(self.github.reopened, [])
 
-        episode = notification("VolSyncBackupStale", starts_at=NEW_EPISODE_STARTS_AT)
-        self.assertEqual(gate.post(episode)[1], {"action": "reopened", "issue": number})
-        self.assertEqual(self.counter(gate, "reopens_suppressed_total"), 2)
+    # -- the Investigation a reopened Incident Issue is owed
+
+    def test_a_reopen_of_an_issue_that_carries_no_diagnosis_forwards_one_investigation(self):
+        """Incident Issue #29 was reopened for a six-hour DNS outage on
+        2026-09-12 and again on 2026-09-15 and investigated neither time: the
+        reopen asserted a Diagnosis it never checked for, and the one
+        Investigation ever dispatched for that issue had died before posting."""
+        gate = self.start_gate(RUN_BUDGET_PER_DAY=5)
+        payload = notification("CoreDNSDown", starts_at=NEW_EPISODE_STARTS_AT)
+        number = self.github.declare_issue(marker_for(payload["groupKey"]), state="closed")
+
+        status, body = gate.post(payload)
+
+        self.assertEqual(status, 200, body)
+        self.assertEqual(body, {"action": "reopened", "issue": number, "forwarded": True})
+        self.assertEqual(self.github.reopened, [number])
+        self.assertEqual(self.github.created, [])
         self.assertEqual(self.counter(gate, "issues_reopened_total"), 1)
-        self.assertEqual(self.budget(gate)["run_budget_used"], 0)
+        self.assertEqual(self.counter(gate, "forwards_total"), 1)
+        self.assertEqual(self.counter(gate, "reopen_forwards_total"), 1)
+        self.assertEqual(self.counter(gate, "bare_reopens_total"), 0)
+        self.assertEqual(self.budget(gate)["run_budget_used"], 1)
+        self.assertEqual(self.github.labels_on(number), ["needs-triage"])
+
+        self.assertEqual(len(self.hermes.requests), 1)
+        forward = self.hermes.requests[0]
+        self.assertTrue(forward["signature_valid"], forward["headers"])
+        self.assertTrue(forward["timestamp_fresh"], forward["headers"])
+        self.assertIn(str(number), forward["headers"]["x-request-id"])
+        for expected in (f"#{number}", "CoreDNSDown", payload["groupKey"], "Verified evidence"):
+            self.assertIn(expected, forward["body"]["prompt"])
+        reopened = self.log_events(gate, "incident_issue_reopened")[0]
+        self.assertEqual(reopened["reason"], "started_after_close")
+        self.assertIsNone(reopened["no_investigation"])
+        self.assertEqual((reopened["budget_used"], reopened["budget_limit"]), (1, 5))
+
+    def test_a_reopen_of_an_issue_that_already_carries_a_diagnosis_forwards_nothing(self):
+        """The flap protection the old reopen claimed, kept for the case it was
+        written for: a group that clears and fires again against an issue the
+        Agent already diagnosed spends no slot and asks for no second
+        Diagnosis. The three headings are the whole test: the Gate and the
+        Agent comment through one machine account, so the author of a comment
+        separates nothing."""
+        gate = self.start_gate(RUN_BUDGET_PER_DAY=5)
+        payload = notification("CephOSDDown", starts_at=NEW_EPISODE_STARTS_AT)
+        number = self.github.declare_issue(marker_for(payload["groupKey"]), state="closed")
+        self.github.declare_comment(number, DIAGNOSIS)
+
+        status, body = gate.post(payload)
+
+        self.assertEqual(status, 200, body)
+        self.assertEqual(body, {"action": "reopened", "issue": number})
+        self.assertNotIn("forwarded", body)
+        self.assertEqual(self.github.reopened, [number])
         self.assertEqual(self.hermes.requests, [])
-        self.assertEqual(self.log_events(gate, "incident_issue_reopened")[0]["reason"], "started_after_close")
+        self.assertEqual(self.counter(gate, "forwards_total"), 0)
+        self.assertEqual(self.counter(gate, "reopen_forwards_total"), 0)
+        self.assertEqual(self.counter(gate, "bare_reopens_total"), 0)
+        self.assertEqual(self.budget(gate)["run_budget_used"], 0)
+        self.assertEqual(self.github.labels_on(number), ["needs-triage"])
+        self.assertEqual(self.log_events(gate, "incident_issue_reopened")[0]["no_investigation"],
+                         "diagnosis_present")
+
+    def test_the_gates_own_comments_are_never_mistaken_for_a_diagnosis(self):
+        """A still-firing comment is the Gate talking to itself, not a
+        Diagnosis. An Incident Issue that collected several of them before the
+        owner closed it is still owed an Investigation when it fires again."""
+        gate = self.start_gate(RUN_BUDGET_PER_DAY=5)
+        payload = notification("KubeNodeNotReady")
+        number = gate.post(payload)[1]["issue"]
+        gate.post(payload)
+        self.github.close_issue(number)
+
+        status, body = gate.post(notification("KubeNodeNotReady", starts_at=NEW_EPISODE_STARTS_AT))
+
+        self.assertEqual(status, 200, body)
+        self.assertEqual(body, {"action": "reopened", "issue": number, "forwarded": True})
+        self.assertEqual(len(self.github.created), 1)
+        self.assertEqual(self.counter(gate, "forwards_total"), 2)
+        self.assertEqual(self.counter(gate, "reopen_forwards_total"), 1)
+        self.assertEqual(self.budget(gate)["run_budget_used"], 2)
+
+    def test_a_reopen_forwards_nothing_once_the_diagnosis_has_landed(self):
+        """One close buys at most one Investigation. The episode that arrives
+        while the issue is still bare is investigated; every later one, however
+        often the group flaps across a close, is not."""
+        gate = self.start_gate(RUN_BUDGET_PER_DAY=5)
+        payload = notification("VolSyncBackupStale", starts_at=NEW_EPISODE_STARTS_AT)
+        number = self.github.declare_issue(marker_for(payload["groupKey"]), state="closed")
+
+        self.assertEqual(gate.post(payload)[1], {"action": "reopened", "issue": number, "forwarded": True})
+
+        self.github.declare_comment(number, DIAGNOSIS)
+        self.github.close_issue(number, closed_at="2026-09-11T19:00:00Z")
+        later = notification("VolSyncBackupStale", starts_at="2026-09-11T20:00:00.000Z")
+
+        self.assertEqual(gate.post(later)[1], {"action": "reopened", "issue": number})
+        self.assertEqual(self.counter(gate, "issues_reopened_total"), 2)
+        self.assertEqual(self.counter(gate, "forwards_total"), 1)
+        self.assertEqual(self.counter(gate, "reopen_forwards_total"), 1)
+        self.assertEqual(self.budget(gate)["run_budget_used"], 1)
+        self.assertEqual(len(self.hermes.requests), 1)
+
+    def test_a_reopen_with_no_budget_left_is_labelled_uninvestigated_and_counted(self):
+        """A reopen the Run Budget cannot investigate is a Bare Issue by
+        another route, so it carries the same label and its own counter. The
+        alternative is the failure this whole change is about: an Incident
+        Issue back in the queue with no Diagnosis and nothing but a log line
+        saying so."""
+        gate = self.start_gate(RUN_BUDGET_PER_DAY=1)
+        payload = notification("EtcdHighFsyncDurations", starts_at=NEW_EPISODE_STARTS_AT)
+        number = self.github.declare_issue(marker_for(payload["groupKey"]), state="closed")
+        self.assertEqual(gate.post(notification("Unrelated"))[1]["action"], "created")
+
+        status, body = gate.post(payload)
+
+        self.assertEqual(status, 200, body)
+        self.assertEqual(body, {"action": "reopened", "issue": number})
+        self.assertEqual(self.github.reopened, [number])
+        self.assertEqual([c["issue"] for c in self.github.comments], [number])
+        self.assertEqual(self.github.labels_on(number), ["needs-triage", "uninvestigated"])
+        self.assertEqual(self.counter(gate, "bare_reopens_total"), 1)
+        self.assertEqual(self.counter(gate, "reopen_forwards_total"), 0)
+        self.assertEqual(self.counter(gate, "forward_failures_total"), 0)
+        self.assertEqual(len(self.hermes.requests), 1)
+        self.assertEqual(self.log_events(gate, "incident_issue_reopened")[0]["no_investigation"],
+                         "run_budget_exhausted")
+        self.assertEqual([r["path"] for r in self.github.requests
+                          if r["method"] == "GET" and "/comments" in r["path"]],
+                         [f"/repos/{INCIDENTS_REPO}/issues/{number}/comments?per_page=100&page=1"])
+
+    def test_a_reopen_forwards_nothing_while_forwarding_is_disabled(self):
+        """The kill switch is read before anything else. Reaching the forwarder
+        with an empty HERMES_WEBHOOK_URL raises out of handle(), which answers
+        Alertmanager with a 500 it retries for ever."""
+        gate = self.start_gate(hermes=None, RUN_BUDGET_PER_DAY=5)
+        payload = notification("NodeRAIDDegraded", starts_at=NEW_EPISODE_STARTS_AT)
+        number = self.github.declare_issue(marker_for(payload["groupKey"]), state="closed")
+
+        status, body = gate.post(payload)
+
+        self.assertEqual(status, 200, body)
+        self.assertEqual(body, {"action": "reopened", "issue": number})
+        self.assertEqual(self.github.reopened, [number])
+        self.assertEqual(self.github.labels_on(number), ["needs-triage", "uninvestigated"])
+        self.assertEqual(self.hermes.requests, [])
+        self.assertEqual(self.counter(gate, "bare_reopens_total"), 1)
+        self.assertEqual(self.counter(gate, "forward_failures_total"), 0)
+        self.assertEqual(self.budget(gate)["run_budget_used"], 0)
+        self.assertEqual(self.log_events(gate, "incident_issue_reopened")[0]["no_investigation"],
+                         "forwarding_disabled")
+        self.assertEqual([r["path"] for r in self.github.requests
+                          if r["method"] == "GET" and "/comments" in r["path"]],
+                         [f"/repos/{INCIDENTS_REPO}/issues/{number}/comments?per_page=100&page=1"])
+
+    def test_a_diagnosed_issue_is_never_labelled_uninvestigated_when_the_budget_is_out(self):
+        """The Diagnosis is read before the budget is consulted. Deciding the
+        cheap refusals first would stamp `uninvestigated` on an issue the Agent
+        had already diagnosed, which fills the queue that label exists to keep
+        clean with the issues that need it least."""
+        gate = self.start_gate(RUN_BUDGET_PER_DAY=1)
+        payload = notification("CephOSDDown", starts_at=NEW_EPISODE_STARTS_AT)
+        number = self.github.declare_issue(marker_for(payload["groupKey"]), state="closed")
+        self.github.declare_comment(number, DIAGNOSIS)
+        self.assertEqual(gate.post(notification("Unrelated"))[1]["action"], "created")
+
+        status, body = gate.post(payload)
+
+        self.assertEqual(status, 200, body)
+        self.assertEqual(body, {"action": "reopened", "issue": number})
+        self.assertEqual(self.github.reopened, [number])
+        self.assertEqual(self.github.labels_on(number), ["needs-triage"])
+        self.assertEqual(self.counter(gate, "bare_reopens_total"), 0)
+        self.assertEqual(self.log_events(gate, "incident_issue_reopened")[0]["no_investigation"],
+                         "diagnosis_present")
+
+    def test_a_diagnosis_beyond_the_first_page_of_comments_is_still_found(self):
+        """An Incident Issue the owner left open for weeks carries one Gate
+        comment per Alertmanager repeat, so by the time it is closed the
+        Diagnosis is no longer on the page the Agent posted it to."""
+        gate = self.start_gate(RUN_BUDGET_PER_DAY=5)
+        payload = notification("KubeDeploymentReplicasMismatch", starts_at=NEW_EPISODE_STARTS_AT)
+        number = self.github.declare_issue(marker_for(payload["groupKey"]), state="closed")
+        for _ in range(100):
+            self.github.declare_comment(number, "Still firing at some point in the last fortnight.\n")
+        self.github.declare_comment(number, DIAGNOSIS)
+
+        status, body = gate.post(payload)
+
+        self.assertEqual(status, 200, body)
+        self.assertEqual(body, {"action": "reopened", "issue": number})
+        self.assertEqual(self.hermes.requests, [])
+        self.assertEqual(self.budget(gate)["run_budget_used"], 0)
+        self.assertEqual([r["path"] for r in self.github.requests
+                          if r["method"] == "GET" and "/comments" in r["path"]],
+                         [f"/repos/{INCIDENTS_REPO}/issues/{number}/comments?per_page=100&page=1",
+                          f"/repos/{INCIDENTS_REPO}/issues/{number}/comments?per_page=100&page=2"])
+
+    def test_a_comment_read_that_fails_leaves_the_incident_issue_untouched(self):
+        """The comment read comes before the reopen for this reason: raising
+        after the PATCH would leave the issue open, and the retry would find it
+        open, comment "still firing" and lose the reopen and its Investigation
+        for good."""
+        gate = self.start_gate(RUN_BUDGET_PER_DAY=5)
+        payload = notification("CephMonQuorumAtRisk", starts_at=NEW_EPISODE_STARTS_AT)
+        number = self.github.declare_issue(marker_for(payload["groupKey"]), state="closed")
+        self.github.fail_path_suffix = "/comments"
+
+        status, body = gate.post(payload)
+
+        self.assertEqual(status, 502, body)
+        self.assertEqual(self.github.issues[number]["state"], "closed")
+        self.assertEqual(self.github.reopened, [])
+        self.assertEqual(self.github.comments, [])
+        self.assertEqual(self.counter(gate, "github_errors_total"), 1)
+        self.assertEqual(self.counter(gate, "issues_reopened_total"), 0)
+        self.assertEqual(self.budget(gate)["run_budget_used"], 0)
+
+        self.github.fail_path_suffix = None
+
+        status, body = gate.post(payload)
+
+        self.assertEqual(status, 200, body)
+        self.assertEqual(body, {"action": "reopened", "issue": number, "forwarded": True})
+        self.assertEqual(self.github.reopened, [number])
+        self.assertEqual(self.counter(gate, "reopen_forwards_total"), 1)
 
     # -- rollover and persistence
 
@@ -1507,7 +1758,7 @@ class IncidentIndexTests(unittest.TestCase):
         status, body = gate.post(payload)
 
         self.assertEqual(status, 200, body)
-        self.assertEqual(body, {"action": "reopened", "issue": number})
+        self.assertEqual(body, {"action": "reopened", "issue": number, "forwarded": True})
         self.assertEqual(self.github.created, [])
         self.assertEqual(self.github.reopened, [number])
         self.assertEqual(self.github.issues[number]["state"], "open")
@@ -1526,7 +1777,7 @@ class IncidentIndexTests(unittest.TestCase):
         status, body = gate.post(payload)
 
         self.assertEqual(status, 200, body)
-        self.assertEqual(body, {"action": "reopened", "issue": created["issue"]})
+        self.assertEqual(body, {"action": "reopened", "issue": created["issue"], "forwarded": True})
         self.assertEqual(len(self.github.created), 1)
         self.assertEqual(self.github.reopened, [created["issue"]])
         self.assertEqual(self.entries()[index_key_for(payload["groupKey"])]["issue"], created["issue"])
@@ -1622,11 +1873,12 @@ class IncidentIndexTests(unittest.TestCase):
         status, body = gate.post(payload)
 
         self.assertEqual(status, 200, body)
-        self.assertEqual(body, {"action": "reopened", "issue": created["issue"]})
+        self.assertEqual(body, {"action": "reopened", "issue": created["issue"], "forwarded": True})
         self.assertEqual(len(self.github.created), 1)
         self.assertEqual(self.github.reopened, [created["issue"]])
         self.assertEqual([r["path"] for r in self.github.requests if r["method"] == "GET"],
-                         [f"/repos/{INCIDENTS_REPO}/issues/{created['issue']}"])
+                         [f"/repos/{INCIDENTS_REPO}/issues/{created['issue']}",
+                          f"/repos/{INCIDENTS_REPO}/issues/{created['issue']}/comments?per_page=100&page=1"])
         self.assertEqual(self.entries()[index_key_for(payload["groupKey"])]["issue"], created["issue"])
         self.assertNotIn("incident_index_dropped", gate.read_log())
 
