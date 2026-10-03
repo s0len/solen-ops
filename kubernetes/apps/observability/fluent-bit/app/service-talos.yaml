@@ -1,0 +1,26 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fluent-bit-talos
+  annotations:
+    lbipam.cilium.io/ips: ${TALOS_LOGS_LB_IP}
+spec:
+  type: LoadBalancer
+  externalTrafficPolicy: Local
+  loadBalancerSourceRanges:
+    - 192.168.10.40/32
+    - 192.168.10.41/32
+    - 192.168.10.42/32
+  selector:
+    app.kubernetes.io/name: fluent-bit
+    app.kubernetes.io/instance: fluent-bit
+  ports:
+    - name: talos-kernel
+      port: 6050
+      targetPort: 6050
+      protocol: TCP
+    - name: talos-service
+      port: 6051
+      targetPort: 6051
+      protocol: TCP

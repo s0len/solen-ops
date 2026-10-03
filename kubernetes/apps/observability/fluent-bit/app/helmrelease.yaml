@@ -33,6 +33,24 @@ spec:
           skip_empty_lines on
           skip_long_lines on
 
+        [INPUT]
+          name tcp
+          alias talos-kernel
+          listen 0.0.0.0
+          port 6050
+          format json
+          source_address_key src
+          tag talos.kernel
+
+        [INPUT]
+          name tcp
+          alias talos-service
+          listen 0.0.0.0
+          port 6051
+          format json
+          source_address_key src
+          tag talos.service
+
       filters: |-
         [FILTER]
           name kubernetes
@@ -65,6 +83,12 @@ spec:
           rename k_labels_app app
           rename k_labels_k8s-app app
 
+        [FILTER]
+          name lua
+          match talos.*
+          call set_node
+          code local nodes = {["192.168.10.40"] = "control-0", ["192.168.10.41"] = "control-1", ["192.168.10.42"] = "control-2"} function set_node(tag, ts, record) local ip = string.match(record["src"] or "", "(%d+%.%d+%.%d+%.%d+)") record["node"] = nodes[ip] or ip or "unknown" record["src"] = nil return 2, ts, record end
+
       customParsers: |-
         [PARSER]
           name containerd
@@ -80,6 +104,17 @@ spec:
           host victoria-logs-server.observability.svc.cluster.local
           port 9428
           uri /insert/jsonline?_stream_fields=stream,k_namespace_name,k_pod_name,app&_msg_field=log&_time_field=date
+          format json_lines
+          json_date_format iso8601
+          compress gzip
+          log_response_payload false
+
+        [OUTPUT]
+          name http
+          match talos.*
+          host victoria-logs-server.observability.svc.cluster.local
+          port 9428
+          uri /insert/jsonline?_stream_fields=node,talos-service,facility&_msg_field=msg&_time_field=talos-time
           format json_lines
           json_date_format iso8601
           compress gzip
