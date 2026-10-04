@@ -118,7 +118,7 @@ function upgrade_node() {
 
     # Get the factory image from the node config (install.image is per-node)
     local factory_image
-    if ! factory_image=$(yq --exit-status '.machine.install.image' "${node_config}" 2>/dev/null); then
+    if ! factory_image=$(yq --exit-status 'select(has("machine")) | .machine.install.image' "${node_config}" 2>/dev/null); then
         gum log --structured --level error "Failed to read install image from node config" "node" "$node_name"
         return 1
     fi
@@ -502,8 +502,8 @@ function main() {
 
         local ca_crt_b64
         local ca_key_b64
-        ca_crt_b64=$(yq -r '.machine.ca.crt' "${injected}" | tr -d '\n')
-        ca_key_b64=$(yq -r '.machine.ca.key' "${injected}" | tr -d '\n')
+        ca_crt_b64=$(yq -r 'select(has("machine")) | .machine.ca.crt' "${injected}" | tr -d '\n')
+        ca_key_b64=$(yq -r 'select(has("machine")) | .machine.ca.key' "${injected}" | tr -d '\n')
 
         local tmp
         tmp=$(mktemp -d)
