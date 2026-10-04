@@ -105,7 +105,7 @@
     {
       "description": ["Talos Group"],
       "groupName": "Talos",
-      "matchPackageNames": ["ghcr.io/siderolabs/installer", "/talos(ctl)?$/"],
+      "matchPackageNames": ["ghcr.io/siderolabs/installer-base", "/talos(ctl)?$/"],
       "group": {
         "commitMessageTopic": "{{{groupName}}} group"
       }
