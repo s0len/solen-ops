@@ -9,18 +9,7 @@ machine:
     - device: /dev/disk/by-id/nvme-2400A_NVMe_Micron_512GB_232345213B1F
       partitions:
         - mountpoint: /var/lib/etcd
-  files:
-    - op: create
-      path: /etc/cri/conf.d/20-customization.part
-      permissions: 0o644
-      content: |
-        [plugins."io.containerd.cri.v1.images"]
-          discard_unpacked_layers = false
-        [plugins."io.containerd.cri.v1.runtime"]
-          cdi_spec_dirs = ["/var/cdi/static", "/var/cdi/dynamic"]
-          device_ownership_from_security_context = true
   network:
-    hostname: control-1
     interfaces:
       # Onboard 1GbE: Intel I219-LM (e1000e), MAC 90:8d:6e:8a:d3:86, PCI 0000:00:1f.6
       # Switched from USB 2.5GbE adapter enp0s20f0u5 (RTL8156B) which kept flapping →
@@ -35,18 +24,6 @@ machine:
             dhcp: false
             addresses:
               - 192.168.20.41/24
-  install:
-    diskSelector:
-      model: "*Seagate BarraCud*"
-    image: "factory.talos.dev/metal-installer/${TALOS_SCHEMATIC}:${TALOS_VERSION}"
-    wipe: false
-  sysfs:
-    devices.system.cpu.intel_pstate.hwp_dynamic_boost: 1
-  sysctls:
-    vm.nr_hugepages: "1024"
-  udev:
-    rules:
-      - SUBSYSTEM=="drm", KERNEL=="renderD*", GROUP="44", MODE="0660"
   nodeLabels:
     intel.feature.node.kubernetes.io/gpu: "true"
     topology.kubernetes.io/zone: zone-b
@@ -59,3 +36,16 @@ provisioning:
   diskSelector:
     match: system_disk
   grow: true
+---
+apiVersion: v1alpha1
+kind: HostnameConfig
+hostname: control-1
+---
+apiVersion: v1alpha1
+kind: UnattendedInstallConfig
+installer:
+  image: "factory.talos.dev/metal-installer/${TALOS_SCHEMATIC}:${TALOS_VERSION}"
+provisioning:
+  diskSelector:
+    match: glob("*Seagate BarraCud*", disk.model)
+  wipe: false

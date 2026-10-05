@@ -116,9 +116,9 @@ function upgrade_node() {
 
     export TALOS_SCHEMATIC="$schematic_id"
 
-    # Get the factory image from the node config (install.image is per-node)
+    # Get the factory image from the node config (installer.image is per-node)
     local factory_image
-    if ! factory_image=$(yq --exit-status 'select(has("machine")) | .machine.install.image' "${node_config}" 2>/dev/null); then
+    if ! factory_image=$(yq --exit-status 'select(.kind == "UnattendedInstallConfig") | .installer.image' "${node_config}" 2>/dev/null); then
         gum log --structured --level error "Failed to read install image from node config" "node" "$node_name"
         return 1
     fi

@@ -9,18 +9,7 @@ machine:
     - device: /dev/disk/by-id/ata-KINGSTON_SV300S37A240G_50026B786500A926
       partitions:
         - mountpoint: /var/lib/etcd
-  files:
-    - op: create
-      path: /etc/cri/conf.d/20-customization.part
-      permissions: 0o644
-      content: |
-        [plugins."io.containerd.cri.v1.images"]
-          discard_unpacked_layers = false
-        [plugins."io.containerd.cri.v1.runtime"]
-          cdi_spec_dirs = ["/var/cdi/static", "/var/cdi/dynamic"]
-          device_ownership_from_security_context = true
   network:
-    hostname: control-0
     interfaces:
       - interface: enp2s0
         mtu: 1500
@@ -38,20 +27,6 @@ machine:
               - 192.168.20.40/24
       - interface: enp1s0f1
         dhcp: false
-  install:
-    diskSelector:
-      model: "*SSD 870*"
-    image: "factory.talos.dev/metal-installer/${TALOS_SCHEMATIC}:${TALOS_VERSION}"
-    wipe: false
-  sysfs:
-    devices.system.cpu.intel_pstate.hwp_dynamic_boost: 1
-  sysctls:
-    vm.nr_hugepages: "1024"
-  udev:
-    rules:
-      - SUBSYSTEM=="drm", KERNEL=="renderD*", GROUP="44", MODE="0660"
-      # Unbind usbhid from OMRON USB UPS (06DA:0003) so NUT can access it via libusb
-      - ACTION=="add|change", SUBSYSTEM=="usb", ATTR{idVendor}=="06da", ATTR{idProduct}=="0003", RUN+="/bin/sh -c 'echo 1-7:1.0 > /sys/bus/usb/drivers/usbhid/unbind 2>/dev/null || true'"
   nodeLabels:
     intel.feature.node.kubernetes.io/gpu: "true"
     topology.kubernetes.io/zone: zone-a
@@ -64,3 +39,16 @@ provisioning:
   diskSelector:
     match: disk.serial == 'S5GXNF1R887620N'
   grow: true
+---
+apiVersion: v1alpha1
+kind: HostnameConfig
+hostname: control-0
+---
+apiVersion: v1alpha1
+kind: UnattendedInstallConfig
+installer:
+  image: "factory.talos.dev/metal-installer/${TALOS_SCHEMATIC}:${TALOS_VERSION}"
+provisioning:
+  diskSelector:
+    match: glob("*SSD 870*", disk.model)
+  wipe: false
