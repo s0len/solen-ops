@@ -163,3 +163,8 @@ apiVersion: v1alpha1
 kind: KmsgLogConfig
 name: remote-log
 url: tcp://192.168.10.122:6050/
+---
+apiVersion: v1alpha1
+kind: DiscoveryServiceConfig
+name: default
+endpoint: https://discovery.talos.dev/
