@@ -27,10 +27,13 @@ machine:
               - 192.168.20.40/24
       - interface: enp1s0f1
         dhcp: false
-  nodeLabels:
-    intel.feature.node.kubernetes.io/gpu: "true"
-    topology.kubernetes.io/zone: zone-a
-    node.kubernetes.io/storage: ceph
+---
+apiVersion: v1alpha1
+kind: KubeNodeConfig
+labels:
+  intel.feature.node.kubernetes.io/gpu: "true"
+  topology.kubernetes.io/zone: zone-a
+  node.kubernetes.io/storage: ceph
 ---
 apiVersion: v1alpha1
 kind: VolumeConfig

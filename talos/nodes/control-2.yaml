@@ -16,11 +16,14 @@ machine:
             dhcp: false
             addresses:
               - 192.168.20.42/24
-  nodeLabels:
-    intel.feature.node.kubernetes.io/gpu: "true"
-    plex.node/preferred: "true"
-    topology.kubernetes.io/zone: zone-c
-    node.kubernetes.io/storage: ceph
+---
+apiVersion: v1alpha1
+kind: KubeNodeConfig
+labels:
+  intel.feature.node.kubernetes.io/gpu: "true"
+  plex.node/preferred: "true"
+  topology.kubernetes.io/zone: zone-c
+  node.kubernetes.io/storage: ceph
 ---
 apiVersion: v1alpha1
 kind: VolumeConfig
