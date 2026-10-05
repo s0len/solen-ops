@@ -24,16 +24,7 @@ cluster:
   controlPlane:
     endpoint: https://192.168.10.80:6443
   clusterName: main
-  network:
-    cni:
-      name: none
-    dnsDomain: cluster.local
-    podSubnets:
-      - 10.69.0.0/16
-    serviceSubnets:
-      - 10.96.0.0/16
   token: op://talos/talos/CLUSTER_TOKEN
-  secretboxEncryptionSecret: op://talos/talos/CLUSTER_SECRETBOXENCRYPTIONSECRET
   ca:
     crt: op://talos/talos/CLUSTER_CA_CRT
     key: op://talos/talos/CLUSTER_CA_KEY
@@ -42,31 +33,6 @@ cluster:
     key: op://talos/talos/CLUSTER_AGGREGATORCA_KEY
   serviceAccount:
     key: op://talos/talos/CLUSTER_SERVICEACCOUNT_KEY
-  apiServer:
-    image: "registry.k8s.io/kube-apiserver:${KUBERNETES_VERSION}"
-    extraArgs:
-      enable-aggregator-routing: "true"
-      feature-gates: ImageVolume=true,MutatingAdmissionPolicy=true
-      runtime-config: admissionregistration.k8s.io/v1beta1=true
-    certSANs:
-      - 192.168.10.80
-      - 127.0.0.1
-    disablePodSecurityPolicy: true
-    auditPolicy:
-      apiVersion: audit.k8s.io/v1
-      kind: Policy
-      rules:
-        - level: Metadata
-  controllerManager:
-    image: "registry.k8s.io/kube-controller-manager:${KUBERNETES_VERSION}"
-    extraArgs:
-      bind-address: 0.0.0.0
-  proxy:
-    disabled: true
-  scheduler:
-    image: "registry.k8s.io/kube-scheduler:${KUBERNETES_VERSION}"
-    extraArgs:
-      bind-address: 0.0.0.0
   etcd:
     ca:
       crt: op://talos/talos/CLUSTER_ETCD_CA_CRT
@@ -75,8 +41,6 @@ cluster:
       listen-metrics-urls: http://0.0.0.0:2381
     advertisedSubnets:
       - 192.168.10.0/24
-  coreDNS:
-    disabled: true
 ---
 apiVersion: v1alpha1
 kind: KmsgLogConfig
@@ -201,3 +165,84 @@ content: |
   [plugins."io.containerd.cri.v1.runtime"]
     cdi_spec_dirs = ["/var/cdi/static", "/var/cdi/dynamic"]
     device_ownership_from_security_context = true
+---
+apiVersion: v1alpha1
+kind: KubeNetworkConfig
+dnsDomain: cluster.local
+podSubnets:
+  - 10.69.0.0/16
+serviceSubnets:
+  - 10.96.0.0/16
+---
+apiVersion: v1alpha1
+kind: KubeAPIServerConfig
+image: "registry.k8s.io/kube-apiserver:${KUBERNETES_VERSION}"
+extraArgs:
+  enable-aggregator-routing: "true"
+  feature-gates: ImageVolume=true,MutatingAdmissionPolicy=true
+  runtime-config: admissionregistration.k8s.io/v1beta1=true
+certExtraSANs:
+  - 192.168.10.80
+  - 127.0.0.1
+---
+apiVersion: v1alpha1
+kind: KubeAuthenticationConfig
+configuration:
+  anonymous:
+    enabled: true
+    conditions:
+      - path: /livez
+      - path: /readyz
+      - path: /healthz
+  jwt: []
+---
+apiVersion: v1alpha1
+kind: KubeAuthorizerConfig
+name: node
+type: Node
+---
+apiVersion: v1alpha1
+kind: KubeAuthorizerConfig
+name: rbac
+type: RBAC
+---
+apiVersion: v1alpha1
+kind: KubeAuditPolicyConfig
+configuration:
+  apiVersion: audit.k8s.io/v1
+  kind: Policy
+  rules:
+    - level: Metadata
+---
+apiVersion: v1alpha1
+kind: KubeEtcdEncryptionConfig
+config:
+  resources:
+    - resources:
+        - secrets
+      providers:
+        - secretbox:
+            keys:
+              - name: key2
+                secret: op://talos/talos/CLUSTER_SECRETBOXENCRYPTIONSECRET
+        - identity: {}
+---
+apiVersion: v1alpha1
+kind: KubeControllerManagerConfig
+image: "registry.k8s.io/kube-controller-manager:${KUBERNETES_VERSION}"
+extraArgs:
+  bind-address: 0.0.0.0
+---
+apiVersion: v1alpha1
+kind: KubeSchedulerConfig
+image: "registry.k8s.io/kube-scheduler:${KUBERNETES_VERSION}"
+extraArgs:
+  bind-address: 0.0.0.0
+---
+apiVersion: v1alpha1
+kind: KubeProxyConfig
+enabled: false
+---
+apiVersion: v1alpha1
+kind: KubeCoreDNSConfig
+enabled: false
