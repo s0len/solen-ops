@@ -9,21 +9,33 @@ machine:
     - device: /dev/disk/by-id/nvme-2400A_NVMe_Micron_512GB_232345213B1F
       partitions:
         - mountpoint: /var/lib/etcd
-  network:
-    interfaces:
-      # Onboard 1GbE: Intel I219-LM (e1000e), MAC 90:8d:6e:8a:d3:86, PCI 0000:00:1f.6
-      # Switched from USB 2.5GbE adapter enp0s20f0u5 (RTL8156B) which kept flapping →
-      # DHCP IP drift (.41→.46) + etcd quorum churn + Ceph mon.e crashloop.
-      - interface: enp0s31f6
-        mtu: 1500
-        dhcp: true
-        vip:
-          ip: 192.168.10.80
-        vlans:
-          - vlanId: 20
-            dhcp: false
-            addresses:
-              - 192.168.20.41/24
+---
+# Onboard 1GbE: Intel I219-LM (e1000e), MAC 90:8d:6e:8a:d3:86, PCI 0000:00:1f.6
+# Switched from USB 2.5GbE adapter enp0s20f0u5 (RTL8156B) which kept flapping →
+# DHCP IP drift (.41→.46) + etcd quorum churn + Ceph mon.e crashloop.
+apiVersion: v1alpha1
+kind: LinkConfig
+name: enp0s31f6
+mtu: 1500
+---
+apiVersion: v1alpha1
+kind: DHCPv4Config
+name: enp0s31f6
+routeMetric: 1024
+clientIdentifier: none
+---
+apiVersion: v1alpha1
+kind: VLANConfig
+name: enp0s31f6.20
+vlanID: 20
+parent: enp0s31f6
+addresses:
+  - address: 192.168.20.41/24
+---
+apiVersion: v1alpha1
+kind: Layer2VIPConfig
+name: 192.168.10.80
+link: enp0s31f6
 ---
 apiVersion: v1alpha1
 kind: KubeNodeConfig
