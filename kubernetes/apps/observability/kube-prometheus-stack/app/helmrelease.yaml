@@ -196,6 +196,10 @@ spec:
       enabled: false
       forceDeployDashboards: true
 
+    defaultRules:
+      disabled:
+        NodeFilesystemSpaceFillingUp: true
+
     additionalPrometheusRulesMap:
       node-filesystem-rules:
         groups:
@@ -217,6 +221,22 @@ spec:
                 for: 1h
                 labels:
                   severity: warning
+              - alert: NodeFilesystemSpaceFillingUp
+                annotations:
+                  description: Filesystem on {{ $labels.device }}, mounted on {{ $labels.mountpoint }}, at {{ $labels.instance }} has only {{ printf "%.2f" $value }}% available space left and is filling up fast.
+                  runbook_url: https://runbooks.prometheus-operator.dev/runbooks/node/nodefilesystemspacefillingup
+                  summary: Filesystem is predicted to run out of space within the next 4 hours.
+                expr: |-
+                  (
+                    node_filesystem_avail_bytes{job="node-exporter",fstype!="",mountpoint!=""} / node_filesystem_size_bytes{job="node-exporter",fstype!="",mountpoint!=""} * 100 < 10
+                  and
+                    predict_linear(node_filesystem_avail_bytes{job="node-exporter",fstype!="",mountpoint!=""}[6h], 4*60*60) < 0
+                  and
+                    node_filesystem_readonly{job="node-exporter",fstype!="",mountpoint!=""} == 0
+                  )
+                for: 1h
+                labels:
+                  severity: critical
       dockerhub-rules:
         groups:
           - name: dockerhub
