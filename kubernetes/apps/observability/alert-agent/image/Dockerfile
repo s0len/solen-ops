@@ -2,7 +2,7 @@ FROM docker.io/nousresearch/hermes-agent:v2026.9.24@sha256:fca358f12efd65bfaaca0
 
 ARG TARGETARCH
 # renovate: datasource=github-releases depName=cli/cli
-ARG GH_VERSION=v2.101.0
+ARG GH_VERSION=v2.102.0
 # renovate: datasource=github-releases depName=kubernetes/kubernetes
 ARG KUBECTL_VERSION=v1.37.1
 
