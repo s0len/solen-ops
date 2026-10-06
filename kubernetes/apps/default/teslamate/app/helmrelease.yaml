@@ -35,7 +35,7 @@ spec:
           init-extensions:
             image:
               repository: ghcr.io/cloudnative-pg/postgresql
-              tag: "16.15@sha256:6b0a34e3773a7c90428c7cca6287510efc38d930aa864f2d50b950554272e799"
+              tag: "16.15@sha256:34cd4159d07b3410a1b29da35072e2e927a0905e717a61afa3814624a2e8859a"
             command: ["sh", "-c"]
             args:
               - |
