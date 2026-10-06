@@ -135,6 +135,8 @@ spec:
               replacement: $1
               sourceLabels: ["__meta_kubernetes_pod_node_name"]
               targetLabel: kubernetes_node
+            - action: labeldrop
+              regex: ^(pod|container)$
 
     kube-state-metrics:
       fullnameOverride: kube-state-metrics
