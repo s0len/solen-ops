@@ -36,6 +36,7 @@ import os
 import re
 import subprocess
 import sys
+import time
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -598,6 +599,11 @@ class HttpError(Exception):
     """An HTTP dependency could not be used."""
 
 
+# Only reads are retried: a POST that timed out may still have landed, and a
+# second comment or label on an Incident Issue is worse than a failed run.
+GET_RETRY_DELAYS = (2.0, 5.0)
+
+
 def http_json(url: str, *, method: str = "GET", body: Optional[dict] = None,
               headers: Optional[dict] = None, timeout: float = 20.0) -> Any:
     data = json.dumps(body).encode("utf-8") if body is not None else None
@@ -606,13 +612,22 @@ def http_json(url: str, *, method: str = "GET", body: Optional[dict] = None,
     if data is not None:
         merged["Content-Type"] = "application/json"
     request = urllib.request.Request(url, data=data, method=method, headers=merged)
-    try:
-        with urllib.request.urlopen(request, timeout=timeout) as response:
-            payload = response.read()
-    except urllib.error.HTTPError as exc:
-        raise HttpError(f"{method} {url} returned {exc.code}") from exc
-    except (urllib.error.URLError, OSError) as exc:
-        raise HttpError(f"{method} {url} unreachable: {exc}") from exc
+    delays = GET_RETRY_DELAYS if method == "GET" else ()
+    for attempt in range(len(delays) + 1):
+        try:
+            with urllib.request.urlopen(request, timeout=timeout) as response:
+                payload = response.read()
+            break
+        except urllib.error.HTTPError as exc:
+            error, cause = HttpError(f"{method} {url} returned {exc.code}"), exc
+            transient = exc.code >= 500 or exc.code == 429
+        except (urllib.error.URLError, OSError) as exc:
+            error, cause = HttpError(f"{method} {url} unreachable: {exc}"), exc
+            transient = True
+        if not transient or attempt == len(delays):
+            raise error from cause
+        log("http_retry", method=method, url=url, attempt=attempt + 1, error=str(error))
+        time.sleep(delays[attempt])
     if not payload:
         return None
     try:

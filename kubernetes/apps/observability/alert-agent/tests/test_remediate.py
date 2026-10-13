@@ -19,7 +19,9 @@ import subprocess
 import sys
 import tempfile
 import unittest
+import urllib.error
 from datetime import datetime, timedelta, timezone
+from unittest import mock
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -427,6 +429,64 @@ class Expectations(unittest.TestCase):
         self.assertEqual(len(items), 1)
         bad = json.dumps([{"crash_id": "; reboot"}])
         self.assertIsNone(remediate.pluck_list(bad, "crash_id", r"^.*$")[0])
+
+
+class _Response:
+    def __init__(self, payload: bytes):
+        self.payload = payload
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc):
+        return False
+
+    def read(self):
+        return self.payload
+
+
+def _http_error(code: int) -> urllib.error.HTTPError:
+    return urllib.error.HTTPError("https://api.github.com/x", code, "boom", {}, None)
+
+
+class HttpRetries(unittest.TestCase):
+    """One GitHub read timeout used to fail the Job and latch KubeJobFailed for a day."""
+
+    def call(self, outcomes, method="GET"):
+        with mock.patch.object(remediate.urllib.request, "urlopen", side_effect=outcomes) as urlopen, \
+                mock.patch.object(remediate.time, "sleep") as sleep:
+            try:
+                return remediate.http_json("https://api.github.com/x", method=method), urlopen, sleep
+            except remediate.HttpError as exc:
+                return exc, urlopen, sleep
+
+    def test_a_get_that_times_out_once_is_retried(self):
+        result, urlopen, sleep = self.call([TimeoutError("read timed out"), _Response(b"[]")])
+        self.assertEqual(result, [])
+        self.assertEqual(urlopen.call_count, 2)
+        self.assertEqual(sleep.call_count, 1)
+
+    def test_a_get_answered_with_5xx_is_retried(self):
+        result, urlopen, _ = self.call([_http_error(502), _Response(b"[]")])
+        self.assertEqual(result, [])
+        self.assertEqual(urlopen.call_count, 2)
+
+    def test_a_get_that_never_recovers_still_fails(self):
+        result, urlopen, _ = self.call([TimeoutError("read timed out")] * 3)
+        self.assertIsInstance(result, remediate.HttpError)
+        self.assertEqual(urlopen.call_count, 3)
+
+    def test_a_4xx_is_not_retried(self):
+        result, urlopen, sleep = self.call([_http_error(401)])
+        self.assertIsInstance(result, remediate.HttpError)
+        self.assertIn("returned 401", str(result))
+        self.assertEqual(urlopen.call_count, 1)
+        sleep.assert_not_called()
+
+    def test_a_write_is_never_retried(self):
+        result, urlopen, _ = self.call([TimeoutError("read timed out"), _Response(b"{}")], method="POST")
+        self.assertIsInstance(result, remediate.HttpError)
+        self.assertEqual(urlopen.call_count, 1)
 
 
 class VolSyncGhostSnapshot(unittest.TestCase):
