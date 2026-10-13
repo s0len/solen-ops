@@ -11,7 +11,7 @@ A single firing condition emitted by Prometheus and delivered through Alertmanag
 _Avoid_: alarm, notification, event
 
 **Alert Group**:
-The set of alerts Alertmanager bundles under one group key (today alertname plus job). The unit that gets one Incident Issue.
+The set of alerts Alertmanager bundles under one group key (today alertname plus job; for VolSync alerts, alertname plus namespace and name, so each backup source is its own group). The unit that gets one Incident Issue.
 _Avoid_: incident, batch
 
 **Floor**:

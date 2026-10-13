@@ -12,7 +12,17 @@ spec:
     receiver: pushover
     repeatInterval: 12h
     routes:
-      # groupWait here is the Floor; the matcher is the Known-benign list,
+      # One Alert Group per ReplicationSource, so a second wedged backup gets
+      # its own Incident Issue instead of a comment on the first one's.
+      - receiver: alert-agent
+        continue: true
+        groupBy: ["alertname", "namespace", "name"]
+        groupWait: 15m
+        matchers:
+          - name: alertname
+            matchType: "=~"
+            value: VolSync.+
+      # groupWait here is the Floor; the first matcher is the Known-benign list,
       # including the two alertnames the Agent raises about itself.
       - receiver: alert-agent
         continue: true
@@ -21,6 +31,9 @@ spec:
           - name: alertname
             matchType: "!~"
             value: Watchdog|InfoInhibitor|etcdMemberCommunicationSlow|AlertAgentHeartbeatStale|AlertAgentGateDown
+          - name: alertname
+            matchType: "!~"
+            value: VolSync.+
       - receiver: "null"
         matchers:
           - name: alertname
