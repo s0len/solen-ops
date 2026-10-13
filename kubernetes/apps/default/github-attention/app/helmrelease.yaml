@@ -43,7 +43,7 @@ spec:
               # stdlib-only script, so no package install at runtime -- apk
               # needs root and this pod runs as 65534.
               repository: python
-              tag: 3.14-alpine
+              tag: 3.15-alpine
             command: ["python3", "/scripts/gh-attention.py"]
             env:
               GITHUB_USER: s0len
