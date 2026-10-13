@@ -12,6 +12,16 @@ spec:
     receiver: pushover
     repeatInterval: 12h
     routes:
+      # Watchdog always fires; healthchecks.io pages when these pings stop,
+      # which is the only thing that notices Alertmanager itself being down.
+      - receiver: heartbeat
+        groupWait: 0s
+        groupInterval: 1m
+        repeatInterval: 4m
+        matchers:
+          - name: alertname
+            value: Watchdog
+            matchType: =
       # One Alert Group per ReplicationSource, so a second wedged backup gets
       # its own Incident Issue instead of a comment on the first one's.
       - receiver: alert-agent
@@ -69,6 +79,12 @@ spec:
           matchType: =
   receivers:
     - name: "null"
+    - name: heartbeat
+      webhookConfigs:
+        - urlSecret:
+            name: alertmanager-secret
+            key: ALERTMANAGER_HEARTBEAT_URL
+          sendResolved: false
     - name: alert-agent
       webhookConfigs:
         - url: http://alert-agent.observability.svc.cluster.local:8080/webhook
