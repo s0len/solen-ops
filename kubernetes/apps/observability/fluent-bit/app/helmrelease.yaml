@@ -10,6 +10,10 @@ spec:
     name: fluent-bit
   interval: 1h
   values:
+    readinessProbe:
+      httpGet:
+        path: /
+        port: http
     config:
       service: |-
         [SERVICE]
@@ -21,7 +25,9 @@ spec:
           http_server on
           http_listen 0.0.0.0
           http_port {{ .Values.metricsPort }}
-          health_check on
+          storage.path /var/log/flb-storage/
+          storage.sync normal
+          storage.backlog.mem_limit 16M
 
       inputs: |-
         [INPUT]
@@ -32,6 +38,7 @@ spec:
           tag kubernetes.*
           skip_empty_lines on
           skip_long_lines on
+          storage.type filesystem
 
         [INPUT]
           name tcp
@@ -41,6 +48,7 @@ spec:
           format json
           source_address_key src
           tag talos.kernel
+          storage.type filesystem
 
         [INPUT]
           name tcp
@@ -50,6 +58,7 @@ spec:
           format json
           source_address_key src
           tag talos.service
+          storage.type filesystem
 
       filters: |-
         [FILTER]
@@ -108,6 +117,8 @@ spec:
           json_date_format iso8601
           compress gzip
           log_response_payload false
+          retry_limit no_limits
+          storage.total_limit_size 1G
 
         [OUTPUT]
           name http
@@ -119,6 +130,8 @@ spec:
           json_date_format iso8601
           compress gzip
           log_response_payload false
+          retry_limit no_limits
+          storage.total_limit_size 1G
     dashboards:
       enabled: true
     serviceMonitor:
