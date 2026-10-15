@@ -10,9 +10,6 @@ spec:
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
-  dependsOn:
-    - name: victoria-logs
-      namespace: observability
   path: ./kubernetes/apps/observability/fluent-bit/app
   prune: true
   retryInterval: 2m
