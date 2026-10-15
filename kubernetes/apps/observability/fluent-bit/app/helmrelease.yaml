@@ -120,7 +120,7 @@ spec:
           compress gzip
           log_response_payload false
           retry_limit no_limits
-          storage.total_limit_size 1G
+          storage.total_limit_size 10G
 
         [OUTPUT]
           name http
@@ -133,7 +133,7 @@ spec:
           compress gzip
           log_response_payload false
           retry_limit no_limits
-          storage.total_limit_size 1G
+          storage.total_limit_size 10G
     dashboards:
       enabled: true
     serviceMonitor:
