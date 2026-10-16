@@ -1,0 +1,99 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s-labs/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: &app upbrr
+spec:
+  interval: 30m
+  chartRef:
+    kind: OCIRepository
+    name: upbrr
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+  values:
+    controllers:
+      upbrr:
+        strategy: Recreate
+        containers:
+          app:
+            image:
+              repository: ghcr.io/autobrr/upbrr
+              tag: 0.4.0@sha256:cfd21650a797acc6a303a34f7fc6c004a03c9cbd1c364016bc89e7105126c937
+            env:
+              TZ: ${TIMEZONE}
+              UPBRR_WEB_PORT: &port 80
+              UPBRR_WEB_OPEN_BROWSER: false
+              UPBRR_WEB_TRUSTED_PROXIES: 10.69.0.0/16
+            probes:
+              liveness:
+                enabled: true
+                custom: true
+                spec:
+                  httpGet: &healthcheck
+                    path: /api/auth/status
+                    port: *port
+                  periodSeconds: 30
+                  timeoutSeconds: 5
+                  failureThreshold: 5
+              readiness:
+                enabled: true
+                custom: true
+                spec:
+                  httpGet: *healthcheck
+                  periodSeconds: 10
+                  timeoutSeconds: 5
+                  failureThreshold: 3
+              startup:
+                enabled: true
+                custom: true
+                spec:
+                  httpGet: *healthcheck
+                  periodSeconds: 10
+                  timeoutSeconds: 5
+                  failureThreshold: 30
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities: { drop: ["ALL"] }
+            resources:
+              requests:
+                cpu: 10m
+              limits:
+                memory: 4Gi
+    defaultPodOptions:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 568
+        runAsGroup: 568
+        fsGroup: 568
+        fsGroupChangePolicy: OnRootMismatch
+    service:
+      app:
+        controller: *app
+        ports:
+          http:
+            port: *port
+    route:
+      app:
+        hostnames:
+          - "{{ .Release.Name }}.${SECRET_DOMAIN}"
+        parentRefs:
+          - name: envoy-internal
+            namespace: network
+            sectionName: https
+    persistence:
+      config:
+        existingClaim: *app
+      data:
+        type: nfs
+        server: ${TRUENAS_IP}
+        path: /mnt/rust/data
+        globalMounts:
+          - path: /data
+            readOnly: false
+      tmp:
+        type: emptyDir
