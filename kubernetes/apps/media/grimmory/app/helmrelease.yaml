@@ -114,11 +114,11 @@ spec:
               # TEMPORARY: fork preview build carrying the fix for
               # https://github.com/grimmory-tools/grimmory/issues/2116
               # (multi-user shelf assignment 401). Built from s0len/grimmory
-              # branch fix/multi-user-shelf-unassign (= upstream develop + fix).
+              # branch fork-build (= upstream v3.5.0 + fix).
               # Revert to ghcr.io/grimmory-tools/grimmory once a release
               # containing the fix ships upstream.
               repository: ghcr.io/s0len/grimmory
-              tag: preview-d7e4e2f
+              tag: preview-0e8693141@sha256:108528fd5aedf96e2a6a2bd85634256bc3f27fc42c3533845eb57acda050aaf0
             env:
               TZ: ${TIMEZONE}
               DISK_TYPE: NETWORK
