@@ -125,7 +125,7 @@ spec:
       posters:
         type: nfs
         server: ${TRUENAS_IP}
-        path: /mnt/rust/posters
+        path: /mnt/rust/data/posters
         globalMounts:
           - path: /posters
             readOnly: false
