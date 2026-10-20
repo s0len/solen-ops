@@ -226,7 +226,7 @@ poster_cleanarr:
   ignore_media: []
 upgradinatorr:
   log_level: info
-  dry_run: true
+  dry_run: false
   instances_list:
     - instance: radarr_standard
       count: 3
