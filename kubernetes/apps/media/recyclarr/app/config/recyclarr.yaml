@@ -304,10 +304,24 @@ radarr:
       type: sqp-uhd
 
     quality_profiles:
-      # Guide-backed SQP-2
+      # Guide-backed SQP-2, Bluray-1080p added as last-resort fallback
       - trash_id: c3933358ba2356bafc41524f81471069 # [SQP] SQP-2
         reset_unmatched_scores:
           enabled: true
+        upgrade:
+          allowed: true
+          until_quality: WEB|Remux|Bluray|2160p
+        qualities:
+          - name: WEB|Remux|Bluray|2160p
+            qualities:
+              - WEBDL-2160p
+              - WEBRip-2160p
+              - Remux-2160p
+              - Bluray-2160p
+              - WEBDL-1080p
+              - WEBRip-1080p
+          - name: Remux-1080p
+          - name: Bluray-1080p
 
       # Guide-backed SQP-3 (Audio) -- using the Audio variant per discord recommendation
       # https://discord.com/channels/492590071455940612/1385343352563826748
@@ -376,6 +390,7 @@ radarr:
           - dc98083864ea246d05a42df0d05f81cc # x265 (HD)
         assign_scores_to:
           - name: "[SQP] SQP-2"
+            score: 0
           - name: "[SQP] SQP-3 (Audio)"
           - name: "[SQP] SQP-4"
 
