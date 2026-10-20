@@ -19,7 +19,7 @@ resources:
   - ./netronome/ks.yaml
   - ./nextcloud/ks.yaml
   - ./paperless/ks.yaml
-  # - ./photos-backup/ks.yaml  # enable after the rust/photos dataset + NFS export exist on TrueNAS
+  - ./photos-backup/ks.yaml
   - ./searxng/ks.yaml
   - ./tandoor/ks.yaml
   - ./teslamate/ks.yaml

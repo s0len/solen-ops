@@ -1,6 +1,6 @@
 ---
-# Static read-only NFS PV for the photos dataset. readOnly is enforced at
-# the mount level: nothing that binds this claim can write to the photos.
+# Static read-only NFS PV for the Nextcloud data dataset. readOnly is enforced
+# at the mount level: nothing that binds this claim can write to the files.
 apiVersion: v1
 kind: PersistentVolume
 metadata:
@@ -14,7 +14,7 @@ spec:
   storageClassName: ""
   nfs:
     server: ${TRUENAS_IP}
-    path: /mnt/rust/photos
+    path: /mnt/rust/cloud
     readOnly: true
 ---
 apiVersion: v1

@@ -229,6 +229,9 @@ spec:
     persistence:
       enabled: true
       existingClaim: *app
+      nextcloudData:
+        enabled: true
+        existingClaim: nextcloud-data
 
     cronjob:
       enabled: true
