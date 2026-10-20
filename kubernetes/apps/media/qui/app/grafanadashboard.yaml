@@ -13,3 +13,4 @@ spec:
     - datasourceName: Prometheus
       inputName: DS_PROMETHEUS
   url: https://raw.githubusercontent.com/autobrr/qui/v1.33.0/documentation/static/examples/qui-grafana-dashboard.json
+  contentCacheDuration: 24h
