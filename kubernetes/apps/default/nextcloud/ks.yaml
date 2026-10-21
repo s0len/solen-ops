@@ -34,15 +34,9 @@ spec:
   postBuild:
     substitute:
       APP: *app
-      VOLSYNC_CAPACITY: 1Ti
+      VOLSYNC_CAPACITY: 20Gi
       VOLSYNC_CACHE_CAPACITY: 32Gi
       VOLSYNC_SCHEDULE: "0 1 * * *"
-      # Bootstrap restore is intentionally enabled: nextcloud is the most
-      # critical app and should come back online automatically after a
-      # cluster rebuild. VolSync uses status.lastManualSync to avoid
-      # spurious re-triggers — as long as the RD object is not deleted,
-      # the restore fires exactly once on fresh deploys. If you need to
-      # do a manual `kubectl delete` of the RD for any reason, expect
-      # ~400 GiB of Ceph churn for ~5h while it rebuilds.
+      # Bootstrap restore stays enabled; user files live on NFS (rust/cloud), backed up by photos-backup.
       GATUS_SUBDOMAIN: cloud
       GATUS_PATH: /status.php
