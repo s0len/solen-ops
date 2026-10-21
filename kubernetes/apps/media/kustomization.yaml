@@ -24,7 +24,7 @@ resources:
   - ./plex/ks.yaml
   - ./qbittorrent/ks.yaml
   - ./qui/ks.yaml
-  - ./seasonpackarr/ks.yaml
+  # - ./seasonpackarr/ks.yaml
   - ./sonarr/ks.yaml
   - ./playbook/ks.yaml
   - ./radarr/ks.yaml
