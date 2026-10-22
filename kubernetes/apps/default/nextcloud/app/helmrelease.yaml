@@ -96,17 +96,6 @@ spec:
           authtype: LOGIN
           secure: ssl
 
-      lifecycle:
-        postStartCommand:
-          - "/bin/sh"
-          - "-c"
-          - |
-            su -s /bin/sh www-data -c 'php occ db:add-missing-indices' || true
-            su -s /bin/sh www-data -c 'php occ maintenance:repair --include-expensive' || true
-            # Ensure the OIDC login app is present + enabled (idempotent)
-            su -s /bin/sh www-data -c 'php occ app:install oidc_login' || su -s /bin/sh www-data -c 'php occ app:enable oidc_login' || true
-            # File scanning is handled by the cronjob, not needed on pod start
-
       phpConfigs:
         www.conf: |
           [www]

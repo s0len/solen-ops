@@ -1,0 +1,80 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/SchemaStore/schemastore/master/src/schemas/json/kubernetes-job.json
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: nextcloud-maintenance-35-0-2
+spec:
+  backoffLimit: 2
+  activeDeadlineSeconds: 3600
+  template:
+    spec:
+      restartPolicy: Never
+      automountServiceAccountToken: false
+      securityContext:
+        runAsUser: 33
+        runAsGroup: 33
+      affinity:
+        podAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - topologyKey: kubernetes.io/hostname
+              labelSelector:
+                matchLabels:
+                  app.kubernetes.io/name: nextcloud
+                  app.kubernetes.io/instance: nextcloud
+                  app.kubernetes.io/component: app
+      containers:
+        - name: occ
+          image: docker.io/library/nextcloud:35.0.2-fpm-alpine
+          workingDir: /var/www/html
+          command:
+            - /bin/sh
+            - -c
+            - |
+              until php occ status --no-warnings 2>/dev/null | grep -q 'maintenance: false'; do
+                echo "waiting for nextcloud to leave maintenance mode"
+                sleep 15
+              done
+              php occ db:add-missing-indices --no-interaction
+              php occ maintenance:repair --include-expensive --no-interaction
+          volumeMounts:
+            - name: nextcloud-main
+              mountPath: /var/www/
+              subPath: root
+            - name: nextcloud-main
+              mountPath: /var/www/html
+              subPath: html
+            - name: nextcloud-main
+              mountPath: /var/www/html/config
+              subPath: config
+            - name: nextcloud-main
+              mountPath: /var/www/html/custom_apps
+              subPath: custom_apps
+            - name: nextcloud-main
+              mountPath: /var/www/html/themes
+              subPath: themes
+            - name: nextcloud-main
+              mountPath: /var/www/tmp
+              subPath: tmp
+            - name: nextcloud-data
+              mountPath: /var/www/html/data
+              subPath: data
+            - name: nextcloud-config
+              mountPath: /var/www/html/config/caching.config.php
+              subPath: caching.config.php
+          resources:
+            requests:
+              cpu: 100m
+              memory: 512Mi
+            limits:
+              memory: 2Gi
+      volumes:
+        - name: nextcloud-main
+          persistentVolumeClaim:
+            claimName: nextcloud
+        - name: nextcloud-data
+          persistentVolumeClaim:
+            claimName: nextcloud-data
+        - name: nextcloud-config
+          configMap:
+            name: nextcloud-config
