@@ -33,7 +33,7 @@ spec:
           app:
             image:
               repository: ghcr.io/danielbrendel/hortusfox-web
-              tag: v6.3
+              tag: v6.4
             env:
               TZ: ${TIMEZONE}
               DB_DRIVER: mysql
