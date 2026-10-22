@@ -3,7 +3,7 @@
 # (upstream: https://github.com/nextcloud/server/issues/22951).
 # Runs as a before-starting hook, after the entrypoint has synced
 # /usr/src/nextcloud to /var/www/html. Files are only replaced when their
-# checksum matches the pristine 34.0.3 release; on mismatch (Nextcloud
+# checksum matches the pristine 35.0.2 release; on mismatch (Nextcloud
 # upgraded) the hook warns and leaves the code untouched — rebase the files
 # in kubernetes/apps/default/nextcloud/app/resources/icc-patch/ against the
 # new release and update the checksums below.
@@ -27,7 +27,7 @@ apply() {
     fi
 }
 
-apply lib/private/Image.php 6c1ccdfc286d7980a4f6c2131dc3b168463a875a46dc7d7b5afed02777e35cb1 Image.php
-apply lib/private/Preview/HEIC.php d82b19495178ff085dc944be9154509d400b726502a91b72240de8a0f909271c HEIC.php
+apply lib/private/Image.php d13dca4dbdf971bc295326e61e198ecfbb46ded7bf12ae805bd9c80d4cd4b87e Image.php
+apply lib/private/Preview/HEIC.php 8487c7538028bda35f668e46bb0cbbe8d58ca0e2cbbd82bc6c9d0c274d26c942 HEIC.php
 
 exit 0
