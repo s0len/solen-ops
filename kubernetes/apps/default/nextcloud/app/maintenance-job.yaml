@@ -12,8 +12,8 @@ spec:
       restartPolicy: Never
       automountServiceAccountToken: false
       securityContext:
-        runAsUser: 33
-        runAsGroup: 33
+        runAsUser: 82
+        runAsGroup: 82
       affinity:
         podAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -31,7 +31,7 @@ spec:
             - /bin/sh
             - -c
             - |
-              until php occ status --no-warnings 2>/dev/null | grep -q 'maintenance: false'; do
+              until php occ status --no-warnings 2>&1 | tee /dev/stderr | grep -q 'maintenance: false'; do
                 echo "waiting for nextcloud to leave maintenance mode"
                 sleep 15
               done
