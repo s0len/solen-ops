@@ -15,13 +15,6 @@
       "schedule": ["every 3 months on the first day of the month"]
     },
     {
-      "description": ["Batch Nextcloud image digest updates weekly"],
-      "matchDatasources": ["docker"],
-      "matchPackageNames": ["nextcloud"],
-      "matchUpdateTypes": ["digest"],
-      "schedule": ["before 9am on monday"]
-    },
-    {
       "description": ["Never auto-merge anything that changes the alert Agent's image: the pod holds a cluster credential, so the owner reads the release notes first"],
       "matchFileNames": ["kubernetes/apps/observability/alert-agent/image/**"],
       "automerge": false
