@@ -1,0 +1,48 @@
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/monitoring.coreos.com/prometheusrule_v1.json
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: nut-exporter-rules
+spec:
+  groups:
+    - name: nut-exporter.rules
+      rules:
+        - alert: UpsOnBattery
+          annotations:
+            summary: >-
+              The {{ $labels.ups }} UPS has been on battery for 2m — mains power to
+              it is gone. garage carries control-0 and control-2; garderob carries
+              control-1 and the fiber, and shuts control-1 down by itself at 15%.
+          expr: network_ups_tools_ups_status{flag="OB"} == 1
+          for: 2m
+          labels:
+            severity: warning
+
+        - alert: UpsLowBattery
+          annotations:
+            summary: >-
+              The {{ $labels.ups }} UPS is down to {{ $value }}% battery. At 15%
+              nut-shutdown-garderob powers control-1 off; the garage nodes have no
+              such poller and drop when their battery does.
+          expr: |
+            network_ups_tools_battery_charge <= 40
+              or network_ups_tools_battery_charge and on (ups) network_ups_tools_ups_status{flag="LB"} == 1
+          for: 1m
+          labels:
+            severity: critical
+
+        - alert: UpsNotReporting
+          annotations:
+            summary: >-
+              The {{ $labels.ups }} UPS has not reported to Prometheus for 10m — the
+              scrape is failing, the target has left service discovery, or its NUT
+              server or USB driver is dead. Until it is back, an outage on that UPS
+              is indistinguishable from normal operation.
+          expr: |
+            up{job="nut-exporter"} == 0
+              or absent(network_ups_tools_battery_charge{job="nut-exporter", ups="garage"})
+              or absent(network_ups_tools_battery_charge{job="nut-exporter", ups="garderob"})
+          for: 10m
+          labels:
+            severity: critical

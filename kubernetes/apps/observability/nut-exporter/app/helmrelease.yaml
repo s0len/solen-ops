@@ -67,3 +67,18 @@ spec:
             path: /ups_metrics
             interval: 1m
             scrapeTimeout: 10s
+            params:
+              server: ["nut-server-garage.observability.svc.cluster.local"]
+            relabelings:
+              - targetLabel: ups
+                replacement: garage
+          - port: http
+            scheme: http
+            path: /ups_metrics
+            interval: 1m
+            scrapeTimeout: 10s
+            params:
+              server: ["nut-server-garderob.observability.svc.cluster.local"]
+            relabelings:
+              - targetLabel: ups
+                replacement: garderob

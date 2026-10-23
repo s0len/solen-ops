@@ -13,6 +13,8 @@ spec:
   dependsOn:
     - name: nut-server-garage
       namespace: observability
+    - name: nut-server-garderob
+      namespace: observability
     - name: kube-prometheus-stack
       namespace: observability
   path: ./kubernetes/apps/observability/nut-exporter/app
