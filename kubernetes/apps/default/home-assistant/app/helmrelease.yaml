@@ -90,9 +90,12 @@ spec:
               tag: 4.143.1@sha256:377b66bec5645510ed52549bb00e648c273edc604d230a3f90fd2b2433afcb97
             env:
               HOME: /tmp/code-server
+            envFrom:
+              - secretRef:
+                  name: home-assistant-code-server-secret
             args:
               - --auth
-              - none
+              - password
               - --user-data-dir
               - /tmp/code-server
               - --extensions-dir
@@ -107,8 +110,9 @@ spec:
             resources:
               requests:
                 cpu: 10m
+                memory: 128Mi
               limits:
-                memory: 256Mi
+                memory: 1Gi
     defaultPodOptions:
       hostNetwork: true
       nodeSelector:
@@ -189,4 +193,4 @@ spec:
         advancedMounts:
           home-assistant:
             code-server:
-              - path: /tmp/code-server
+              - path: /tmp
