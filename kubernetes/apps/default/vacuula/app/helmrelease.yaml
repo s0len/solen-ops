@@ -30,6 +30,7 @@ spec:
               TZ: ${TIMEZONE}
               VACUULA_TZ: ${TIMEZONE}
               VACUULA_PORT: &httpPort 80
+              GEN3_PORT: &gen3Port 443
               GEN3_ENABLED: "True"
               GEN4_ENABLED: "False"
               MDNS_ENABLED: "False"
@@ -39,7 +40,7 @@ spec:
                 custom: true
                 spec:
                   tcpSocket:
-                    port: &gen3Port 443
+                    port: *gen3Port
                   initialDelaySeconds: 0
                   periodSeconds: 10
                   timeoutSeconds: 5
