@@ -163,7 +163,7 @@ spec:
         type: image
         image:
           repository: registry.k8s.io/kubectl
-          tag: v1.37.1
+          tag: v1.37.2
         pullPolicy: IfNotPresent
         advancedMounts:
           alert-remediator:
