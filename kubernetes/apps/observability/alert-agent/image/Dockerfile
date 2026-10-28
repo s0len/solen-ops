@@ -4,7 +4,7 @@ ARG TARGETARCH
 # renovate: datasource=github-releases depName=cli/cli
 ARG GH_VERSION=v2.103.3
 # renovate: datasource=github-releases depName=kubernetes/kubernetes
-ARG KUBECTL_VERSION=v1.37.1
+ARG KUBECTL_VERSION=v1.37.2
 
 RUN set -eu; \
     arch="${TARGETARCH:?TARGETARCH must be set by BuildKit}"; \
