@@ -111,14 +111,15 @@ spec:
         containers:
           grimmory:
             image:
-              # TEMPORARY: fork preview build carrying the fix for
+              # TEMPORARY: fork preview build carrying the fixes for
               # https://github.com/grimmory-tools/grimmory/issues/2116
-              # (multi-user shelf assignment 401). Built from s0len/grimmory
-              # branch fork-build (= upstream v3.5.0 + fix).
+              # (multi-user shelf assignment 401) and for magic shelves hiding
+              # books other users have progress on. Built from s0len/grimmory
+              # branch fork-build (= upstream develop c4371e91c + fixes).
               # Revert to ghcr.io/grimmory-tools/grimmory once a release
-              # containing the fix ships upstream.
+              # containing the fixes ships upstream.
               repository: ghcr.io/s0len/grimmory
-              tag: preview-0e8693141@sha256:108528fd5aedf96e2a6a2bd85634256bc3f27fc42c3533845eb57acda050aaf0
+              tag: preview-113d979@sha256:030af799824da8f1ab78c85042fd41409e2f16d55bfa3c1bd524fb4e4e1b71ba
             env:
               TZ: ${TIMEZONE}
               DISK_TYPE: NETWORK
