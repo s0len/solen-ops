@@ -21,6 +21,7 @@ spec:
   values:
     controllers:
       unpackerr:
+        strategy: Recreate
         annotations:
           reloader.stakater.com/auto: "true"
         containers:
@@ -30,6 +31,7 @@ spec:
               tag: v1.0.1@sha256:22b4693fbeaae4bd927905d63b59b8f67b4a1446682d965ac876c61a48976658
             env:
               TZ: ${TIMEZONE}
+              UN_CONFIG_FILE: /config/unpackerr.conf
               UN_WEBSERVER_METRICS: true
               UN_WEBSERVER_LOG_FILE: /logs/webserver.log
               UN_WEBSERVER_ROLES_metrics_PERMISSIONS_0: system:metrics:read
@@ -92,6 +94,15 @@ spec:
           http:
             port: 5656
 
+    route:
+      app:
+        hostnames:
+          - "{{ .Release.Name }}.${SECRET_DOMAIN}"
+        parentRefs:
+          - name: envoy-internal
+            namespace: network
+            sectionName: https
+
     serviceMonitor:
       app:
         serviceName: *app
@@ -108,6 +119,9 @@ spec:
             scrapeTimeout: 10s
 
     persistence:
+      config:
+        existingClaim: *app
+
       logs:
         type: emptyDir
 

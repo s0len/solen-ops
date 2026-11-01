@@ -10,6 +10,9 @@ spec:
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
+  components:
+    - ../../../../components/gatus/guarded
+    - ../../../../components/volsync-kopia
   dependsOn:
     - name: onepassword
       namespace: external-secrets
@@ -23,3 +26,8 @@ spec:
     namespace: flux-system
   interval: 30m
   timeout: 5m
+  postBuild:
+    substitute:
+      APP: *app
+      VOLSYNC_CAPACITY: 1Gi
+      VOLSYNC_SCHEDULE: "0 7 * * *"
