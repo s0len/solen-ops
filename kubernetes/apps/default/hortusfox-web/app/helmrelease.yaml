@@ -73,6 +73,8 @@ spec:
               MARIADB_DATABASE: hortusfox
               MARIADB_USER: hortusfox
               MARIADB_RANDOM_ROOT_PASSWORD: "true"
+              # Run mariadb-upgrade on start after Renovate major bumps
+              MARIADB_AUTO_UPGRADE: "1"
             envFrom:
               - secretRef:
                   name: hortusfox-secret
