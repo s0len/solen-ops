@@ -214,7 +214,7 @@ spec:
               - path: /books-for-kids
                 subPath: media/books-for-kids
               - path: /bookdrop
-                subPath: torrents/books
+                subPath: torrents/bookdrop
       mysqld:
         type: emptyDir
         medium: Memory
