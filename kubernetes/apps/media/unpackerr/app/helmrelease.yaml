@@ -38,26 +38,20 @@ spec:
               UN_WEBSERVER_API_KEYS_0_NAME: prometheus
               UN_WEBSERVER_API_KEYS_0_ROLES_0: metrics
               UN_ACTIVITY: true
-              UN_SONARR_0_URL: http://sonarr.media.svc.cluster.local
-              UN_SONARR_0_PATHS_0: /data/torrents/series
-              UN_RADARR_0_URL: http://radarr-standard.media.svc.cluster.local
-              UN_RADARR_0_PATHS_0: /data/torrents/movies
-              UN_RADARR_1_URL: http://radarr-kids.media.svc.cluster.local
-              UN_RADARR_1_PATHS_0: /data/torrents/kidsmovies
-              UN_RADARR_2_URL: http://radarr-anime.media.svc.cluster.local
-              UN_RADARR_2_PATHS_0: /data/torrents/animemovies
-              # UN_LIDARR_0_URL: http://lidarr.media.svc.cluster.local
-              # UN_LIDARR_0_PATHS_0: /data/torrents/music
-              # UN_READARR_0_URL: http://readarr-books.media.svc.cluster.local
-              # UN_READARR_0_PATHS_0: /data/torrents/books
-              # UN_READARR_1_URL: http://readarr-audio.media.svc.cluster.local
-              # UN_READARR_1_PATHS_0: /data/torrents/audiobooks
-              UN_FOLDER_0_PATH: /data/torrents/sport
-              UN_FOLDER_0_INTERVAL: 30s
-              UN_WEBHOOK_0_NAME: notifiarr
-              UN_WEBHOOK_0_IGNORE_SSL: "false"
-              UN_WEBHOOK_0_SILENT: "false"
-              UN_WEBHOOK_0_EVENTS_0: 0
+              UN_SONARR_main_URL: http://sonarr.media.svc.cluster.local
+              UN_SONARR_main_PATHS_0: /data/torrents/series
+              UN_RADARR_standard_URL: http://radarr-standard.media.svc.cluster.local
+              UN_RADARR_standard_PATHS_0: /data/torrents/movies
+              UN_RADARR_kids_URL: http://radarr-kids.media.svc.cluster.local
+              UN_RADARR_kids_PATHS_0: /data/torrents/kidsmovies
+              UN_RADARR_anime_URL: http://radarr-anime.media.svc.cluster.local
+              UN_RADARR_anime_PATHS_0: /data/torrents/animemovies
+              UN_FOLDER_sport_PATH: /data/torrents/sport
+              UN_FOLDER_sport_INTERVAL: 30s
+              UN_WEBHOOK_notifiarr_NAME: notifiarr
+              UN_WEBHOOK_notifiarr_IGNORE_SSL: "false"
+              UN_WEBHOOK_notifiarr_SILENT: "false"
+              UN_WEBHOOK_notifiarr_EVENTS_0: 0
             envFrom:
               - secretRef:
                   name: unpackerr-secret
