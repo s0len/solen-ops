@@ -32,6 +32,9 @@ spec:
               TZ: ${TIMEZONE}
               UN_WEBSERVER_METRICS: true
               UN_WEBSERVER_LOG_FILE: /logs/webserver.log
+              UN_WEBSERVER_ROLES_metrics_PERMISSIONS_0: system:metrics:read
+              UN_WEBSERVER_API_KEYS_0_NAME: prometheus
+              UN_WEBSERVER_API_KEYS_0_ROLES_0: metrics
               UN_ACTIVITY: true
               UN_SONARR_0_URL: http://sonarr.media.svc.cluster.local
               UN_SONARR_0_PATHS_0: /data/torrents/series
@@ -48,6 +51,7 @@ spec:
               # UN_READARR_1_URL: http://readarr-audio.media.svc.cluster.local
               # UN_READARR_1_PATHS_0: /data/torrents/audiobooks
               UN_FOLDER_0_PATH: /data/torrents/sport
+              UN_FOLDER_0_INTERVAL: 30s
               UN_WEBHOOK_0_NAME: notifiarr
               UN_WEBHOOK_0_IGNORE_SSL: "false"
               UN_WEBHOOK_0_SILENT: "false"
@@ -55,6 +59,8 @@ spec:
             envFrom:
               - secretRef:
                   name: unpackerr-secret
+              - secretRef:
+                  name: unpackerr-metrics-secret
             probes:
               liveness:
                 enabled: true
@@ -93,6 +99,11 @@ spec:
           - port: http
             scheme: http
             path: /metrics
+            authorization:
+              type: Bearer
+              credentials:
+                name: unpackerr-metrics-secret
+                key: UN_WEBSERVER_API_KEYS_0_KEY
             interval: 1m
             scrapeTimeout: 10s
 
