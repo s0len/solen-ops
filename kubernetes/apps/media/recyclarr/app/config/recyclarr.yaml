@@ -88,6 +88,7 @@ sonarr:
             - Nordic
             - "Personal Good Swedish Release Groups"
             - "Personal Bad Swedish Groups"
+            - "Nordic Subs Only"
         upgrade:
           allowed: true
           until_quality: WEB 1080p
@@ -439,6 +440,7 @@ radarr:
             - Nordic
             - Personal Good Swedish Release Groups
             - Personal Bad Swedish Groups
+            - Nordic Subs Only
         upgrade:
           allowed: true
           until_quality: Bluray|WEB-1080p
