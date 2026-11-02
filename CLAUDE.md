@@ -28,8 +28,11 @@ This is a Kubernetes home operations repository for a self-hosted bare-metal clu
 - **Always push immediately after committing** — Flux only reconciles what's on `origin/main`. A commit that hasn't been pushed has zero effect on the cluster.
 - For urgent fixes, offer to `flux reconcile` after pushing to skip the polling interval.
 - If working from a worktree on a non-main branch, push the commit straight to main with `git push origin HEAD:main` (fast-forward) rather than opening a PR.
+- A ruleset on `main` requires `Flux Local - Success` and `Image Pull - Success`. The owner pushes past it as repository admin, so "Bypassed rule violations" on a push is expected.
 
-**The one exception (ADR-0001):** the unattended alert Agent (`kubernetes/apps/observability/alert-agent`, machine account `solen-ops-agent`) proposes every change as a pull request from an `agent/incident-<n>` branch, because nobody reviewed its diff before it was written. Its PRs are never merged automatically and nothing in this repository automerges. Leave that as it is — a Fix PR is not a mistake to "correct" into a commit on main, and the Agent must never be given a shortcut past the owner's review.
+**The one exception (ADR-0001):** the unattended alert Agent (`kubernetes/apps/observability/alert-agent`, machine account `solen-ops-agent`) proposes every change as a pull request from an `agent/incident-<n>` branch, because nobody reviewed its diff before it was written. Its PRs are never merged automatically. Leave that as it is — a Fix PR is not a mistake to "correct" into a commit on main, and the Agent must never be given a shortcut past the owner's review.
+
+**Renovate (ADR-0005):** minor, patch and digest updates automerge once CI is green; majors and the protected list in `.renovate/autoMerge.json5` wait for the owner's Saturday review. An app that holds data or serves the whole cluster joins that list in the commit that adds it.
 
 ## Agent skills
 
