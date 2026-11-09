@@ -10,7 +10,7 @@ spec:
       rules:
         - alert: HighGpuUsage
           expr: |
-            rate(DCGM_FI_DEV_GPU_UTIL[15m]) > 0.85
+            avg_over_time(DCGM_FI_DEV_GPU_UTIL_RATIO[15m]) > 0.85
           for: 15m
           labels:
             severity: warning
