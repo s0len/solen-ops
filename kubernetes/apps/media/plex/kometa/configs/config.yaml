@@ -624,6 +624,10 @@ libraries:
     reapply_overlays: false
     #reset_overlays: false
     schedule_overlays: daily
+
+    metadata_files:
+      - url: "https://raw.githubusercontent.com/s0len/meta-manager-config/main/metadata/series/title_cards.yaml"
+
     collection_files:
       - url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/collection_files/better_new_and_old_tv_shows_releases.yaml
       # KAC anime genre + season collections (vendored from KenWeTech/KAC-Files)
