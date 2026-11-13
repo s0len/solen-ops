@@ -6,33 +6,11 @@ collections:
     collection_mode: hide
     sort_title: "!07_Viaplay"
 
-  Recommended TV Shows:
-    trakt_list: https://trakt.tv/users/solentankar/lists/tv-based-on-recently-watched-couchmoney-tv?sort=rank,asc
-    sync_mode: sync
-    smart_label:
-      sort_by: added.asc
-      all:
-        label: <<smart_label>>
-    summary:
-      This collection of TV Shows is maintained by an awesome AI which looks at recently watched TV Shows of Uniflix
-      users and then creates recommendations based on what it thinks we would appreciate.
-    visible_library: true
-    visible_home: true
-    visible_shared: true
-    sort_title: "!017_recommended_series"
-    collection_mode: hide
-
   Trending TV Shows:
-    trakt_list: https://trakt.tv/users/solentankar/lists/tv-trending-couchmoney-tv?sort=rank,asc
+    tmdb_trending_weekly: 100
     sync_mode: sync
-    smart_label:
-      sort_by: added.asc
-      all:
-        label: <<smart_label>>
-    summary:
-      This collection of TV Shows is maintained by an awesome AI which looks at the whole wide worlds trending
-      series and their ratings and then creates it's own version of what should be the most trendy tv shows in
-      the whole Universe!
+    collection_order: custom
+    summary: The shows the whole world is watching this week that are available on Uniflix.
     visible_library: true
     visible_home: true
     visible_shared: true
@@ -40,95 +18,12 @@ collections:
     collection_mode: hide
 
   Popular TV Shows:
-    trakt_list: https://trakt.tv/users/solentankar/lists/tv-recommendations-couchmoney-tv?sort=rank,asc
+    tmdb_popular: 100
     sync_mode: sync
-    smart_label:
-      sort_by: added.asc
-      all:
-        label: <<smart_label>>
-    summary:
-      This collection of TV Shows is maintained by an awesome AI which looks at the whole wide worlds most popular
-      series and their ratings and then creates it's own version of what should be the most popular tv shows in
-      the whole Universe!
+    collection_order: custom
+    summary: The most popular shows in the world right now that are available on Uniflix.
     visible_library: true
     visible_home: true
     visible_shared: true
     sort_title: "!019_popular_series"
     collection_mode: hide
-
-  ⭐⭐⭐⭐⭐ - Exceptional Epics:
-    trakt_list: https://trakt.tv/users/solentankar/lists/uniflix-5-stars
-    sync_mode: sync
-    #file_poster: config/posters/Exceptional Epics.jpg
-    smart_label:
-      sort_by: added.asc
-      all:
-        label: <<smart_label>>
-    summary: This is a MUST watch!
-    visible_library: true
-    visible_home: true
-    visible_shared: true
-    sort_title: "!021_Exceptional_Epics"
-
-  ⭐⭐⭐⭐ - Remarkable Reels:
-    trakt_list:
-      - https://trakt.tv/users/solentankar/lists/uniflix-4-stars
-    sync_mode: sync
-    #file_poster: config/posters/Remarkable Reels.jpg
-    #    smart_label:
-    #      sort_by: added.asc
-    #      all:
-    #        label: <<smart_label>>
-    #        unplayed: true
-    summary: Seriously good in more then one way. You should not miss this one.
-    visible_library: true
-    visible_home: true
-    visible_shared: true
-    sort_title: "!022_Remarkable_Reels"
-
-  ⭐⭐⭐ - Average Aces:
-    trakt_list:
-      - https://trakt.tv/users/solentankar/lists/uniflix-3-stars
-    sync_mode: sync
-    #file_poster: config/posters/Average Aces.jpg
-    #    smart_label:
-    #      sort_by: added.asc
-    #      all:
-    #        label: <<smart_label>>
-    #        unplayed: true
-    summary: General recommendation to watch this one. Though maybe not twice.
-    visible_library: true
-    visible_home: false
-    visible_shared: false
-    sort_title: "!023_Average_Aces"
-
-  ⭐⭐ - Mediocre Misses:
-    trakt_list:
-      - https://trakt.tv/users/solentankar/lists/uniflix-2-stars
-    sync_mode: sync
-    #file_poster: config/posters/Mediocre Misses.jpg
-    #    smart_label:
-    #      sort_by: added.asc
-    #      all:
-    #        label: <<smart_label>>
-    #        unplayed: true
-    summary: Only for those with a special interest in the genre, actor or similar.
-    visible_library: true
-    visible_home: false
-    visible_shared: false
-    sort_title: "!024_Mediocre_Misses"
-
-  ⭐ - Dreadful Duds:
-    trakt_list: https://trakt.tv/users/solentankar/lists/uniflix-1-star
-    sync_mode: sync
-    #file_poster: config/posters/Dreadful Duds.jpg
-    #    smart_label:
-    #      sort_by: added.asc
-    #      all:
-    #        label: <<smart_label>>
-    #        unplayed: true
-    summary: Should be avoided at any cost.
-    visible_library: true
-    visible_home: false
-    visible_shared: false
-    sort_title: "!025_Dreadful_Duds"
