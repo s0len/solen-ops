@@ -1,26 +1,18 @@
-# Vendored from https://github.com/KenWeTech/KAC-Files (Seasons.yml)
-# Upstream commit: 2e8d4c756d62 - vendored 2026-08-13
-# Covers are loaded from the upstream repo's raw URLs; no local assets needed.
-##############################################################
-##               Anime Seasons Collections                  ##
-##                Created by KenWeTech                      ##
-##                      Version 1.0                         ##
-##        https://github.com/KenWeTech/KAC-Files/           ##
-##############################################################
-
-
-#######################
-##     Templates     ##
-#######################
+# Based on https://github.com/KenWeTech/KAC-Files (Seasons.yml, commit 2e8d4c756d62), builders converted from MyAnimeList to AniList.
+# Covers are loaded from the upstream repo's raw URLs.
 
 templates:
   Anime Season:
     url_poster: https://raw.githubusercontent.com/KenWeTech/KAC-Files/main/Covers/Seasons/<<year>>/<<season>>.jpg
-    mal_season:
+    anilist_search:
       season: <<season_lower>>
       year: <<year>>
-      limit: 500
-      sort_by: members
+      format:
+        - tv
+        - short
+        - ona
+      sort_by: popular
+    cache_builders: 7
     sync_mode: sync
     sort_title: zzzz_Season_<<sort_order>>_<<season_index>>_<<year>>
     summary: Anime airing during the <<season_lower>> anime season in <<year>>.
@@ -33,27 +25,22 @@ templates:
     sort_title: zzzz_Season_<<sort_order>>
     summary: Animes airing during the specified season and year.
 
-#############################
-##       Collections       ##
-#############################
-
 collections:
 
   Anime This Season:
     sort_title: '!000_Anime This Season'
-    mal_season:
-      sort_by: members
-      starting_only: False
-      limit: 500
-    summary: Anime that is airing/returning this season only. For older seasons please check the bottom of collections for them.
+    anilist_search:
+      status: airing
+      format:
+        - tv
+        - short
+        - ona
+      sort_by: popular
+    summary: Anime that is airing right now. For older seasons please check the bottom of collections for them.
     sync_mode: sync
     visible_home: true
     visible_library: true
     url_poster: https://raw.githubusercontent.com/KenWeTech/KAC-Files/main/Covers/Seasons/Anime-This-Season.jpg
-
-#############################
-##         Seasons         ##
-#############################
 
   Anime Seasons:
     template: {name: Seasons, sort_order: "00007", cover: "Anime-Seasons.jpg"}

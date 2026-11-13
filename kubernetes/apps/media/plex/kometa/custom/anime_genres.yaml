@@ -1,36 +1,39 @@
-# Vendored from https://github.com/KenWeTech/KAC-Files (Genres.yml)
-# Upstream commit: 2e8d4c756d62 - vendored 2026-08-13
-# Covers are loaded from the upstream repo's raw URLs; no local assets needed.
-##############################################################
-##            Anime Genres & MAL Collections                ##
-##                Created by KenWeTech                      ##
-##                      Version 1.0                         ##
-##        https://github.com/KenWeTech/KAC-Files/           ##
-##############################################################
-
-
-#######################
-##     Templates     ##
-#######################
+# Based on https://github.com/KenWeTech/KAC-Files (Genres.yml, commit 2e8d4c756d62), builders converted from MyAnimeList to AniList.
+# Covers are loaded from the upstream repo's raw URLs.
 
 templates:
-  MAL:
+  Chart:
     collection_order: custom
     sync_mode: sync
     sort_title: '!015_<<collection_name>>'
-    summary: Animes that are currently <<summary_text>> on MAL.
+    summary: Animes that are currently <<summary_text>> on AniList.
     url_poster: https://raw.githubusercontent.com/KenWeTech/KAC-Files/main/Covers/<<cover>>
-  Anime:
-    mal_search:
-      genre: <<mal_id>>
-      limit: 0
+  Genre:
+    anilist_search:
+      genre: <<genre>>
+      sort_by: popular
+      limit: 500
+    cache_builders: 7
     url_poster: https://raw.githubusercontent.com/KenWeTech/KAC-Files/main/Covers/Genres/<<cover>>
     collection_order: alpha
     collection_mode: hide
     sync_mode: sync
     sort_title: zzz++_<<collection_name>>
     summary: Animes that are in the <<collection_name>> category/genre.
-  Genre:
+  Tag:
+    anilist_search:
+      tag: <<tag>>
+      min_tag_percent: 50
+      sort_by: popular
+      limit: 500
+    cache_builders: 7
+    url_poster: https://raw.githubusercontent.com/KenWeTech/KAC-Files/main/Covers/Genres/<<cover>>
+    collection_order: alpha
+    collection_mode: hide
+    sync_mode: sync
+    sort_title: zzz++_<<collection_name>>
+    summary: Animes that are in the <<collection_name>> category/genre.
+  Header:
     url_poster: https://raw.githubusercontent.com/KenWeTech/KAC-Files/main/Covers/Genres/<<cover>>
     collection_mode: hide
     blank_collection: true
@@ -45,206 +48,177 @@ templates:
     sort_title: zzz++_<<collection_name>>
     summary: Animes that are in the <<collection_name>> category/genre.
 
-#############################
-##       Collections       ##
-#############################
-
 collections:
 
-#############################
-##        MAL Lists        ##
-#############################
-
   Top Airing Anime:
-    template: {name: MAL, summary_text: "the top airing", cover: "MAL-Top-Airing.jpg"}
-    mal_airing: 20
+    template: {name: Chart, summary_text: "the top airing", cover: "MAL-Top-Airing.jpg"}
+    anilist_search:
+      status: airing
+      sort_by: score
+      limit: 50
 
   Top Rated Anime:
-    template: {name: MAL, summary_text: "the top rated", cover: "MAL-Top-Rated.jpg"}
-    # patched: upstream uses mal_rated, which is not a valid Kometa builder (mal_all = MAL top-rated ranking)
-    mal_all: 20
+    template: {name: Chart, summary_text: "the top rated", cover: "MAL-Top-Rated.jpg"}
+    anilist_top_rated: 50
 
   Most Popular Anime:
-    template: {name: MAL, summary_text: "most popular", cover: "MAL-Popular.jpg"}
-    mal_popular: 20
-
-  Most Favorited Anime:
-    template: {name: MAL, summary_text: "most favorited", cover: "MAL-Favorited.jpg"}
-    mal_favorite: 20
-
-#############################
-##    MAL Anime Genres     ##
-#############################
+    template: {name: Chart, summary_text: "most popular", cover: "MAL-Popular.jpg"}
+    anilist_popular: 50
 
   Anime Genres:
-    template: {name: Genre, cover: "Anime-Genres.png"}
-
+    template: {name: Header, cover: "Anime-Genres.png"}
   Action:
-    template: {name: Anime, mal_id: 1, cover: "Action.png"}
+    template: {name: Genre, genre: "Action", cover: "Action.png"}
   Adult Cast:
-    template: {name: Anime, mal_id: 50, cover: "Adult-Cast.png"}
+    template: {name: Tag, tag: "Primarily Adult Cast", cover: "Adult-Cast.png"}
   Adventure:
-    template: {name: Anime, mal_id: 2, cover: "Adventure.png"}
+    template: {name: Genre, genre: "Adventure", cover: "Adventure.png"}
   Anthropomorphic:
-    template: {name: Anime, mal_id: 51, cover: "Anthropomorphic.png"}
-  Avant Garde:
-    template: {name: Anime, mal_id: 5, cover: "Avant-Garde.png"}
-  Award Winning:
-    template: {name: Anime, mal_id: 46, cover: "Award-Winning.png"}
+    template: {name: Tag, tag: "Anthropomorphism", cover: "Anthropomorphic.png"}
   Boys Love:
-    template: {name: Anime, mal_id: 28, cover: "Boys-Love.png"}
+    template: {name: Tag, tag: "Boys' Love", cover: "Boys-Love.png"}
   CGDCT:
-    template: {name: Anime, mal_id: 52, cover: "CGDCT.png"}
+    template: {name: Tag, tag: "Cute Girls Doing Cute Things", cover: "CGDCT.png"}
   Childcare:
-    template: {name: Anime, mal_id: 53, cover: "Childcare.png"}
+    template: {name: Tag, tag: "Parenthood", cover: "Childcare.png"}
   Combat Sports:
-    template: {name: Anime, mal_id: 54, cover: "Combat-Sports.png"}
+    template: {name: Tag, tag: "Boxing, Wrestling, Judo, Sumo", cover: "Combat-Sports.png"}
   Comedy:
-    template: {name: Anime, mal_id: 4, cover: "Comedy.png"}
+    template: {name: Genre, genre: "Comedy", cover: "Comedy.png"}
   Crossdressing:
-    template: {name: Anime, mal_id: 81, cover: "Crossdressing.png"}
+    template: {name: Tag, tag: "Crossdressing", cover: "Crossdressing.png"}
   Delinquents:
-    template: {name: Anime, mal_id: 55, cover: "Delinquents.png"}
+    template: {name: Tag, tag: "Delinquents", cover: "Delinquents.png"}
   Detective:
-    template: {name: Anime, mal_id: 39, cover: "Detective.png"}
-  Drama:
-    template: {name: Anime, mal_id: 8, cover: "Drama.png"}
+    template: {name: Tag, tag: "Detective", cover: "Detective.png"}
   Donghua:
     template: {name: Special, cover: "Donghua.png"}
-    # patched: upstream also uses sonarr_taglist: anime, which needs Sonarr configured in Kometa
-    plex_search:
-      all:
-        audio_language: zh
-      title.not: 
-          - Black Sails
-          - aggretsuko
-          - Sherlock
-          - Zoids
-          - Avatar
+    anilist_search:
+      country: cn
+      sort_by: popular
+      limit: 500
+    cache_builders: 7
+  Drama:
+    template: {name: Genre, genre: "Drama", cover: "Drama.png"}
   Ecchi:
-    template: {name: Anime, mal_id: 9, cover: "Ecchi.png"}
+    template: {name: Genre, genre: "Ecchi", cover: "Ecchi.png"}
   Educational:
-    template: {name: Anime, mal_id: 56, cover: "Educational.png"}
-  Erotica:
-    template: {name: Anime, mal_id: 49, cover: "Erotica.png"}
+    template: {name: Tag, tag: "Educational", cover: "Educational.png"}
   Fantasy:
-    template: {name: Anime, mal_id: 10, cover: "Fantasy.png"}
+    template: {name: Genre, genre: "Fantasy", cover: "Fantasy.png"}
   Gag Humor:
-    template: {name: Anime, mal_id: 57, cover: "Gag-Humor.png"}
+    template: {name: Tag, tag: "Slapstick, Surreal Comedy", cover: "Gag-Humor.png"}
   Girls Love:
-    template: {name: Anime, mal_id: 26, cover: "Girls-Love.png"}
+    template: {name: Tag, tag: "Yuri", cover: "Girls-Love.png"}
   Gore:
-    template: {name: Anime, mal_id: 58, cover: "Gore.png"}
+    template: {name: Tag, tag: "Gore", cover: "Gore.png"}
   Gourmet:
-    template: {name: Anime, mal_id: 47, cover: "Gourmet.png"}
+    template: {name: Tag, tag: "Food", cover: "Gourmet.png"}
   Harem:
-    template: {name: Anime, mal_id: 35, cover: "Harem.png"}
+    template: {name: Tag, tag: "Female Harem", cover: "Harem.png"}
   Hentai:
-    template: {name: Anime, mal_id: 12, cover: "Hentai.png"}
+    template: {name: Genre, genre: "Hentai", cover: "Hentai.png"}
   High Stakes Game:
-    template: {name: Anime, mal_id: 59, cover: "High-Stakes-Game.png"}
+    template: {name: Tag, tag: "Gambling, Death Game", cover: "High-Stakes-Game.png"}
   Historical:
-    template: {name: Anime, mal_id: 13, cover: "Historical.png"}
+    template: {name: Tag, tag: "Historical", cover: "Historical.png"}
   Horror:
-    template: {name: Anime, mal_id: 14, cover: "Horror.png"}
-  Idols Female:
-    template: {name: Anime, mal_id: 60, cover: "Idols-Female.png"}
-  Idols Male:
-    template: {name: Anime, mal_id: 61, cover: "Idols-Male.png"}
+    template: {name: Genre, genre: "Horror", cover: "Horror.png"}
+  Idols:
+    template: {name: Tag, tag: "Idol", cover: "Idols-Female.png"}
   Isekai:
-    template: {name: Anime, mal_id: 62, cover: "Isekai.png"}
+    template: {name: Tag, tag: "Isekai", cover: "Isekai.png"}
   Iyashikei:
-    template: {name: Anime, mal_id: 63, cover: "Iyashikei.png"}
+    template: {name: Tag, tag: "Iyashikei", cover: "Iyashikei.png"}
   Josei:
-    template: {name: Anime, mal_id: 43, cover: "Josei.png"}
+    template: {name: Tag, tag: "Josei", cover: "Josei.png"}
   Kids:
-    template: {name: Anime, mal_id: 15, cover: "Kids.png"}
+    template: {name: Tag, tag: "Kids", cover: "Kids.png"}
   Love Polygon:
-    template: {name: Anime, mal_id: 64, cover: "Love-Polygon.png"}
+    template: {name: Tag, tag: "Love Triangle", cover: "Love-Polygon.png"}
   Magical Sex Shift:
-    template: {name: Anime, mal_id: 65, cover: "Magical-Sex-Shift.png"}
+    template: {name: Tag, tag: "Gender Bending", cover: "Magical-Sex-Shift.png"}
   Mahou Shoujo:
-    template: {name: Anime, mal_id: 66, cover: "Mahou-Shoujo.png"}
+    template: {name: Genre, genre: "Mahou Shoujo", cover: "Mahou-Shoujo.png"}
   Martial Arts:
-    template: {name: Anime, mal_id: 17, cover: "Martial-Arts.png"}
+    template: {name: Tag, tag: "Martial Arts", cover: "Martial-Arts.png"}
   Mecha:
-    template: {name: Anime, mal_id: 18, cover: "Mecha.png"}
+    template: {name: Genre, genre: "Mecha", cover: "Mecha.png"}
   Medical:
-    template: {name: Anime, mal_id: 67, cover: "Medical.png"}
+    template: {name: Tag, tag: "Medicine", cover: "Medical.png"}
   Military:
-    template: {name: Anime, mal_id: 38, cover: "Military.png"}
+    template: {name: Tag, tag: "Military", cover: "Military.png"}
   Mobile Suit Gundam:
     template: {name: Special, cover: "Mobile-Suit-Gundam.png"}
     plex_search:
       all:
         title: Gundam
+    ignore_blank_results: true
   Music:
-    template: {name: Anime, mal_id: 19, cover: "Music.png"}
+    template: {name: Genre, genre: "Music", cover: "Music.png"}
   Mystery:
-    template: {name: Anime, mal_id: 7, cover: "Mystery.png"}
+    template: {name: Genre, genre: "Mystery", cover: "Mystery.png"}
   Mythology:
-    template: {name: Anime, mal_id: 6, cover: "Mythology.png"}
+    template: {name: Tag, tag: "Mythology", cover: "Mythology.png"}
   Organized Crime:
-    template: {name: Anime, mal_id: 68, cover: "Organized-Crime.png"}
+    template: {name: Tag, tag: "Yakuza, Mafia, Triads, Gangs, Criminal Organization", cover: "Organized-Crime.png"}
   Otaku Culture:
-    template: {name: Anime, mal_id: 69, cover: "Otaku-Culture.png"}
+    template: {name: Tag, tag: "Otaku Culture", cover: "Otaku-Culture.png"}
   Parody:
-    template: {name: Anime, mal_id: 20, cover: "Parody.png"}
+    template: {name: Tag, tag: "Parody", cover: "Parody.png"}
   Performing Arts:
-    template: {name: Anime, mal_id: 70, cover: "Performing-Arts.png"}
+    template: {name: Tag, tag: "Acting, Dancing, Ballet, Musical Theater, Kabuki, Rakugo, Manzai", cover: "Performing-Arts.png"}
   Pets:
-    template: {name: Anime, mal_id: 71, cover: "Pets.png"}
+    template: {name: Tag, tag: "Animals", cover: "Pets.png"}
   Psychological:
-    template: {name: Anime, mal_id: 40, cover: "Psychological.png"}
+    template: {name: Genre, genre: "Psychological", cover: "Psychological.png"}
   Racing:
-    template: {name: Anime, mal_id: 3, cover: "Racing.png"}
+    template: {name: Tag, tag: "Cars, Motorcycles", cover: "Racing.png"}
   Reincarnation:
-    template: {name: Anime, mal_id: 72, cover: "Reincarnation.png"}
+    template: {name: Tag, tag: "Reincarnation", cover: "Reincarnation.png"}
   Reverse Harem:
-    template: {name: Anime, mal_id: 73, cover: "Reverse-Harem.png"}
+    template: {name: Tag, tag: "Male Harem", cover: "Reverse-Harem.png"}
   Romance:
-    template: {name: Anime, mal_id: 22, cover: "Romance.png"}
-  Romantic Subtext:
-    template: {name: Anime, mal_id: 74, cover: "Romantic-Subtext.png"}
+    template: {name: Genre, genre: "Romance", cover: "Romance.png"}
   Samurai:
-    template: {name: Anime, mal_id: 21, cover: "Samurai.png"}
+    template: {name: Tag, tag: "Samurai", cover: "Samurai.png"}
   School:
-    template: {name: Anime, mal_id: 23, cover: "School.png"}
+    template: {name: Tag, tag: "School", cover: "School.png"}
   Sci-Fi:
-    template: {name: Anime, mal_id: 24, cover: "Sci-Fi.png"}
+    template: {name: Genre, genre: "Sci-Fi", cover: "Sci-Fi.png"}
   Seinen:
-    template: {name: Anime, mal_id: 42, cover: "Seinen.png"}
+    template: {name: Tag, tag: "Seinen", cover: "Seinen.png"}
   Shoujo:
-    template: {name: Anime, mal_id: 25, cover: "Shoujo.png"}
+    template: {name: Tag, tag: "Shoujo", cover: "Shoujo.png"}
   Shounen:
-    template: {name: Anime, mal_id: 27, cover: "Shounen.png"}
+    template: {name: Tag, tag: "Shounen", cover: "Shounen.png"}
   Showbiz:
-    template: {name: Anime, mal_id: 75, cover: "Showbiz.png"}
+    template: {name: Tag, tag: "Acting, Filmmaking, Modeling", cover: "Showbiz.png"}
   Slice of Life:
-    template: {name: Anime, mal_id: 36, cover: "Slice-of-Life.png"}
+    template: {name: Genre, genre: "Slice of Life", cover: "Slice-of-Life.png"}
   Space:
-    template: {name: Anime, mal_id: 29, cover: "Space.png"}
+    template: {name: Tag, tag: "Space", cover: "Space.png"}
   Sports:
-    template: {name: Anime, mal_id: 30, cover: "Sports.png"}
+    template: {name: Genre, genre: "Sports", cover: "Sports.png"}
   Strategy Game:
-    template: {name: Anime, mal_id: 11, cover: "Strategy-Game.png"}
+    template: {name: Tag, tag: "Board Game, Card Battle, Go, Shogi, Mahjong, Karuta, Poker", cover: "Strategy-Game.png"}
   Super Power:
-    template: {name: Anime, mal_id: 31, cover: "Super-Power.png"}
+    template: {name: Tag, tag: "Super Power", cover: "Super-Power.png"}
   Supernatural:
-    template: {name: Anime, mal_id: 37, cover: "Supernatural.png"}
+    template: {name: Genre, genre: "Supernatural", cover: "Supernatural.png"}
   Survival:
-    template: {name: Anime, mal_id: 76, cover: "Survival.png"}
+    template: {name: Tag, tag: "Survival", cover: "Survival.png"}
   Suspense:
-    template: {name: Anime, mal_id: 41, cover: "Suspense.png"}
+    template: {name: Genre, genre: "Thriller", cover: "Suspense.png"}
   Team Sports:
-    template: {name: Anime, mal_id: 77, cover: "Team-Sports.png"}
+    template: {name: Tag, tag: "Baseball, Basketball, Football, Volleyball, Handball, Rugby, American Football, Lacrosse", cover: "Team-Sports.png"}
   Time Travel:
-    template: {name: Anime, mal_id: 78, cover: "Time-Travel.png"}
+    template: {name: Tag, tag: "Time Manipulation, Time Loop", cover: "Time-Travel.png"}
   Vampire:
-    template: {name: Anime, mal_id: 32, cover: "Vampire.png"}
+    template: {name: Tag, tag: "Vampire", cover: "Vampire.png"}
   Video Game:
-    template: {name: Anime, mal_id: 79, cover: "Video-Game.png"}
+    template: {name: Tag, tag: "Video Games, E-Sports, Virtual World", cover: "Video-Game.png"}
   Visual Arts:
-    template: {name: Anime, mal_id: 80, cover: "Visual-Arts.png"}
+    template: {name: Tag, tag: "Drawing, Photography, Calligraphy, Crafts", cover: "Visual-Arts.png"}
   Workplace:
-    template: {name: Anime, mal_id: 48, cover: "Workplace.png"}
+    template: {name: Tag, tag: "Work, Office", cover: "Workplace.png"}

@@ -771,14 +771,3 @@ radarr:
   monitor: false
   availability: announced
   quality_profile: "[SQP] SQP-3 (Audio)"
-
-mal:
-  client_id: <<MYANIMELIST_CLIENT_ID>>
-  client_secret: <<MYANIMELIST_CLIENT_SECRET>>
-  localhost_url: <<MYANIMELIST_LOCALHOST_URL>>
-  authorization:
-    access_token: <<MYANIMELIST_ACCESS_TOKEN>>
-    token_type: Bearer
-    expires_in: <<MYANIMELIST_EXPIRES_IN>>
-    refresh_token: <<MYANIMELIST_REFRESH_TOKEN>>
-  cache_expiration: 60
