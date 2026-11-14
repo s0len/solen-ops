@@ -25,7 +25,7 @@ spec:
                   app.kubernetes.io/component: app
       containers:
         - name: occ
-          image: docker.io/library/nextcloud:35.0.2-fpm-alpine
+          image: docker.io/library/nextcloud:35.0.3-fpm-alpine
           workingDir: /var/www/html
           command:
             - /bin/sh
