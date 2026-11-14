@@ -36,6 +36,7 @@
         "kubernetes/apps/kube-system/cilium/**",
         "kubernetes/apps/kube-system/coredns/**",
         "kubernetes/apps/media/qbittorrent/**",
+        "kubernetes/apps/media/shortlist/**",
         "kubernetes/apps/network/envoy-gateway/**",
         "kubernetes/apps/network/external-dns/**",
         "kubernetes/apps/openebs-system/**",
