@@ -1,5 +1,20 @@
 collections:
 
+  Recommended Movies:
+    smart_filter:
+      all:
+        unplayed: true
+        critic_rating.gte: 7
+        audience_rating.gte: 8
+      sort_by: random
+      limit: 30
+    summary: Movies you have not watched yet that both critics and audiences rate highly.
+    visible_library: true
+    visible_home: true
+    visible_shared: true
+    sort_title: "!017_recommended_movies"
+    collection_mode: hide
+
   Popular Movies:
     tmdb_popular: 100
     sync_mode: sync

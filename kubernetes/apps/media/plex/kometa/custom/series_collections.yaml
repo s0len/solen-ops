@@ -6,6 +6,21 @@ collections:
     collection_mode: hide
     sort_title: "!07_Viaplay"
 
+  Recommended TV Shows:
+    smart_filter:
+      all:
+        plays.lt: 1
+        critic_rating.gte: 7
+        audience_rating.gte: 8
+      sort_by: random
+      limit: 30
+    summary: Shows you have not started yet that both critics and audiences rate highly.
+    visible_library: true
+    visible_home: true
+    visible_shared: true
+    sort_title: "!017_recommended_series"
+    collection_mode: hide
+
   Trending TV Shows:
     tmdb_trending_weekly: 100
     sync_mode: sync
