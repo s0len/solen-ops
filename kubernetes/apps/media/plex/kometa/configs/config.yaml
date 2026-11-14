@@ -113,11 +113,6 @@ libraries:
           visible_library_netflix: true
           visible_library_amazon: true
           sort_by: random
-      - default: collectionless
-        template_variables:
-          summary_collectionless: This is a grouping of movies that have no collection. This collection is solely for the purpose of ensuring collections display in the proper fashion. This is a dummy collection, pay it no mind.
-          collection_section: "999"
-          collection_mode: hide
     overlay_files:
       - url: https://raw.githubusercontent.com/s0len/meta-manager-config/main/overlays/background_top_left_313_wide.yml
 
@@ -310,9 +305,6 @@ libraries:
           visible_library_popular: true
           visible_shared_popular: true
           summary_popular: The most popular movies for kids inside the Uniflix verse.
-      - default: collectionless
-        template_variables:
-          summary_collectionless: This is a grouping of movies that have no collection. This collection is solely for the purpose of ensuring collections display in the proper fashion. This is a dummy collection, pay it no mind.
     overlay_files:
       - default: languages
         template_variables:
