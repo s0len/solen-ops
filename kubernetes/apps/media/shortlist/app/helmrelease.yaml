@@ -45,7 +45,6 @@ spec:
               tag: 1.15.0@sha256:cb362541b937c2cc8e48769d28a87f9a71ef167890896cf0a6857eac699f85df
             env:
               TZ: ${TIMEZONE}
-              SHORTLIST_DRY_RUN: "1"
               PLEX_URL: http://${PLEX_IP}:32400
               TAUTULLI_URL: http://tautulli.media.svc.cluster.local
             envFrom:
