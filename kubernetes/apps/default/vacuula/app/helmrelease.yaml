@@ -25,7 +25,7 @@ spec:
           app:
             image:
               repository: ghcr.io/vacuula/vacuula
-              tag: 1.1.0@sha256:07fc8c8bd337de6f6e8e1cea2f4ce623a28399ad7e87a788ee0005d7974a9df4
+              tag: 1.1.1@sha256:349085eac629bc6c1a8d93b78a0649c965a71c7f29f964fde633aabce7e4c31d
             env:
               TZ: ${TIMEZONE}
               VACUULA_TZ: ${TIMEZONE}
