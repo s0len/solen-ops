@@ -665,6 +665,7 @@ settings:
   asset_depth: 2
   asset_directory: config/assets
   asset_folders: true
+  auto_sort_hubs: sort_title
   cache: true
   cache_expiration: 5
   check_nightly: false
