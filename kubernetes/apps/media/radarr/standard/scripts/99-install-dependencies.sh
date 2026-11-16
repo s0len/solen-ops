@@ -31,7 +31,9 @@ fi
 # Install dovi_tool (static binary)
 if ! command -v dovi_tool &> /dev/null; then
     echo "Installing dovi_tool to /usr/local/bin..."
-    wget -O /tmp/dovi_tool.tar.gz https://github.com/quietvoid/dovi_tool/releases/download/2.1.2/dovi_tool-2.1.2-x86_64-unknown-linux-musl.tar.gz
+    # renovate: datasource=github-releases depName=quietvoid/dovi_tool
+    DOVI_TOOL_VERSION=2.1.2
+    wget -O /tmp/dovi_tool.tar.gz https://github.com/quietvoid/dovi_tool/releases/download/$DOVI_TOOL_VERSION/dovi_tool-$DOVI_TOOL_VERSION-x86_64-unknown-linux-musl.tar.gz
     tar -xzf /tmp/dovi_tool.tar.gz -C /usr/local/bin/
     chmod +x /usr/local/bin/dovi_tool
     rm /tmp/dovi_tool.tar.gz
