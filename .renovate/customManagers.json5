@@ -29,7 +29,7 @@
     {
       "customType": "regex",
       "description": ["Track the Flux distribution artifact"],
-      "managerFilePatterns": ["(^|/)kubernetes/.+\\.ya?ml$"],
+      "managerFilePatterns": ["/(^|/)kubernetes/.+\\.ya?ml$/"],
       "matchStrings": ["artifact: oci://(?<depName>[^:\\s]+):(?<currentValue>\\S+)"],
       "datasourceTemplate": "docker"
     },
