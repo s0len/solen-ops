@@ -6,16 +6,16 @@ collections:
       all:
         country: Sweden
     sort_title: ~_Best of Sweden
-    visible_home: weekly(monday)
-    visible_shared: weekly(monday)
+    visible_home: false
+    visible_shared: false
     collection_mode: hide
 
   Best of United States:
     mdblist_list: https://mdblist.com/lists/solentankar/best-of-united-states
     sort_title: ~_Best of United States
     smart_label: random
-    visible_home: weekly(monday)
-    visible_shared: weekly(monday)
+    visible_home: false
+    visible_shared: false
     collection_mode: hide
     sync_mode: sync
     limit: 50
