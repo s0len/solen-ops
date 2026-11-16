@@ -57,8 +57,8 @@ spec:
                 # Download static jq
                 echo "Downloading jq..."
                 # renovate: datasource=github-releases depName=jqlang/jq
-                JQ_VERSION=jq-1.7.1
-                wget -O /deps/jq https://github.com/jqlang/jq/releases/download/$JQ_VERSION/jq-linux-amd64
+                JQ_VERSION=1.7.1
+                wget -O /deps/jq https://github.com/jqlang/jq/releases/download/jq-$JQ_VERSION/jq-linux-amd64
                 chmod +x /deps/jq
 
                 # Download static ffmpeg (from John Van Sickle's builds)

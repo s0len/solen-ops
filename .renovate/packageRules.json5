@@ -15,6 +15,12 @@
       "schedule": ["every 3 months on the first day of the month"]
     },
     {
+      "description": ["jq tags its releases as jq-1.8.2"],
+      "matchDatasources": ["github-releases"],
+      "matchPackageNames": ["jqlang/jq"],
+      "extractVersion": "^jq-(?<version>\\d+\\.\\d+(?:\\.\\d+)?)$"
+    },
+    {
       "description": ["Never auto-merge anything that changes the alert Agent's image: the pod holds a cluster credential, so the owner reads the release notes first"],
       "matchFileNames": ["kubernetes/apps/observability/alert-agent/image/**"],
       "automerge": false
