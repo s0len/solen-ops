@@ -24,6 +24,12 @@
       "matchDatasources": ["docker"],
       "matchPackageNames": ["docker.io/nousresearch/hermes-agent", "nousresearch/hermes-agent", "ghcr.io/s0len/hermes-agent"],
       "automerge": false
+    },
+    {
+      "description": ["Hold Flux Alert and Provider at v1beta3: their v1 API ships with Flux 2.10 and this cluster runs 2.9, so the bump fails the cluster-apps dry-run. Remove together with the Flux 2.10 upgrade"],
+      "matchDatasources": ["kubernetes-api"],
+      "matchDepNames": ["Alert", "Provider"],
+      "enabled": false
     }
   ]
 }
