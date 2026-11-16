@@ -30,6 +30,7 @@ spec:
             command:
               - sh
               - -c
+              # renovate: datasource=github-releases depName=siderolabs/talos
               - wget -qO /shared/talosctl "https://github.com/siderolabs/talos/releases/download/v1.12.4/talosctl-linux-amd64" && chmod +x /shared/talosctl
             securityContext:
               allowPrivilegeEscalation: false
