@@ -32,7 +32,7 @@ fi
 if ! command -v dovi_tool &> /dev/null; then
     echo "Installing dovi_tool to /usr/local/bin..."
     # renovate: datasource=github-releases depName=quietvoid/dovi_tool
-    DOVI_TOOL_VERSION=2.1.2
+    DOVI_TOOL_VERSION=2.3.4
     wget -O /tmp/dovi_tool.tar.gz https://github.com/quietvoid/dovi_tool/releases/download/$DOVI_TOOL_VERSION/dovi_tool-$DOVI_TOOL_VERSION-x86_64-unknown-linux-musl.tar.gz
     tar -xzf /tmp/dovi_tool.tar.gz -C /usr/local/bin/
     chmod +x /usr/local/bin/dovi_tool
