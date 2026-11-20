@@ -46,6 +46,13 @@ spec:
                   secretKeyRef:
                     name: tvsportsdb-secret
                     key: DATABASE_URL
+              # alembic loads the app settings, which refuse to start a
+              # deployment without a strong SECRET_KEY.
+              SECRET_KEY:
+                valueFrom:
+                  secretKeyRef:
+                    name: tvsportsdb-secret
+                    key: SECRET_KEY
 
         containers:
           app:
@@ -54,8 +61,14 @@ spec:
               tag: latest@sha256:99a558a99a72ed9c5680bc934d10037e41a4a5f11b348f53255ce7f23207f2b5
             env:
               TZ: ${TIMEZONE}
+              ENVIRONMENT: production
               DEBUG: "false"
               API_V1_PREFIX: /api/v1
+              # Requests arrive via Cloudflare -> cloudflared -> envoy-external,
+              # and envoy appends the cloudflared pod IP, so X-Forwarded-For is
+              # "<anything the client sent>, <client IP added by Cloudflare>,
+              # <cloudflared pod IP>". The client is 2 entries from the right.
+              TRUSTED_PROXY_HOPS: "2"
               UPDATER_LEAGUES: "4391:auto,4370:auto,4443:2023,4443:2024,4443:2025,4443:auto,4371:auto,4328:auto,4480:auto,4481:auto,4490:auto,4502:auto,4517:auto,4380:auto,4387:auto,4407:auto,4436:2026,4436:auto,4437:2026,4437:auto,4373:auto"
               UPDATER_CRON_HOURS: "8,10,11,12,14,15,16,17,19,20"
               SNOOKER_UPDATER_ENABLED: "true"
@@ -77,9 +90,12 @@ spec:
                   secretKeyRef:
                     name: tvsportsdb-secret
                     key: SECRET_KEY
-              # Cookie attributes for cross-site auth (frontend on apex, backend on api.)
+              # The frontend (apex) and backend (api.) are the same site, so Lax
+              # cookies still reach the API. "none" also sent them on requests
+              # from other sites, letting any page a signed-in editor visits
+              # post multipart uploads/imports with their session (CSRF).
               COOKIE_SECURE: "true"
-              COOKIE_SAMESITE: "none"
+              COOKIE_SAMESITE: "lax"
               COOKIE_DOMAIN: ".${SECRET_TVSPORTSDB_DOMAIN}"
               # S3/R2 Storage
               S3_ENDPOINT_URL:
