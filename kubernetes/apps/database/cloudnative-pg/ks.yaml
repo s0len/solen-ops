@@ -65,6 +65,8 @@ spec:
   dependsOn:
     - name: cloudnative-pg
       namespace: database
+    - name: cloudnative-pg-barman-plugin
+      namespace: database
   healthCheckExprs:
     - apiVersion: postgresql.cnpg.io/v1
       kind: Cluster
