@@ -3,7 +3,9 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: nextcloud-maintenance-35-0-2
+  name: nextcloud-maintenance
+  annotations:
+    kustomize.toolkit.fluxcd.io/force: enabled
 spec:
   backoffLimit: 2
   activeDeadlineSeconds: 3600
