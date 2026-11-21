@@ -37,7 +37,7 @@ spec:
                 # renovate: datasource=github-releases depName=navidrome/apple-music-plugin
                 dl https://github.com/navidrome/apple-music-plugin/releases/download/v0.2.0/apple-music.ndp apple-music.ndp
                 # renovate: datasource=github-releases depName=J0R6IT0/navidrome-lyrics-plugin
-                dl https://github.com/J0R6IT0/navidrome-lyrics-plugin/releases/download/v7.2.0/nd-lyrics.ndp nd-lyrics.ndp
+                dl https://github.com/J0R6IT0/navidrome-lyrics-plugin/releases/download/v9.2.0/nd-lyrics.ndp nd-lyrics.ndp
                 # renovate: datasource=github-releases depName=kgarner7/navidrome-listenbrainz-daily-playlist
                 dl https://github.com/kgarner7/navidrome-listenbrainz-daily-playlist/releases/download/v6.0.0/listenbrainz-daily-playlist.ndp listenbrainz-daily-playlist.ndp
                 # renovate: datasource=github-releases depName=NeptuneHub/AudioMuse-AI-NV-plugin
