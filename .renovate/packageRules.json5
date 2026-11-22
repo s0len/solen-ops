@@ -5,7 +5,7 @@
       "description": ["Allowed postgresql major release"],
       "matchDatasources": ["docker"],
       "matchPackageNames": ["/postgresql/"],
-      "allowedVersions": "<17"
+      "allowedVersions": "<19"
     },
     {
       "description": ["Custom schedule for frequently updated container digests"],
