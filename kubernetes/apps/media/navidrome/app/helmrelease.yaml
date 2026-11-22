@@ -41,7 +41,7 @@ spec:
                 # renovate: datasource=github-releases depName=kgarner7/navidrome-listenbrainz-daily-playlist
                 dl https://github.com/kgarner7/navidrome-listenbrainz-daily-playlist/releases/download/v6.0.0/listenbrainz-daily-playlist.ndp listenbrainz-daily-playlist.ndp
                 # renovate: datasource=github-releases depName=NeptuneHub/AudioMuse-AI-NV-plugin
-                dl https://github.com/NeptuneHub/AudioMuse-AI-NV-plugin/releases/download/v8/audiomuseai.ndp audiomuseai.ndp
+                dl https://github.com/NeptuneHub/AudioMuse-AI-NV-plugin/releases/download/v12/audiomuseai.ndp audiomuseai.ndp
             securityContext:
               allowPrivilegeEscalation: false
               readOnlyRootFilesystem: true
