@@ -15,6 +15,17 @@ connectivity:
   checker:
     target: 1.1.1.1:53
     interval: 1m
+alerting:
+  pushover:
+    application-token: $${GATUS_PUSHOVER_TOKEN}
+    user-key: $${GATUS_PUSHOVER_USER_KEY}
+    priority: 1
+    resolved-priority: 0
+    default-alert:
+      enabled: true
+      failure-threshold: 10
+      success-threshold: 2
+      send-on-resolved: true
 endpoints:
   - name: flux-webhook
     group: external
@@ -24,3 +35,21 @@ endpoints:
       dns-resolver: tcp://1.1.1.1:53
     conditions:
       - "[STATUS] == 404"
+  - name: prometheus
+    group: alert-chain
+    url: http://kube-prometheus-stack-prometheus.observability.svc.cluster.local:9090/-/healthy
+    interval: 1m
+    conditions:
+      - "[STATUS] == 200"
+    alerts:
+      - type: pushover
+        description: Prometheus is unreachable, so no alert is being raised at all
+  - name: alertmanager
+    group: alert-chain
+    url: http://kube-prometheus-stack-alertmanager.observability.svc.cluster.local:9093/-/healthy
+    interval: 1m
+    conditions:
+      - "[STATUS] == 200"
+    alerts:
+      - type: pushover
+        description: Alertmanager is unreachable, so no alert can be delivered
