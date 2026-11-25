@@ -51,7 +51,7 @@ spec:
             command:
               - /bin/sh
               - -c
-              - printf '/artwork/hashed/\n/cache/\n' > /data/.kopiaignore
+              - printf '/artwork/hashed/\n/backup/\n/cache/\n' > /data/.kopiaignore
             securityContext:
               allowPrivilegeEscalation: false
               readOnlyRootFilesystem: true
@@ -77,9 +77,6 @@ spec:
               ND_AGENTS: audiomuseai,apple-music,lastfm
               ND_LASTFM_ENABLED: "true"
               ND_LISTENBRAINZ_ENABLED: "true"
-              ND_BACKUP_PATH: /data/backup
-              ND_BACKUP_SCHEDULE: "0 4 * * *"
-              ND_BACKUP_COUNT: "7"
             envFrom:
               - secretRef:
                   name: navidrome-secret
