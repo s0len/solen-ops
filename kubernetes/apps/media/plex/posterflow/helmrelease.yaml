@@ -41,7 +41,7 @@ spec:
           app:
             image:
               repository: docker.io/dweagle/posterflow
-              tag: 0.19.2@sha256:b79993da11cb166d53fe5fbf8eef092a9c13cb9e641f6a51920adb73ab360336
+              tag: 0.19.7@sha256:6b3453ab845dc6ff015791dcde74d8962e82665b494ffb1d062344d4733c99aa
             command:
               - python
               - main.py
