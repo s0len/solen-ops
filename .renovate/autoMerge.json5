@@ -35,7 +35,6 @@
         "kubernetes/apps/kopiur-system/**",
         "kubernetes/apps/kube-system/cilium/**",
         "kubernetes/apps/kube-system/coredns/**",
-        "kubernetes/apps/media/plex/posterflow/**",
         "kubernetes/apps/media/qbittorrent/**",
         "kubernetes/apps/media/shortlist/**",
         "kubernetes/apps/network/envoy-gateway/**",
