@@ -24,7 +24,7 @@ spec:
           reloader.stakater.com/auto: "true"
         initContainers:
           download-plugins:
-            image:
+            image: &curl
               repository: docker.io/curlimages/curl
               tag: 8.23.0@sha256:3fb7e13e5d179a845c97d78204f3f1064d1907037f26a3ebf91710571151fd93
             command:
@@ -42,6 +42,16 @@ spec:
                 dl https://github.com/kgarner7/navidrome-listenbrainz-daily-playlist/releases/download/v6.0.0/listenbrainz-daily-playlist.ndp listenbrainz-daily-playlist.ndp
                 # renovate: datasource=github-releases depName=NeptuneHub/AudioMuse-AI-NV-plugin
                 dl https://github.com/NeptuneHub/AudioMuse-AI-NV-plugin/releases/download/v12/audiomuseai.ndp audiomuseai.ndp
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities: { drop: ["ALL"] }
+          kopiaignore:
+            image: *curl
+            command:
+              - /bin/sh
+              - -c
+              - printf '/artwork/hashed/\n/cache/\n' > /data/.kopiaignore
             securityContext:
               allowPrivilegeEscalation: false
               readOnlyRootFilesystem: true
